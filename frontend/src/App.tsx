@@ -164,10 +164,11 @@ export default function App() {
     setExecutionStage(1); // 1: COO 분해 시작
     addLiveLog('CEO 지시', `"${instruction}" (수신: ${targetTeam}, 우선순위: ${priority})`, 'info');
 
-    // 파이프라인 단계 시뮬레이션 타이머
-    const timer1 = setTimeout(() => setExecutionStage(2), 700); // 2: 특허 조사
-    const timer2 = setTimeout(() => setExecutionStage(3), 1500); // 3: 백엔드 개발
-    const timer3 = setTimeout(() => setExecutionStage(4), 2200); // 4: QA 검수
+    // 파이프라인 단계 시뮬레이션 타이머 (1: COO -> 2: 특허 -> 3: 프론트 -> 4: 백엔드 -> 5: 보안 -> 6: QA/COO 승인)
+    const timer1 = setTimeout(() => setExecutionStage(2), 600);  // 2: 특허 FTO
+    const timer2 = setTimeout(() => setExecutionStage(3), 1200); // 3: 프론트 UI
+    const timer3 = setTimeout(() => setExecutionStage(4), 1800); // 4: 백엔드 개발
+    const timer4 = setTimeout(() => setExecutionStage(5), 2400); // 5: 보안 심사
 
     try {
       const response = await postCommand({
@@ -176,11 +177,11 @@ export default function App() {
       });
 
       setLatestCommandResult(response);
-      setExecutionStage(5); // 완료
+      setExecutionStage(6); // 6: 완료 및 COO 최종 승인
 
       addLiveLog(
         '명령 실행 완료',
-        `프로젝트 [${response.project_id}] 전 공정 완료 (완료 태스크 ${response.completed_tasks?.length || 0}건)`,
+        `프로젝트 [${response.project_id}] 전 공정 완료 (완료 태스크 ${response.completed_tasks?.length || 0}건, COO 최종 품질검수 통과)`,
         'success'
       );
 
@@ -195,6 +196,7 @@ export default function App() {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+      clearTimeout(timer4);
       setIsExecutingCommand(false);
     }
   };
@@ -425,6 +427,7 @@ export default function App() {
                   {[
                     { name: 'COOAgent', role: '총괄 운영 및 업무 분해', status: '정상 가동', color: 'text-sky-400' },
                     { name: 'PatentSearchAgent', role: '특허 Gatekeeper (FTO)', status: '정상 가동', color: 'text-purple-400' },
+                    { name: 'FrontendDevAgent', role: '모바일 반응형 및 UI/UX 개발', status: '정상 가동', color: 'text-cyan-400' },
                     { name: 'BackendDevAgent', role: '회피설계 및 시스템 구현', status: '정상 가동', color: 'text-blue-400' },
                     { name: 'SecurityAgent', role: '정보보안 및 OWASP 취약점 심사', status: '정상 가동', color: 'text-rose-400' },
                     { name: 'QAAgent', role: '독립 품질 및 규격 검수', status: '정상 가동', color: 'text-emerald-400' },

@@ -50,6 +50,11 @@ async def test_complete_company_operation():
     assert patent_task is not None
     assert patent_task["status"] == "CLOSED"
 
+    # 프론트엔드 에이전트 산출물 확인
+    front_task = next((t for t in completed_tasks if t["assignee"] == "FrontendAgent"), None)
+    assert front_task is not None
+    assert front_task["status"] == "CLOSED"
+
     # 개발 에이전트 산출물 확인
     dev_task = next((t for t in completed_tasks if t["assignee"] == "BackendAgent"), None)
     assert dev_task is not None
@@ -64,6 +69,10 @@ async def test_complete_company_operation():
     sec_task = next((t for t in completed_tasks if t["assignee"] == "SecurityAgent"), None)
     assert sec_task is not None
     assert sec_task["status"] == "CLOSED"
+
+    # COO 최종 감사 확인
+    assert "coo_audit" in result
+    assert result["coo_audit"]["approved"] is True
 
     # 3. 특허 보고서 파일 생성 및 내용 확인 (COMPANY_LEDGERS/KNOWLEDGE_PATENT/)
     patent_files = list((settings.LEDGER_DIR / "KNOWLEDGE_PATENT").glob("*.md"))
@@ -82,12 +91,17 @@ async def test_complete_company_operation():
     md_content = task_ledger_md.read_text(encoding="utf-8")
     assert f"# TASK LEDGER — {prj_id}" in md_content
     assert "PatentSearchAgent" in md_content
+    assert "FrontendAgent" in md_content
     assert "BackendAgent" in md_content
     assert "SecurityAgent" in md_content
     assert "QAAgent" in md_content
 
     json_tasks = json.loads(task_ledger_json.read_text(encoding="utf-8"))
-    assert len(json_tasks) >= 4
+    assert len(json_tasks) >= 5
+
+    # 4-1. 회의록 원장(MEETING_LOG) COO 최종 감사 확인
+    meeting_files = list((settings.LEDGER_DIR / "MEETING_LOG").glob("*.md"))
+    assert len(meeting_files) > 0
 
     # 5. 명령 원장 파일 생성 확인 (COMPANY_LEDGERS/COMMAND_LOG/)
     cmd_file_md = settings.LEDGER_DIR / "COMMAND_LOG" / f"{cmd_id}.md"
@@ -117,10 +131,12 @@ async def test_complete_company_operation():
         # 태스크 조회
         tasks_stmt = select(TaskModel).where(TaskModel.project_id == prj_id)
         tasks_objs = (await session.execute(tasks_stmt)).scalars().all()
-        assert len(tasks_objs) >= 3
+        assert len(tasks_objs) == 5
         task_assignees = {t.assignee for t in tasks_objs}
         assert "PatentSearchAgent" in task_assignees
+        assert "FrontendAgent" in task_assignees
         assert "BackendAgent" in task_assignees
+        assert "SecurityAgent" in task_assignees
         assert "QAAgent" in task_assignees
         break
 

@@ -98,3 +98,37 @@ class LedgerSyncService:
 """
             async with aiofiles.open(md_path, mode="w", encoding="utf-8") as f:
                 await f.write(content)
+
+    async def sync_meeting_log(self, meeting: Dict[str, Any]):
+        async with self.lock:
+            meet_id = meeting["id"]
+            meet_dir = self.settings.LEDGER_DIR / "MEETING_LOG"
+            meet_dir.mkdir(parents=True, exist_ok=True)
+            md_path = meet_dir / f"{meet_id}.md"
+            json_path = meet_dir / f"{meet_id}.json"
+
+            checked_items_str = "\n".join(
+                f"- [x] {item}" for item in meeting.get("checked_items", [])
+            )
+            content = f"""# EXECUTIVE AUDIT MEETING LOG — {meet_id}
+
+- **감사 ID**: {meet_id}
+- **프로젝트**: {meeting.get('project_id', '')}
+- **주관자**: {meeting.get('chairperson', 'COO')}
+- **참석 에이전트**: {meeting.get('attendees', 'COOAgent, PatentSearchAgent, FrontendAgent, BackendAgent, SecurityAgent, QAAgent')}
+- **감사 승인 여부**: {"승인 (APPROVED)" if meeting.get('approved', True) else "반려 (REJECTED)"}
+
+## 총괄 품질 종합 감사 요약
+{meeting.get('summary', '')}
+
+## 세부 검증 확인 항목
+{checked_items_str}
+
+## 후속 지시 및 경영진 총평
+{meeting.get('directive', '')}
+"""
+            async with aiofiles.open(md_path, mode="w", encoding="utf-8") as f:
+                await f.write(content)
+            async with aiofiles.open(json_path, mode="w", encoding="utf-8") as f:
+                await f.write(json.dumps(meeting, ensure_ascii=False, indent=2))
+

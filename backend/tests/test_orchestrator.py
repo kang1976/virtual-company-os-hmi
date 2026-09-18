@@ -21,12 +21,15 @@ async def test_full_command_orchestration():
     assert result["status"] == "SUCCESS"
     assert "project_id" in result
     assert "command_id" in result
-    assert len(result["completed_tasks"]) == 4
+    assert len(result["completed_tasks"]) == 5
     assignees = [t["assignee"] for t in result["completed_tasks"]]
     assert "PatentSearchAgent" in assignees
+    assert "FrontendAgent" in assignees
     assert "BackendAgent" in assignees
     assert "SecurityAgent" in assignees
     assert "QAAgent" in assignees
+    assert "coo_audit" in result
+    assert result["coo_audit"]["approved"] is True
 
     # 검증: broadcast 이벤트 확인
     event_names = [e[0] for e in broadcast_events]

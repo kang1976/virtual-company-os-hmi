@@ -15,22 +15,24 @@ import {
   FolderOpen,
   ShieldAlert,
   Lock,
+  Palette,
+  ShieldCheck,
 } from 'lucide-react';
 import type { CommandResponse, Priority, TaskItem } from '../../types';
 
 export interface CommandBarProps {
   onCommandSubmit: (instruction: string, targetTeam: string, priority: Priority) => Promise<CommandResponse | void>;
   isExecuting: boolean;
-  executionStage?: number; // 0: 대기, 1: COO 분해, 2: 특허 조사, 3: 개발 구현, 4: 보안 심사, 5: QA 검수, 6: 완료
+  executionStage?: number; // 0: 대기, 1: COO 분해, 2: 특허 조사, 3: 프론트 UI, 4: 백엔드 개발, 5: 보안 심사, 6: QA/COO 승인
   latestResult: CommandResponse | null;
   onNavigateTab?: (tab: 'kanban' | 'ledgers' | 'org') => void;
   onSelectDeliverable?: (task: TaskItem) => void;
 }
 
 const PRESET_COMMANDS = [
+  '모바일 관제 대시보드 UI/UX 개편 및 3종 테마 구축',
   '스마트 팩토리 PLC 모니터링 시스템 구축',
   'AI 비전 품질 검사 파이프라인 개발',
-  'ERP 실시간 재고 연동 서비스 구축',
   '클라우드 네이티브 MES 제조 실행 시스템 설계',
 ];
 
@@ -38,6 +40,7 @@ const TARGET_TEAMS = [
   { id: '전체', label: '전사 총괄 (COO 자율 분해)' },
   { id: '운영기획팀', label: '운영기획팀 (COO)' },
   { id: 'IP특허팀', label: 'IP·특허팀 (Gatekeeper)' },
+  { id: '프론트엔드팀', label: '프론트엔드팀 (UI/UX 디자인)' },
   { id: '백엔드개발팀', label: '백엔드개발팀 (회피설계)' },
   { id: '보안팀', label: '보안팀 (취약점·CVE 심사)' },
   { id: '품질QA팀', label: '품질QA팀 (독립 검수)' },
@@ -54,9 +57,10 @@ const PRIORITIES: { id: Priority; label: string; color: string }[] = [
 const PIPELINE_STEPS = [
   { step: 1, name: 'COO 분해', desc: '지시 분석 및 업무 할당', icon: Layers },
   { step: 2, name: '특허 FTO', desc: '선행특허 회피설계', icon: ShieldAlert },
-  { step: 3, name: '시스템 개발', desc: '특허 회피설계 구현', icon: Code2 },
-  { step: 4, name: '보안 심사', desc: 'OWASP / CVE 검증', icon: Lock },
-  { step: 5, name: 'QA 검수', desc: '품질 및 신뢰성 마감', icon: Award },
+  { step: 3, name: '프론트 UI', desc: '모바일/테마 UI 개발', icon: Palette },
+  { step: 4, name: '시스템 개발', desc: '백엔드 아키텍처 구현', icon: Code2 },
+  { step: 5, name: '보안 심사', desc: 'OWASP/CVE 심사', icon: Lock },
+  { step: 6, name: 'COO 종합검수', desc: '품질 승인 및 마감', icon: Award },
 ];
 
 export const CommandBar: React.FC<CommandBarProps> = ({
@@ -322,6 +326,45 @@ export const CommandBar: React.FC<CommandBarProps> = ({
             {latestResult.summary || '전 공정 검증 완료 및 4대 장부 최종 마감되었습니다.'}
           </div>
 
+          {/* COO 최종 종합 품질검수 (Quality Gate) 감사 리포트 */}
+          {latestResult.coo_audit && (
+            <div className="bg-slate-950/90 rounded-xl p-3.5 border border-indigo-900/60 mb-3 text-xs">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span className="font-bold text-white">COO 전사 최종 품질 종합검수 (Quality Gate)</span>
+                </div>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    latestResult.coo_audit.approved
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                      : 'bg-rose-950 text-rose-300 border border-rose-800'
+                  }`}
+                >
+                  {latestResult.coo_audit.approved ? '최종 마감 승인 (CLOSED)' : '재검토 권고 (REVISION)'}
+                </span>
+              </div>
+              <p className="text-slate-300 mb-2 leading-relaxed">
+                {latestResult.coo_audit.executive_summary}
+              </p>
+              {latestResult.coo_audit.checked_items && latestResult.coo_audit.checked_items.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mb-2 bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
+                  {latestResult.coo_audit.checked_items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                      <CheckCircle2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate text-slate-300">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {latestResult.coo_audit.directive_feedback && (
+                <div className="text-[11px] text-indigo-300 italic">
+                  &bull; COO 총평: {latestResult.coo_audit.directive_feedback}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 생성/완료된 태스크 목록 */}
           {latestResult.completed_tasks && latestResult.completed_tasks.length > 0 && (
             <div>
@@ -329,7 +372,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                 <span>공정별 산출물 ({latestResult.completed_tasks.length}건)</span>
                 <span className="text-[11px] text-slate-500">터치하여 상세 보기</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2">
                 {latestResult.completed_tasks.map((task) => (
                   <div
                     key={task.id}

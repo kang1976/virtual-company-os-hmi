@@ -6,6 +6,7 @@ from backend.app.services.ledger_sync import LedgerSyncService
 from backend.app.agents.coo import COOAgent
 from backend.app.agents.patent.search import PatentSearchAgent
 from backend.app.agents.dev.backend import BackendDevAgent
+from backend.app.agents.dev.frontend import FrontendDevAgent
 from backend.app.agents.security import SecurityAgent
 from backend.app.agents.qa import QAAgent
 
@@ -14,6 +15,7 @@ class CompanyOrchestrator:
     def __init__(self, broadcast_fn: Optional[Callable] = None):
         self.coo = COOAgent()
         self.patent = PatentSearchAgent()
+        self.frontend = FrontendDevAgent()
         self.dev = BackendDevAgent()
         self.security = SecurityAgent()
         self.qa = QAAgent()
@@ -82,50 +84,103 @@ class CompanyOrchestrator:
         completed_tasks.append(t1)
         self.broadcast("TASK_UPDATED", t1)
 
-        # 4b. 2단계: 개발
-        dev_res = await self.dev.develop(instruction, patent_findings=pat_findings)
-        deliverable = dev_res.get("deliverable", "")
+        # 4b. 2단계: UI/UX 및 프론트엔드 개발 (FrontendDevAgent)
+        front_res = await self.frontend.develop_ui(
+            instruction,
+            design_guide="모바일 360~430px 반응형 최적화, 3종 테마 지원, WCAG 2.1 AA 준수, 터치 친화적 인터랙션"
+        )
+        front_deliverable = front_res.get("deliverable", "")
         t2 = {
             "id": f"{prj_id}-T002",
-            "title": "핵심 시스템 및 아키텍처 개발",
-            "assignee": "BackendAgent",
+            "title": "UI/UX 디자인 및 반응형 프론트엔드 구현",
+            "assignee": "FrontendAgent",
             "status": "SUBMITTED",
             "priority": "P1",
-            "deliverable": deliverable,
+            "deliverable": front_deliverable,
         }
         completed_tasks.append(t2)
         self.broadcast("TASK_UPDATED", t2)
 
-        # 4c. 3단계: 보안 전문 심사 (Security Gatekeeper)
-        sec_res = await self.security.audit(deliverable, tech_stack="FastAPI/React")
-        sec_status = "VERIFIED" if sec_res.get("passed", True) else "BLOCKED"
+        # 4c. 3단계: 핵심 백엔드 시스템 및 API 개발 (BackendDevAgent)
+        dev_res = await self.dev.develop(instruction, patent_findings=pat_findings)
+        back_deliverable = dev_res.get("deliverable", "")
         t3 = {
             "id": f"{prj_id}-T003",
-            "title": "보안성 및 취약점 검증 (OWASP/CVE)",
+            "title": "핵심 시스템 아키텍처 및 백엔드 API 개발",
+            "assignee": "BackendAgent",
+            "status": "SUBMITTED",
+            "priority": "P1",
+            "deliverable": back_deliverable,
+        }
+        completed_tasks.append(t3)
+        self.broadcast("TASK_UPDATED", t3)
+
+        # 4d. 4단계: 보안 전문 심사 (Security Gatekeeper)
+        full_code_deliverable = f"[Frontend UI/UX]:\n{front_deliverable}\n\n[Backend System]:\n{back_deliverable}"
+        sec_res = await self.security.audit(full_code_deliverable, tech_stack="FastAPI/React/Tailwind")
+        sec_passed = sec_res.get("passed", True)
+        sec_status = "VERIFIED" if sec_passed else "BLOCKED"
+        t4 = {
+            "id": f"{prj_id}-T004",
+            "title": "보안성 및 취약점 심사 (OWASP Top 10/CVE)",
             "assignee": "SecurityAgent",
             "status": sec_status,
             "priority": "P1",
             "deliverable": f"보안 점수: {sec_res.get('security_score', 96)}점 / CVE 위험도: {sec_res.get('cve_risk', 'LOW')}",
         }
-        completed_tasks.append(t3)
-        self.broadcast("TASK_UPDATED", t3)
+        completed_tasks.append(t4)
+        self.broadcast("TASK_UPDATED", t4)
 
-        # 4d. 4단계: QA 독립 품질 검증
-        qa_res = await self.qa.verify(deliverable, criteria="CEO 요구사항 만족 및 안정성 검증")
-        qa_status = "CLOSED" if (qa_res.get("passed", True) and sec_res.get("passed", True)) else "BLOCKED"
-        t4 = {
-            "id": f"{prj_id}-T004",
-            "title": "품질 검증 및 최종 검수",
+        # 4e. 5단계: 독립 품질 검증 (QAAgent)
+        qa_res = await self.qa.verify(
+            full_code_deliverable,
+            criteria="CEO 요구사항 만족, 모바일 터치 사용성 및 안정성 검증"
+        )
+        qa_passed = qa_res.get("passed", True) and sec_passed
+        qa_status = "VERIFIED" if qa_passed else "BLOCKED"
+        t5 = {
+            "id": f"{prj_id}-T005",
+            "title": "독립 품질 및 기능 규격 검수",
             "assignee": "QAAgent",
             "status": qa_status,
             "priority": "P1",
             "deliverable": qa_res.get("feedback", "품질 검증 완료"),
         }
-        completed_tasks.append(t4)
-        if qa_status == "CLOSED":
+        completed_tasks.append(t5)
+        self.broadcast("TASK_UPDATED", t5)
+
+        # 4f. 6단계: COO 최종 종합 품질검수 (COO Final Quality Gate)
+        deliverables_summary = {
+            "PatentSearchAgent (T001)": f"FTO 위험도: {pat_dict.get('fto_risk')}, 소견: {pat_findings[:100]}",
+            "FrontendAgent (T002)": f"컴포넌트: {front_res.get('component_name', 'UI')}, 산출물: {front_deliverable[:100]}",
+            "BackendAgent (T003)": f"모듈명: {dev_res.get('module_name', 'System')}, 아키텍처: {dev_res.get('architecture_summary', 'API')[:100]}",
+            "SecurityAgent (T004)": f"보안점수: {sec_res.get('security_score', 96)}점, CVE: {sec_res.get('cve_risk', 'LOW')}",
+            "QAAgent (T005)": f"품질결과: {'합격' if qa_passed else '불합격'}, 피드백: {qa_res.get('feedback', '완료')[:100]}",
+        }
+        coo_audit = await self.coo.verify_final_quality(instruction, deliverables_summary)
+        coo_approved = coo_audit.get("approved", True) and qa_passed
+
+        # COO 승인 시 전 태스크 최종 종결(CLOSED) 마감
+        if coo_approved:
             for t in completed_tasks:
                 t["status"] = "CLOSED"
-        self.broadcast("TASK_UPDATED", t4)
+        else:
+            for t in completed_tasks:
+                if t["status"] not in ["VERIFIED", "CLOSED"]:
+                    t["status"] = "BLOCKED"
+
+        # 회의록 원장(MEETING_LOG)에 COO 최종 감사 회의 기록 저장
+        meet_id = f"MEET-{today_str}-{timestamp_id:04d}"
+        meet_dict = {
+            "id": meet_id,
+            "project_id": prj_id,
+            "chairperson": "COOAgent",
+            "approved": coo_approved,
+            "summary": coo_audit.get("executive_summary", "전사 산출물 최종 감사 완료"),
+            "checked_items": coo_audit.get("checked_items", []),
+            "directive": coo_audit.get("directive_feedback", "품질 기준 충족 승인"),
+        }
+        await self.sync.sync_meeting_log(meet_dict)
 
         # 5. 장부 및 DB 최종 동기화
         await self.sync.sync_task_ledger(prj_id, completed_tasks)
@@ -144,9 +199,10 @@ class CompanyOrchestrator:
             break
 
         return {
-            "status": "SUCCESS",
+            "status": "SUCCESS" if coo_approved else "NEEDS_REVISION",
             "project_id": prj_id,
             "command_id": cmd_id,
             "completed_tasks": completed_tasks,
             "summary": decomp.get("summary", "전 공정 완료 및 원장 마감"),
+            "coo_audit": coo_audit,
         }

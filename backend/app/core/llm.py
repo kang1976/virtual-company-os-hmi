@@ -79,6 +79,28 @@ class LLMClient:
                 ]
             elif name == "recommendations":
                 mock_data[name] = "API 게이트웨이 레이트 리미팅 적용 및 주기적인 보안 패치 유지 권고."
+            elif name == "component_name":
+                mock_data[name] = "가상회사 통합 관제 대시보드 및 모바일 컴포넌트"
+            elif name == "design_system":
+                mock_data[name] = "사이버 다크/OLED/라이트 3종 테마 및 고대비 슬레이트 팔레트 적용"
+            elif name == "responsive_layout":
+                mock_data[name] = "모바일 360~430px 터치 탭 뷰 및 데스크탑 와이드 반응형 그리드 최적화"
+            elif name == "accessibility_audit":
+                mock_data[name] = "WCAG 2.1 AA 기준 준수, 터치 타깃 최소 44px 확보, 키보드 포커스 완비"
+            elif name == "approved":
+                mock_data[name] = True
+            elif name == "executive_summary":
+                mock_data[name] = "전사 전문 에이전트(특허, 프론트, 백엔드, 보안, QA) 산출물 정밀 감사 결과 전 부문 합격. 최종 종결(CLOSED) 승인."
+            elif name == "checked_items":
+                mock_data[name] = [
+                    "선행특허 FTO 침해 리스크 LOW 확인 (회피설계 반영)",
+                    "프론트엔드 모바일 반응형 및 3종 테마 100% 구현 확인",
+                    "백엔드 시스템 안정성 및 API 명세 정합성 확인",
+                    "OWASP 보안 점수 96점 및 무결성 검증 합격",
+                    "독립 QA 기능 테스트 100% 통과 확인"
+                ]
+            elif name == "directive_feedback":
+                mock_data[name] = "품질 표준을 완벽히 충족함. 전 부서 마감 승인 및 이중 원장 기록 완료."
             else:
                 annotation = field_info.annotation
                 if annotation is bool:

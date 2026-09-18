@@ -5,10 +5,14 @@ from backend.app.agents import (
     PatentOutputSchema,
     BackendDevAgent,
     DevOutputSchema,
+    FrontendDevAgent,
+    FrontendOutputSchema,
     SecurityAgent,
     SecurityOutputSchema,
     QAAgent,
     QAOutputSchema,
+    COOAgent,
+    COOApprovalSchema,
 )
 
 @pytest.mark.asyncio
@@ -96,3 +100,58 @@ async def test_security_agent_audit():
     assert "security_score" in res
     assert "cve_risk" in res
     assert "recommendations" in res
+
+
+@pytest.mark.asyncio
+async def test_frontend_dev_agent():
+    front_agent = FrontendDevAgent()
+    assert front_agent.name == "FrontendAgent"
+    assert front_agent.department == "프론트엔드팀"
+    assert front_agent.role == "프론트엔드 및 UI/UX 개발자"
+
+    res = await front_agent.develop_ui(
+        "모바일 반응형 전체화면 관제 콘솔 및 테마 스위처",
+        design_guide="모바일 터치 44px, 3종 테마 지원"
+    )
+    assert "component_name" in res
+    assert "design_system" in res
+    assert "responsive_layout" in res
+    assert "deliverable" in res
+    assert "accessibility_audit" in res
+
+    schema_obj = FrontendOutputSchema(
+        component_name="Navbar & Dashboard",
+        design_system="사이버 다크 테마",
+        responsive_layout="모바일 360px 대응",
+        deliverable="export function Dashboard() { return <div>UI</div>; }",
+        accessibility_audit="WCAG 2.1 통과"
+    )
+    assert schema_obj.component_name == "Navbar & Dashboard"
+
+
+@pytest.mark.asyncio
+async def test_coo_verify_final_quality():
+    coo = COOAgent()
+    sample_deliverables = {
+        "PatentSearchAgent": "FTO 회피설계 권고안",
+        "FrontendAgent": "모바일 반응형 UI 컴포넌트",
+        "BackendAgent": "FastAPI 백엔드 API",
+        "SecurityAgent": "OWASP 보안 점수 96점 통과",
+        "QAAgent": "독립 품질 검증 100% 통과",
+    }
+    res = await coo.verify_final_quality("모바일 UI 및 보안 검수 지시", sample_deliverables)
+    assert "approved" in res
+    assert res["approved"] is True
+    assert "executive_summary" in res
+    assert "checked_items" in res
+    assert len(res["checked_items"]) > 0
+    assert "directive_feedback" in res
+
+    approval_obj = COOApprovalSchema(
+        approved=True,
+        executive_summary="전 부문 합격",
+        checked_items=["특허 확인", "UI 확인", "보안 확인"],
+        directive_feedback="승인 완료"
+    )
+    assert approval_obj.approved is True
+

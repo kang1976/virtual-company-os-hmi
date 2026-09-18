@@ -21,6 +21,7 @@ import {
   Layers,
   Sparkles,
   Lock,
+  Palette,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -131,7 +132,15 @@ function getAssigneeMeta(assignee: string) {
       icon: ShieldAlert,
     };
   }
-  if (norm.includes('dev') || norm.includes('backend')) {
+  if (norm.includes('front') || norm.includes('ui') || norm.includes('디자인') || norm.includes('화면')) {
+    return {
+      name: 'FrontendDevAgent',
+      role: '프론트엔드 UI/UX',
+      badge: 'bg-cyan-950/60 border-cyan-800/60 text-cyan-300',
+      icon: Palette,
+    };
+  }
+  if (norm.includes('dev') || norm.includes('backend') || norm.includes('백엔드')) {
     return {
       name: 'BackendDevAgent',
       role: '백엔드 회피개발',

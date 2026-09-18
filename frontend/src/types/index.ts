@@ -50,6 +50,7 @@ export interface CommandResponse {
   command_id: string;
   completed_tasks?: TaskItem[];
   summary?: string;
+  coo_audit?: COOFinalApprovalData;
 }
 
 export interface LedgerTree {
@@ -115,3 +116,19 @@ export interface SecurityAuditData {
   cve_risk: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | string;
   recommendations: string;
 }
+
+export interface FrontendAuditData {
+  component_name: string;
+  design_system: string;
+  responsive_layout: string;
+  deliverable: string;
+  accessibility_audit: string;
+}
+
+export interface COOFinalApprovalData {
+  approved: boolean;
+  executive_summary: string;
+  checked_items: string[];
+  directive_feedback: string;
+}
+

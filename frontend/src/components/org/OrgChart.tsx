@@ -11,6 +11,7 @@ import {
   BrainCircuit,
   Briefcase,
   Lock,
+  Palette,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -69,6 +70,7 @@ const AGENT_NODES: OrgAgentNode[] = [
       'CEO 지시의 목표 및 요구사항 분석',
       '하위 실행 태스크 분해 및 부서별 업무 배정',
       '4대 장부(지시·업무·회의·특허) 실시간 동기화',
+      '각 에이전트 산출물 전수 감사 및 최종 품질 종합검수 (Quality Gate)',
       '전 공정 모니터링 및 최종 종합 브리핑 작성',
     ],
     color: 'text-sky-400',
@@ -95,6 +97,26 @@ const AGENT_NODES: OrgAgentNode[] = [
     borderColor: 'border-purple-500/50',
     accentBg: 'bg-purple-950/40',
     icon: ShieldAlert,
+  },
+  {
+    id: 'FRONTEND',
+    name: 'FrontendDevAgent',
+    koreanName: '프론트엔드 UI/UX 개발자',
+    role: '모바일 반응형 화면 설계 및 디자인 시스템 구현',
+    team: '프론트엔드팀',
+    isHuman: false,
+    model: 'Gemini 2.5 Flash',
+    description: 'CEO의 디자인 수정 지시 및 사용자 인터페이스를 완벽하게 구현하며, 모바일 최적화 및 3종 테마 전환을 전담합니다.',
+    responsibilities: [
+      '모바일(360~430px) 반응형 레이아웃 및 터치 UX 최적화',
+      '사이버 다크, OLED 제트블랙, 모던 라이트 3종 테마 시스템 구축',
+      '원클릭 전체화면 및 5단계 칸반 인터랙션 구현',
+      '웹 접근성(WCAG) 및 컴포넌트 단위 품질 검증',
+    ],
+    color: 'text-cyan-400',
+    borderColor: 'border-cyan-500/50',
+    accentBg: 'bg-cyan-950/40',
+    icon: Palette,
   },
   {
     id: 'DEV',
@@ -240,7 +262,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
               가상 회사 조직도 및 에이전트 실시간 관제
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-400">
-              인간 최고 의사결정권자(CEO)와 4대 전문 자율 에이전트가 협력하는 기업 거버넌스
+              인간 최고 의사결정권자(CEO)와 5대 전문 자율 에이전트가 협력하는 기업 거버넌스
             </p>
           </div>
         </div>
@@ -248,7 +270,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         <div className="flex items-center gap-2 text-xs w-full sm:w-auto justify-end">
           <span className="px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800 flex items-center gap-1.5 text-[11px]">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            자율 에이전트 5개체 가동 중
+            자율 에이전트 6개체 가동 중
           </span>
         </div>
       </div>
@@ -270,23 +292,24 @@ export const OrgChart: React.FC<OrgChartProps> = ({
             {renderAgentCard(cooNode, getAgentStatus('COO'), selectedAgent?.id === 'COO', () => setSelectedAgent(cooNode))}
           </div>
 
-          {/* 연결선 2 (4분기선) */}
-          <div className="w-full max-w-2xl flex flex-col items-center my-1 hidden sm:flex">
-            <div className="h-5 w-0.5 bg-sky-500/80" />
-            <div className="w-[88%] h-0.5 bg-slate-700" />
-            <div className="w-[88%] flex justify-between">
-              <div className="h-5 w-0.5 bg-purple-500/80" />
-              <div className="h-5 w-0.5 bg-blue-500/80" />
-              <div className="h-5 w-0.5 bg-rose-500/80" />
-              <div className="h-5 w-0.5 bg-emerald-500/80" />
+          {/* 연결선 2 (수평 분기선) */}
+          <div className="w-full max-w-3xl flex flex-col items-center my-1 hidden sm:flex">
+            <div className="h-4 w-0.5 bg-sky-500/80" />
+            <div className="w-[92%] h-0.5 bg-slate-700" />
+            <div className="w-[92%] flex justify-between">
+              <div className="h-4 w-0.5 bg-purple-500/80" />
+              <div className="h-4 w-0.5 bg-cyan-500/80" />
+              <div className="h-4 w-0.5 bg-blue-500/80" />
+              <div className="h-4 w-0.5 bg-rose-500/80" />
+              <div className="h-4 w-0.5 bg-emerald-500/80" />
             </div>
           </div>
 
           {/* 모바일 연결선 */}
           <div className="sm:hidden h-4 w-0.5 bg-sky-500/80 my-1" />
 
-          {/* 계층 3: 4대 전문 실무 에이전트 (특허, 개발, 보안, QA) */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 pt-1">
+          {/* 계층 3: 5대 전문 실무 에이전트 (특허, 프론트, 백엔드, 보안, QA) */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2 sm:gap-2.5 pt-1">
             {specialistNodes.map((agent) => (
               <div key={agent.id} className="flex flex-col items-center">
                 {renderAgentCard(
