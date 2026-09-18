@@ -22,7 +22,11 @@ import {
   Sparkles,
   Lock,
   Palette,
-  Terminal,
+  BookOpen,
+  Compass,
+  Wrench,
+  ShieldCheck,
+  FileText,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -193,6 +197,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [assigneeFilter, setAssigneeFilter] = useState<string>('ALL');
   const [mobileColumn, setMobileColumn] = useState<string>('ALL');
   const [activeModalTask, setActiveModalTask] = useState<TaskItem | null>(selectedDeliverableTask);
+  const [modalTab, setModalTab] = useState<'directive' | 'plan' | 'action' | 'checklist' | 'all'>('directive');
   const [copied, setCopied] = useState(false);
 
   // Sync external selected deliverable task if provided
@@ -424,8 +429,55 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         </h4>
 
                         {/* 프로젝트 ID */}
-                        <div className="text-[10px] font-mono text-slate-500 mb-2 truncate">
+                        <div className="text-[10px] font-mono text-slate-500 mb-1.5 truncate">
                           {task.project_id}
+                        </div>
+
+                        {/* 4단계 라이프사이클 인디케이터 (지시 -> 계획 -> 구현 -> 검증) */}
+                        <div className="flex items-center justify-between my-2 py-1 px-1.5 rounded bg-slate-900/80 border border-slate-800 text-[9px]">
+                          <span
+                            className={`px-1 py-0.5 rounded font-mono ${
+                              task.detailed_directive || task.coo_prompt
+                                ? 'text-sky-300 bg-sky-950/70 border border-sky-800/60 font-semibold'
+                                : 'text-slate-600'
+                            }`}
+                            title="Stage 1: 상세 기술 지시"
+                          >
+                            📋지시
+                          </span>
+                          <span className="text-slate-700">›</span>
+                          <span
+                            className={`px-1 py-0.5 rounded font-mono ${
+                              task.execution_plan
+                                ? 'text-indigo-300 bg-indigo-950/70 border border-indigo-800/60 font-semibold'
+                                : 'text-slate-600'
+                            }`}
+                            title="Stage 2: 에이전트 실행 계획"
+                          >
+                            📐계획
+                          </span>
+                          <span className="text-slate-700">›</span>
+                          <span
+                            className={`px-1 py-0.5 rounded font-mono ${
+                              task.action_log || task.deliverable
+                                ? 'text-amber-300 bg-amber-950/70 border border-amber-800/60 font-semibold'
+                                : 'text-slate-600'
+                            }`}
+                            title="Stage 3: 실제 구현 및 변경"
+                          >
+                            🛠️구현
+                          </span>
+                          <span className="text-slate-700">›</span>
+                          <span
+                            className={`px-1 py-0.5 rounded font-mono ${
+                              task.verification_checklist
+                                ? 'text-emerald-300 bg-emerald-950/70 border border-emerald-800/60 font-semibold'
+                                : 'text-slate-600'
+                            }`}
+                            title="Stage 4: 완료 검증 체크리스트"
+                          >
+                            🛡️검증
+                          </span>
                         </div>
 
                         {/* 카드 하단: 담당자 배지 & 산출물 뱃지 */}
@@ -458,15 +510,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         })}
       </div>
 
-      {/* 태스크 및 산출물 상세 모달 */}
+      {/* 태스크 및 4단계 심층 라이프사이클 상세 모달 */}
       {activeModalTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
             {/* 모달 헤더 */}
-            <div className="p-5 border-b border-slate-800 flex items-start justify-between bg-slate-950/60">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-xs text-sky-400 font-semibold">
+            <div className="p-4 sm:p-5 border-b border-slate-800 flex items-start justify-between bg-slate-950/80">
+              <div className="flex-1 pr-4">
+                <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                  <span className="font-mono text-xs text-sky-400 font-bold bg-sky-950/80 px-2 py-0.5 rounded border border-sky-800/60">
                     {activeModalTask.id}
                   </span>
                   <span
@@ -479,8 +531,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
                     상태: {activeModalTask.status}
                   </span>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    프로젝트: {activeModalTask.project_id}
+                  </span>
                 </div>
-                <h3 className="text-base font-bold text-white leading-snug">
+                <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
                   {activeModalTask.title}
                 </h3>
               </div>
@@ -489,26 +544,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   setActiveModalTask(null);
                   onCloseDeliverableModal?.();
                 }}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* 모달 본문 정보 */}
-            <div className="p-5 space-y-4 overflow-y-auto flex-1 text-xs">
-              {/* 메타데이터 그리드 */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+            {/* 모달 상단 메타데이터 요약 */}
+            <div className="px-5 py-3 bg-slate-950/40 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-4">
                 <div>
-                  <span className="text-slate-500 block mb-0.5">소속 프로젝트</span>
-                  <span className="font-mono text-slate-200 font-medium">{activeModalTask.project_id}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block mb-0.5">담당 에이전트</span>
+                  <span className="text-slate-500 mr-1.5">담당:</span>
                   <span className="text-slate-200 font-medium">{activeModalTask.assignee}</span>
                 </div>
+                <div className="hidden sm:block text-slate-700">|</div>
                 <div>
-                  <span className="text-slate-500 block mb-0.5">검증 단계</span>
+                  <span className="text-slate-500 mr-1.5">검증 단계:</span>
                   <span className="text-slate-200 font-medium">
                     {activeModalTask.status === 'VERIFIED' || activeModalTask.status === 'CLOSED'
                       ? '최종 마감 (CLOSED)'
@@ -517,77 +568,375 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 </div>
               </div>
 
-              {/* COO 하달 프롬프트 지시 내용 */}
-              {activeModalTask.coo_prompt && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-sky-300 flex items-center gap-1.5 text-xs sm:text-sm">
-                      <Terminal className="w-4 h-4 text-sky-400" />
-                      COO 하달 프롬프트 (세부 업무 지시)
-                    </span>
+              {/* 4단계 라이프사이클 인디케이터 요약 바 */}
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <span
+                  className={`px-2 py-0.5 rounded font-mono border ${
+                    activeModalTask.detailed_directive || activeModalTask.coo_prompt
+                      ? 'bg-sky-950/70 border-sky-800/70 text-sky-300 font-medium'
+                      : 'bg-slate-900 border-slate-800 text-slate-600'
+                  }`}
+                >
+                  📋 1.지시
+                </span>
+                <span className="text-slate-700">→</span>
+                <span
+                  className={`px-2 py-0.5 rounded font-mono border ${
+                    activeModalTask.execution_plan
+                      ? 'bg-indigo-950/70 border-indigo-800/70 text-indigo-300 font-medium'
+                      : 'bg-slate-900 border-slate-800 text-slate-600'
+                  }`}
+                >
+                  📐 2.계획
+                </span>
+                <span className="text-slate-700">→</span>
+                <span
+                  className={`px-2 py-0.5 rounded font-mono border ${
+                    activeModalTask.action_log || activeModalTask.deliverable
+                      ? 'bg-amber-950/70 border-amber-800/70 text-amber-300 font-medium'
+                      : 'bg-slate-900 border-slate-800 text-slate-600'
+                  }`}
+                >
+                  🛠️ 3.구현
+                </span>
+                <span className="text-slate-700">→</span>
+                <span
+                  className={`px-2 py-0.5 rounded font-mono border ${
+                    activeModalTask.verification_checklist
+                      ? 'bg-emerald-950/70 border-emerald-800/70 text-emerald-300 font-medium'
+                      : 'bg-slate-900 border-slate-800 text-slate-600'
+                  }`}
+                >
+                  🛡️ 4.검증
+                </span>
+              </div>
+            </div>
+
+            {/* 4단계 라이프사이클 네비게이션 탭 바 */}
+            <div className="flex items-center gap-1 px-4 pt-3 bg-slate-950/90 border-b border-slate-800 overflow-x-auto">
+              <button
+                onClick={() => setModalTab('directive')}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-colors border-t border-x ${
+                  modalTab === 'directive'
+                    ? 'bg-slate-900 text-sky-300 border-sky-700/60 shadow-inner'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
+                <span>1. 상세 업무 지시</span>
+                {(activeModalTask.detailed_directive || activeModalTask.coo_prompt) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setModalTab('plan')}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-colors border-t border-x ${
+                  modalTab === 'plan'
+                    ? 'bg-slate-900 text-indigo-300 border-indigo-700/60 shadow-inner'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5 text-indigo-400" />
+                <span>2. 기술 실행 계획</span>
+                {activeModalTask.execution_plan && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setModalTab('action')}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-colors border-t border-x ${
+                  modalTab === 'action'
+                    ? 'bg-slate-900 text-amber-300 border-amber-700/60 shadow-inner'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
+                }`}
+              >
+                <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                <span>3. 실제 구현 내역</span>
+                {(activeModalTask.action_log || activeModalTask.deliverable) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setModalTab('checklist')}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-colors border-t border-x ${
+                  modalTab === 'checklist'
+                    ? 'bg-slate-900 text-emerald-300 border-emerald-700/60 shadow-inner'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>4. 검증 체크리스트</span>
+                {activeModalTask.verification_checklist && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setModalTab('all')}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-colors border-t border-x ${
+                  modalTab === 'all'
+                    ? 'bg-slate-900 text-slate-200 border-slate-700 shadow-inner'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5 text-slate-400" />
+                <span>종합 산출물 원문</span>
+              </button>
+            </div>
+
+            {/* 모달 탭 본문 내용 영역 */}
+            <div className="p-5 flex-1 overflow-y-auto space-y-4">
+              {/* TAB 1: COO 상세 기술 지시 */}
+              {modalTab === 'directive' && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-sky-300 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-sky-400" />
+                        Stage 1: COO 상세 기술 업무 지시서 (Detailed Directive)
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        COO가 {activeModalTask.assignee}에게 하달한 기술 명세, 파라미터 제약 및 산출물 규격
+                      </p>
+                    </div>
+                    {(activeModalTask.detailed_directive || activeModalTask.coo_prompt) && (
+                      <button
+                        onClick={() =>
+                          handleCopyDeliverable(
+                            activeModalTask.detailed_directive || activeModalTask.coo_prompt || ''
+                          )
+                        }
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-sky-400" />
+                            <span className="text-sky-400 font-medium">복사됨!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>지시서 복사</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
-                  <div className="bg-sky-950/40 rounded-xl p-3.5 border border-sky-800/60 text-sky-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
-                    {activeModalTask.coo_prompt}
+
+                  <div className="bg-slate-950 rounded-xl p-4 border border-sky-900/40 font-mono text-xs sm:text-sm text-sky-200 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap selection:bg-sky-900 selection:text-white">
+                    {activeModalTask.detailed_directive || activeModalTask.coo_prompt || (
+                      <div className="text-slate-500 italic py-4 text-center">
+                        상세 업무 지시서가 기록되지 않았거나 생성 대기 중입니다.
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* 산출물 내용 영역 */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-white flex items-center gap-1.5">
-                    <FileCheck className="w-4 h-4 text-emerald-400" />
-                    업무 산출물 및 실행 보고서
-                  </span>
-                  {activeModalTask.deliverable && (
-                    <button
-                      onClick={() => handleCopyDeliverable(activeModalTask.deliverable || '')}
-                      className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] transition-colors"
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-3 h-3 text-emerald-400" />
-                          <span className="text-emerald-400 font-medium">복사됨!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" />
-                          <span>복사하기</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-slate-300 leading-relaxed max-h-72 overflow-y-auto whitespace-pre-wrap selection:bg-indigo-900 selection:text-indigo-200">
-                  {activeModalTask.deliverable || (
-                    <div className="text-slate-500 italic">
-                      산출물이 제출 대기 중이거나 원장(Task Ledger)에 기록된 결과입니다.
-                      <br />
-                      원장 탐색기(LedgerViewer)에서 전체 검증 이력을 상세 조회할 수 있습니다.
+              {/* TAB 2: 에이전트 기술 실행 계획 */}
+              {modalTab === 'plan' && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-indigo-300 flex items-center gap-2">
+                        <Compass className="w-4 h-4 text-indigo-400" />
+                        Stage 2: 에이전트 기술 실행 계획서 (Technical Execution Plan)
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {activeModalTask.assignee}가 업무 착수 전 수립한 단계별 실행 계획 및 아키텍처
+                      </p>
                     </div>
-                  )}
-                </div>
-              </div>
+                    {activeModalTask.execution_plan && (
+                      <button
+                        onClick={() => handleCopyDeliverable(activeModalTask.execution_plan || '')}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-indigo-400" />
+                            <span className="text-indigo-400 font-medium">복사됨!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>계획서 복사</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
 
-              {/* 검증 가이드 배너 */}
-              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-900/60 text-slate-300 flex items-start gap-2.5">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-indigo-900/40 font-mono text-xs sm:text-sm text-indigo-200 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap selection:bg-indigo-900 selection:text-white">
+                    {activeModalTask.execution_plan || (
+                      <div className="text-slate-500 italic py-4 text-center">
+                        기술 실행 계획서가 작성 중이거나 원장에 기록된 표준 공정을 따릅니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: 실제 구현 및 변경 내역 */}
+              {modalTab === 'action' && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                        <Wrench className="w-4 h-4 text-amber-400" />
+                        Stage 3: 실제 구현 및 변경 내역 (Implementation & Action Log)
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        실제 실행된 파워셸 커맨드, 빌드 로그, 소스코드 수정 내역 및 파일 실측치
+                      </p>
+                    </div>
+                    {(activeModalTask.action_log || activeModalTask.deliverable) && (
+                      <button
+                        onClick={() =>
+                          handleCopyDeliverable(
+                            activeModalTask.action_log || activeModalTask.deliverable || ''
+                          )
+                        }
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-amber-400" />
+                            <span className="text-amber-400 font-medium">복사됨!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>로그 복사</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-950 rounded-xl p-4 border border-amber-900/40 font-mono text-xs text-amber-200 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap selection:bg-amber-900 selection:text-white">
+                    {activeModalTask.action_log || activeModalTask.deliverable || (
+                      <div className="text-slate-500 italic py-4 text-center">
+                        구현 내역 로그가 아직 수집되지 않았습니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: 완료 검증 체크리스트 */}
+              {modalTab === 'checklist' && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-emerald-300 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        Stage 4: 완료 검증 체크리스트 (Verification & QA Checklist)
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        독립 QAAgent 및 SecurityAgent가 실측 검증한 항목별 체크시트 및 합격 판정
+                      </p>
+                    </div>
+                    {activeModalTask.verification_checklist && (
+                      <button
+                        onClick={() =>
+                          handleCopyDeliverable(activeModalTask.verification_checklist || '')
+                        }
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-400 font-medium">복사됨!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>체크시트 복사</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-950 rounded-xl p-4 border border-emerald-900/40 font-mono text-xs sm:text-sm text-emerald-200 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap selection:bg-emerald-900 selection:text-white">
+                    {activeModalTask.verification_checklist || (
+                      <div className="text-slate-500 italic py-4 text-center">
+                        완료 검증 체크리스트가 준비 중이거나 원장에 기록된 종합 품질 기준을 따릅니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: 전체 종합 산출물 */}
+              {modalTab === 'all' && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-slate-400" />
+                        종합 업무 산출물 원문 (Raw Task Deliverable)
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        4대 장부(TASK_LEDGER)에 최종 영구 보존된 산출물 원문 통합본
+                      </p>
+                    </div>
+                    {activeModalTask.deliverable && (
+                      <button
+                        onClick={() => handleCopyDeliverable(activeModalTask.deliverable || '')}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-400 font-medium">복사됨!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>전체 복사</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-300 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap selection:bg-indigo-900 selection:text-indigo-200">
+                    {activeModalTask.deliverable || (
+                      <div className="text-slate-500 italic py-4 text-center">
+                        산출물이 제출 대기 중이거나 원장에 기록 대기 중입니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 4대 장부 무결성 안내 배너 */}
+              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-900/60 text-slate-300 flex items-start gap-2.5 text-xs">
                 <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="leading-relaxed">
-                  <strong className="text-indigo-300 font-semibold block mb-0.5">5단계 검증 프로세스 가이드:</strong>
-                  모든 태스크는 선행특허 Gatekeeper의 FTO 리스크 평가를 거쳐 회피 설계를 수행한 후, 독립 QAAgent의 검증을 거쳐 최종 종결 처리됩니다.
+                  <strong className="text-indigo-300 font-semibold">4대 장부 단일 진실 공급원(SSOT) 연동:</strong>{' '}
+                  본 화면에 표출되는 4단계(상세지시, 실행계획, 구현로그, 검증시트)는 물리적 원장(
+                  <code className="text-indigo-400 font-mono">COMPANY_LEDGERS/TASK_LEDGER/</code>)과 100% 동일하게
+                  원자적 동기화되어 영구 보존됩니다.
                 </div>
               </div>
             </div>
 
             {/* 모달 푸터 */}
-            <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-end">
+            <div className="p-3.5 sm:p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                Virtual Company 4-Stage Task Lifecycle OS
+              </span>
               <button
                 onClick={() => {
                   setActiveModalTask(null);
                   onCloseDeliverableModal?.();
                 }}
-                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition-colors"
+                className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition-colors ml-auto"
               >
                 닫기
               </button>

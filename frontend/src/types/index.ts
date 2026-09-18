@@ -20,6 +20,10 @@ export interface TaskItem {
   status: TaskStatus | string;
   coo_prompt?: string | null;
   deliverable?: string | null;
+  detailed_directive?: string | null;
+  execution_plan?: string | null;
+  action_log?: string | null;
+  verification_checklist?: string | null;
 }
 
 export interface ProjectItem {
