@@ -22,6 +22,7 @@ import {
   Sparkles,
   Lock,
   Palette,
+  Terminal,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -515,6 +516,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   </span>
                 </div>
               </div>
+
+              {/* COO 하달 프롬프트 지시 내용 */}
+              {activeModalTask.coo_prompt && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-sky-300 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <Terminal className="w-4 h-4 text-sky-400" />
+                      COO 하달 프롬프트 (세부 업무 지시)
+                    </span>
+                  </div>
+                  <div className="bg-sky-950/40 rounded-xl p-3.5 border border-sky-800/60 text-sky-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
+                    {activeModalTask.coo_prompt}
+                  </div>
+                </div>
+              )}
 
               {/* 산출물 내용 영역 */}
               <div>

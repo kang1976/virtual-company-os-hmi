@@ -56,7 +56,7 @@ class LedgerSyncService:
                 await f.write(json.dumps(tasks, ensure_ascii=False, indent=2))
 
             lines = [
-                f"# TASK LEDGER — {project_id}\n\n| ID | 업무명 | 담당 | 우선순위 | 상태 |",
+                f"# TASK LEDGER — {project_id}\n\n## 1. 업무 현황 요약표\n\n| ID | 업무명 | 담당 | 우선순위 | 상태 |",
                 "|---|---|---|---|---|",
             ]
             for t in tasks:
@@ -72,6 +72,16 @@ class LedgerSyncService:
                 lines.append(
                     f"| {t.get('id')} | {t.get('title')} | {t.get('assignee')} | {t.get('priority')} | {status_icon} {t.get('status')} |"
                 )
+
+            lines.append("\n---\n\n## 2. 부서별 세부 업무 내역 및 COO 하달 프롬프트 / 산출물\n")
+            for t in tasks:
+                lines.append(f"### 📌 [{t.get('id')}] {t.get('title')}")
+                lines.append(f"- **담당 에이전트**: `{t.get('assignee')}`")
+                lines.append(f"- **우선순위 / 상태**: `{t.get('priority')}` / `{t.get('status')}`")
+                if t.get("coo_prompt"):
+                    lines.append(f"- **📋 COO 하달 프롬프트 (Directive Prompt)**:\n  > {t.get('coo_prompt')}\n")
+                if t.get("deliverable"):
+                    lines.append(f"- **📦 에이전트 산출물 (Deliverable)**:\n```\n{t.get('deliverable')}\n```\n")
 
             async with aiofiles.open(md_path, mode="w", encoding="utf-8") as f:
                 await f.write("\n".join(lines) + "\n")

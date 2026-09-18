@@ -19,6 +19,8 @@ async def list_tasks():
                 "assignee": t.assignee,
                 "priority": t.priority,
                 "status": t.status,
+                "coo_prompt": t.coo_prompt,
+                "deliverable": t.deliverable,
             }
             for t in tasks
         ]

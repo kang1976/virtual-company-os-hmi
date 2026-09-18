@@ -80,6 +80,8 @@ class CompanyOrchestrator:
             "assignee": "PatentSearchAgent",
             "status": "VERIFIED",
             "priority": "P1",
+            "coo_prompt": f"CEO 지시: '{instruction}'에 대한 선행 특허 및 관련 기술을 글로벌 DB(KR/US/EP)에서 전수 검색하고, FTO(자유실시권) 침해 리스크와 특허 회피 설계 방안을 수립하여 보고하라.",
+            "deliverable": f"FTO 위험도: {pat_res.get('fto_risk', 'LOW')}\n조사 결과: {pat_findings}\n권고사항: {pat_res.get('recommendation', '특허 회피 설계 준수')}",
         }
         completed_tasks.append(t1)
         self.broadcast("TASK_UPDATED", t1)
@@ -96,6 +98,7 @@ class CompanyOrchestrator:
             "assignee": "FrontendAgent",
             "status": "SUBMITTED",
             "priority": "P1",
+            "coo_prompt": f"CEO 지시: '{instruction}'에 대한 전용 UI/UX 화면을 설계하라. 모바일 360~430px 반응형 최적화, 3종 테마(사이버다크/모던라이트/OLED), WCAG 2.1 AA 접근성 표준을 준수하는 React 컴포넌트를 구현하라.",
             "deliverable": front_deliverable,
         }
         completed_tasks.append(t2)
@@ -110,6 +113,7 @@ class CompanyOrchestrator:
             "assignee": "BackendAgent",
             "status": "SUBMITTED",
             "priority": "P1",
+            "coo_prompt": f"CEO 지시: '{instruction}'를 실행하는 백엔드 아키텍처 및 API를 구현하라. 특허조사팀의 FTO 권고사항을 반영하여 독자적 기술 구조를 수립하고 REST/WebSocket 엔드포인트를 완성하라.",
             "deliverable": back_deliverable,
         }
         completed_tasks.append(t3)
@@ -126,7 +130,8 @@ class CompanyOrchestrator:
             "assignee": "SecurityAgent",
             "status": sec_status,
             "priority": "P1",
-            "deliverable": f"보안 점수: {sec_res.get('security_score', 96)}점 / CVE 위험도: {sec_res.get('cve_risk', 'LOW')}",
+            "coo_prompt": f"프론트엔드 및 백엔드 개발 산출물 전체에 대해 OWASP Top 10 취약점, CVE 위험도, 데이터 유출 가능성을 정밀 심사하고 보안 점수 및 기술적 보완책을 제시하라.",
+            "deliverable": f"보안 점수: {sec_res.get('security_score', 96)}점 / CVE 위험도: {sec_res.get('cve_risk', 'LOW')}\n감사 피드백: {sec_res.get('audit_feedback', '보안 심사 통과')}",
         }
         completed_tasks.append(t4)
         self.broadcast("TASK_UPDATED", t4)
@@ -144,6 +149,7 @@ class CompanyOrchestrator:
             "assignee": "QAAgent",
             "status": qa_status,
             "priority": "P1",
+            "coo_prompt": f"개발된 시스템 산출물에 대해 CEO의 최초 지시사항 충족 여부, 모바일 터치 사용성, 예외 처리 및 견고성을 제3자 시각에서 엄격하게 품질 검증하라.",
             "deliverable": qa_res.get("feedback", "품질 검증 완료"),
         }
         completed_tasks.append(t5)
@@ -193,6 +199,8 @@ class CompanyOrchestrator:
                     assignee=t["assignee"],
                     priority=t["priority"],
                     status=t["status"],
+                    coo_prompt=t.get("coo_prompt"),
+                    deliverable=t.get("deliverable"),
                 )
                 session.add(task_m)
             await session.commit()

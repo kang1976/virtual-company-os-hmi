@@ -18,6 +18,7 @@ export interface TaskItem {
   assignee: string;
   priority: Priority | string;
   status: TaskStatus | string;
+  coo_prompt?: string | null;
   deliverable?: string | null;
 }
 

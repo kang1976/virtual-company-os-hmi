@@ -34,6 +34,7 @@ class TaskCreate(BaseModel):
     assignee: str
     priority: Priority = Priority.P2
     status: TaskStatus = TaskStatus.IDLE
+    coo_prompt: Optional[str] = None
     deliverable: Optional[str] = None
 
 class TaskResponse(BaseModel):
@@ -43,4 +44,6 @@ class TaskResponse(BaseModel):
     assignee: str
     priority: str
     status: str
+    coo_prompt: Optional[str] = None
     deliverable: Optional[str] = None
+

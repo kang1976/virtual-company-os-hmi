@@ -37,6 +37,7 @@ class TaskModel(Base):
     assignee = Column(String(100), nullable=False)
     priority = Column(String(10), default="P2")
     status = Column(String(50), default="IDLE")
+    coo_prompt = Column(Text, nullable=True)
     deliverable = Column(Text, nullable=True)
     created_at = Column(DateTime, default=get_utc_now)
     updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
