@@ -17,7 +17,7 @@ import { CommandBar } from './components/ceo/CommandBar';
 import { KanbanBoard } from './components/kanban/KanbanBoard';
 import { LedgerViewer } from './components/ledgers/LedgerViewer';
 import { OrgChart } from './components/org/OrgChart';
-import { getHealth, getTasks, postCommand } from './api/client';
+import { getHealth, getTasks, postCommand, resetSystemData } from './api/client';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useTheme } from './hooks/useTheme';
 import type {
@@ -154,6 +154,29 @@ export default function App() {
     addLiveLog('시스템 새로고침', '서버 상태 및 업무 원장 새로고침 완료', 'info');
   };
 
+  // 시스템 데이터 초기화 핸들러 (CEO 명령: 누적 데이터 완전 초기화)
+  const handleResetSystemData = async () => {
+    if (
+      !window.confirm(
+        '⚠️ 주의: SQLite 데이터베이스 및 4대 장부의 모든 누적 데이터를 완전히 초기화(0건)하시겠습니까?\n이 작업은 즉시 실행되며 되돌릴 수 없습니다.'
+      )
+    ) {
+      return;
+    }
+    try {
+      addLiveLog('데이터 초기화', '전체 데이터 초기화 요청 전송 중...', 'warn');
+      const res = await resetSystemData();
+      addLiveLog('초기화 완료', res.message || '누적 데이터 0건으로 완전 리셋되었습니다.', 'success');
+      alert('✅ 시스템 누적 데이터가 0건으로 완전 초기화되었습니다.');
+      // 화면 상태 갱신
+      handleRefreshAll();
+      setLatestCommandResult(null);
+    } catch (err: any) {
+      addLiveLog('초기화 실패', err.message || '초기화 중 오류 발생', 'warn');
+      alert(`초기화 실패: ${err.message || '알 수 없는 오류'}`);
+    }
+  };
+
   // CEO 지시 하달 실행 핸들러
   const handleExecuteCommand = async (
     instruction: string,
@@ -208,7 +231,7 @@ export default function App() {
   const blockedCount = tasks.filter((t) => t.status === 'BLOCKED').length;
 
   return (
-    <div className={`min-h-screen ${theme} text-slate-100 flex flex-col font-sans selection:bg-sky-900 selection:text-sky-200 transition-colors duration-200`}>
+    <div className={`min-h-screen ${theme} flex flex-col font-sans selection:bg-sky-900 selection:text-sky-200 transition-colors duration-200`}>
       {/* 글로벌 네비게이션 헤더 */}
       <Navbar
         activeTab={activeTab}
@@ -224,6 +247,7 @@ export default function App() {
         onThemeToggle={toggleTheme}
         isFullscreen={isFullscreen}
         onFullscreenToggle={toggleFullscreen}
+        onResetData={handleResetSystemData}
       />
 
       {/* 메인 관제 콘솔 컨테이너 */}

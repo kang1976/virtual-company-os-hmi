@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.models.db import init_db
-from backend.app.api import ws, commands, tasks, ledgers
+from backend.app.api import ws, commands, tasks, ledgers, system
 
 
 @asynccontextmanager
@@ -26,6 +26,7 @@ app.include_router(ws.router)
 app.include_router(commands.router)
 app.include_router(tasks.router)
 app.include_router(ledgers.router)
+app.include_router(system.router)
 
 
 @app.get("/api/health")

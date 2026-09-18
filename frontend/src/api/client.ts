@@ -90,3 +90,13 @@ export async function getLedgerFile(subfolder: string, filename: string): Promis
   const encodedFile = encodeURIComponent(filename);
   return request<LedgerContent>(`/api/ledgers/${encodedFolder}/${encodedFile}`);
 }
+
+/**
+ * 전사 누적 데이터 및 장부 0건 완전 초기화
+ */
+export async function resetSystemData(): Promise<{ status: string; message: string; deleted_files: number }> {
+  return request<{ status: string; message: string; deleted_files: number }>('/api/system/reset', {
+    method: 'POST',
+  });
+}
+

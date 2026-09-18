@@ -15,6 +15,7 @@ import {
   Moon,
   Sun,
   Sparkles,
+  RotateCcw,
 } from 'lucide-react';
 import type { HealthResponse } from '../../types';
 import type { ThemeMode } from '../../hooks/useTheme';
@@ -35,6 +36,7 @@ export interface NavbarProps {
   onThemeToggle: () => void;
   isFullscreen: boolean;
   onFullscreenToggle: () => void;
+  onResetData?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -51,6 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onThemeToggle,
   isFullscreen,
   onFullscreenToggle,
+  onResetData,
 }) => {
   const tabs: { id: NavTabId; label: string; icon: React.ReactNode; desc: string }[] = [
     {
@@ -203,6 +206,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="새로고침"
               >
                 <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`} />
+              </button>
+            )}
+
+            {/* 데이터 전체 초기화 버튼 */}
+            {onResetData && (
+              <button
+                onClick={onResetData}
+                title="데이터 전체 초기화 (DB 및 4대 장부 리셋)"
+                className="p-1.5 sm:p-2 rounded-lg bg-rose-950/60 hover:bg-rose-900/70 text-rose-300 hover:text-rose-100 border border-rose-800/60 active:scale-95 transition-all"
+                aria-label="데이터 초기화"
+              >
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400 hover:text-rose-200" />
               </button>
             )}
           </div>

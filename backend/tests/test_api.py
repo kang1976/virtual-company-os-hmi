@@ -88,3 +88,13 @@ async def test_connection_manager_broadcast():
 
     cm.disconnect(fake_ws)
     assert fake_ws not in cm.active_connections
+
+
+def test_api_system_reset():
+    res = client.post("/api/system/reset")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "SUCCESS"
+    assert "deleted_files" in data
+
+

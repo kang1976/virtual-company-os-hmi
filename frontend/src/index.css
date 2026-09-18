@@ -71,3 +71,143 @@
     background: #475569;
   }
 }
+
+/* ==========================================================================
+   1. 모던 라이트 테마 (Modern Light Theme) 전면 시각화 오버라이드
+   ========================================================================== */
+:root[data-theme="modern-light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="modern-light"] html,
+:root[data-theme="modern-light"] body,
+:root[data-theme="modern-light"] .modern-light {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* slate-900 */
+}
+
+/* 라이트 모드 메인 배경 및 카드 */
+:root[data-theme="modern-light"] header,
+:root[data-theme="modern-light"] footer,
+:root[data-theme="modern-light"] .bg-slate-950,
+:root[data-theme="modern-light"] .bg-slate-950\/90,
+:root[data-theme="modern-light"] .bg-slate-950\/80,
+:root[data-theme="modern-light"] .bg-slate-950\/70,
+:root[data-theme="modern-light"] .bg-slate-950\/60 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+:root[data-theme="modern-light"] .bg-slate-900,
+:root[data-theme="modern-light"] .bg-slate-900\/95,
+:root[data-theme="modern-light"] .bg-slate-900\/90,
+:root[data-theme="modern-light"] .bg-slate-900\/80,
+:root[data-theme="modern-light"] .bg-slate-900\/70,
+:root[data-theme="modern-light"] .bg-slate-900\/60,
+:root[data-theme="modern-light"] .bg-slate-900\/50 {
+  background-color: #f8fafc !important; /* slate-50 */
+}
+
+:root[data-theme="modern-light"] .bg-slate-800,
+:root[data-theme="modern-light"] .bg-slate-800\/80,
+:root[data-theme="modern-light"] .bg-slate-800\/70,
+:root[data-theme="modern-light"] .bg-slate-800\/60 {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #1e293b !important;
+}
+
+:root[data-theme="modern-light"] .hover\:bg-slate-800:hover,
+:root[data-theme="modern-light"] .hover\:bg-slate-700:hover,
+:root[data-theme="modern-light"] .hover\:bg-slate-900:hover {
+  background-color: #cbd5e1 !important; /* slate-300 */
+}
+
+/* 라이트 모드 경계선 */
+:root[data-theme="modern-light"] .border-slate-800,
+:root[data-theme="modern-light"] .border-slate-800\/90,
+:root[data-theme="modern-light"] .border-slate-800\/80,
+:root[data-theme="modern-light"] .border-slate-800\/60,
+:root[data-theme="modern-light"] .border-slate-700,
+:root[data-theme="modern-light"] .border-slate-700\/80 {
+  border-color: #cbd5e1 !important; /* slate-300 */
+}
+
+/* 라이트 모드 텍스트 고대비 보정 */
+:root[data-theme="modern-light"] .text-white,
+:root[data-theme="modern-light"] .text-slate-100,
+:root[data-theme="modern-light"] .text-slate-200 {
+  color: #0f172a !important; /* slate-900 */
+}
+
+:root[data-theme="modern-light"] .text-slate-300,
+:root[data-theme="modern-light"] .text-slate-400 {
+  color: #334155 !important; /* slate-700 */
+}
+
+:root[data-theme="modern-light"] .text-slate-500,
+:root[data-theme="modern-light"] .text-slate-600 {
+  color: #64748b !important; /* slate-500 */
+}
+
+/* 라이트 모드 폼 컨트롤 */
+:root[data-theme="modern-light"] input,
+:root[data-theme="modern-light"] select,
+:root[data-theme="modern-light"] textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+:root[data-theme="modern-light"] input::placeholder,
+:root[data-theme="modern-light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* ==========================================================================
+   2. OLED 제트블랙 테마 (OLED Jet Black Theme) 전면 시각화 오버라이드
+   ========================================================================== */
+:root[data-theme="oled-black"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="oled-black"] html,
+:root[data-theme="oled-black"] body,
+:root[data-theme="oled-black"] .oled-black {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="oled-black"] header,
+:root[data-theme="oled-black"] footer,
+:root[data-theme="oled-black"] .bg-slate-950,
+:root[data-theme="oled-black"] .bg-slate-950\/90,
+:root[data-theme="oled-black"] .bg-slate-950\/80,
+:root[data-theme="oled-black"] .bg-slate-950\/70,
+:root[data-theme="oled-black"] .bg-slate-950\/60,
+:root[data-theme="oled-black"] .bg-slate-900,
+:root[data-theme="oled-black"] .bg-slate-900\/95,
+:root[data-theme="oled-black"] .bg-slate-900\/90,
+:root[data-theme="oled-black"] .bg-slate-900\/80,
+:root[data-theme="oled-black"] .bg-slate-900\/70,
+:root[data-theme="oled-black"] .bg-slate-900\/60,
+:root[data-theme="oled-black"] .bg-slate-900\/50 {
+  background-color: #000000 !important; /* 순수 제트블랙 */
+}
+
+:root[data-theme="oled-black"] .border-slate-800,
+:root[data-theme="oled-black"] .border-slate-800\/90,
+:root[data-theme="oled-black"] .border-slate-800\/80,
+:root[data-theme="oled-black"] .border-slate-800\/60,
+:root[data-theme="oled-black"] .border-slate-700,
+:root[data-theme="oled-black"] .border-slate-700\/80 {
+  border-color: #262626 !important; /* 딥 차콜 고대비 */
+}
+
+:root[data-theme="oled-black"] input,
+:root[data-theme="oled-black"] select,
+:root[data-theme="oled-black"] textarea {
+  background-color: #050505 !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
