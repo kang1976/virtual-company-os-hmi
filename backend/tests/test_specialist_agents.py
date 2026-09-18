@@ -5,6 +5,8 @@ from backend.app.agents import (
     PatentOutputSchema,
     BackendDevAgent,
     DevOutputSchema,
+    SecurityAgent,
+    SecurityOutputSchema,
     QAAgent,
     QAOutputSchema,
 )
@@ -69,3 +71,28 @@ def test_specialist_agent_schemas():
     )
     assert qa_data.passed is True
     assert qa_data.score == 95
+
+    sec_data = SecurityOutputSchema(
+        passed=True,
+        security_score=98,
+        vulnerabilities=["하드코딩된 시크릿 없음", "TLS 1.3 암호화 적용"],
+        cve_risk="LOW",
+        recommendations="주기적 토큰 로테이션 권고"
+    )
+    assert sec_data.passed is True
+    assert sec_data.security_score == 98
+    assert sec_data.cve_risk == "LOW"
+
+
+@pytest.mark.asyncio
+async def test_security_agent_audit():
+    sec_agent = SecurityAgent()
+    assert sec_agent.name == "SecurityAgent"
+    assert sec_agent.department == "보안팀"
+    assert sec_agent.role == "정보보안 및 취약점 심사관"
+
+    res = await sec_agent.audit("PLC 통신 암호화 및 FastAPI 엔드포인트 코드", tech_stack="Python/FastAPI")
+    assert "passed" in res
+    assert "security_score" in res
+    assert "cve_risk" in res
+    assert "recommendations" in res

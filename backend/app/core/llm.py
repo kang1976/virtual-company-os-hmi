@@ -66,6 +66,19 @@ class LLMClient:
                 mock_data[name] = "기존 등록 특허의 통신 프레임 포맷을 회피하여 독자 헤더 구조로 개발 진행할 것."
             elif name == "decision":
                 mock_data[name] = "APPROVED"
+            elif name == "security_score":
+                mock_data[name] = 96
+            elif name == "cve_risk":
+                mock_data[name] = "LOW"
+            elif name == "vulnerabilities":
+                mock_data[name] = [
+                    "입력값 파라미터 유효성 검증 적용 확인 (SQLi/XSS 차단)",
+                    "통신 구간 TLS 1.3 암호화 적용 완료",
+                    "의존성 패키지 라이브러리 CVE 취약점 0건 확인",
+                    "인증 토큰 및 API Key 하드코딩 노출 없음"
+                ]
+            elif name == "recommendations":
+                mock_data[name] = "API 게이트웨이 레이트 리미팅 적용 및 주기적인 보안 패치 유지 권고."
             else:
                 annotation = field_info.annotation
                 if annotation is bool:
