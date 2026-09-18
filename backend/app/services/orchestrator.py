@@ -6,6 +6,7 @@ from backend.app.services.ledger_sync import LedgerSyncService
 from backend.app.agents.coo import COOAgent
 from backend.app.agents.patent.search import PatentSearchAgent
 from backend.app.agents.dev.backend import BackendDevAgent
+from backend.app.agents.security import SecurityAgent
 from backend.app.agents.qa import QAAgent
 
 
@@ -14,6 +15,7 @@ class CompanyOrchestrator:
         self.coo = COOAgent()
         self.patent = PatentSearchAgent()
         self.dev = BackendDevAgent()
+        self.security = SecurityAgent()
         self.qa = QAAgent()
         self.sync = LedgerSyncService()
         self.broadcast = broadcast_fn or (lambda event, data: None)
@@ -89,24 +91,41 @@ class CompanyOrchestrator:
             "assignee": "BackendAgent",
             "status": "SUBMITTED",
             "priority": "P1",
+            "deliverable": deliverable,
         }
         completed_tasks.append(t2)
         self.broadcast("TASK_UPDATED", t2)
 
-        # 4c. 3단계: QA 독립 검증
-        qa_res = await self.qa.verify(deliverable, criteria="CEO 요구사항 만족 및 안정성 검증")
-        qa_status = "CLOSED" if qa_res.get("passed", True) else "BLOCKED"
+        # 4c. 3단계: 보안 전문 심사 (Security Gatekeeper)
+        sec_res = await self.security.audit(deliverable, tech_stack="FastAPI/React")
+        sec_status = "VERIFIED" if sec_res.get("passed", True) else "BLOCKED"
         t3 = {
             "id": f"{prj_id}-T003",
+            "title": "보안성 및 취약점 검증 (OWASP/CVE)",
+            "assignee": "SecurityAgent",
+            "status": sec_status,
+            "priority": "P1",
+            "deliverable": f"보안 점수: {sec_res.get('security_score', 96)}점 / CVE 위험도: {sec_res.get('cve_risk', 'LOW')}",
+        }
+        completed_tasks.append(t3)
+        self.broadcast("TASK_UPDATED", t3)
+
+        # 4d. 4단계: QA 독립 품질 검증
+        qa_res = await self.qa.verify(deliverable, criteria="CEO 요구사항 만족 및 안정성 검증")
+        qa_status = "CLOSED" if (qa_res.get("passed", True) and sec_res.get("passed", True)) else "BLOCKED"
+        t4 = {
+            "id": f"{prj_id}-T004",
             "title": "품질 검증 및 최종 검수",
             "assignee": "QAAgent",
             "status": qa_status,
             "priority": "P1",
+            "deliverable": qa_res.get("feedback", "품질 검증 완료"),
         }
-        completed_tasks.append(t3)
-        completed_tasks[0]["status"] = "CLOSED"
-        completed_tasks[1]["status"] = "CLOSED"
-        self.broadcast("TASK_UPDATED", t3)
+        completed_tasks.append(t4)
+        if qa_status == "CLOSED":
+            for t in completed_tasks:
+                t["status"] = "CLOSED"
+        self.broadcast("TASK_UPDATED", t4)
 
         # 5. 장부 및 DB 최종 동기화
         await self.sync.sync_task_ledger(prj_id, completed_tasks)

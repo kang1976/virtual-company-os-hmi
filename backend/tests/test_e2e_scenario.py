@@ -60,6 +60,11 @@ async def test_complete_company_operation():
     assert qa_task is not None
     assert qa_task["status"] == "CLOSED"
 
+    # 보안 에이전트 심사 확인
+    sec_task = next((t for t in completed_tasks if t["assignee"] == "SecurityAgent"), None)
+    assert sec_task is not None
+    assert sec_task["status"] == "CLOSED"
+
     # 3. 특허 보고서 파일 생성 및 내용 확인 (COMPANY_LEDGERS/KNOWLEDGE_PATENT/)
     patent_files = list((settings.LEDGER_DIR / "KNOWLEDGE_PATENT").glob("*.md"))
     assert len(patent_files) > 0
@@ -78,10 +83,11 @@ async def test_complete_company_operation():
     assert f"# TASK LEDGER — {prj_id}" in md_content
     assert "PatentSearchAgent" in md_content
     assert "BackendAgent" in md_content
+    assert "SecurityAgent" in md_content
     assert "QAAgent" in md_content
 
     json_tasks = json.loads(task_ledger_json.read_text(encoding="utf-8"))
-    assert len(json_tasks) >= 3
+    assert len(json_tasks) >= 4
 
     # 5. 명령 원장 파일 생성 확인 (COMPANY_LEDGERS/COMMAND_LOG/)
     cmd_file_md = settings.LEDGER_DIR / "COMMAND_LOG" / f"{cmd_id}.md"
