@@ -44,9 +44,23 @@ def stop_process(proc: subprocess.Popen, name: str = "프로세스"):
             pass
 
 
+def get_local_ip():
+    """현재 PC의 내부 로컬 네트워크 IP(Wi-Fi/이더넷)를 감지"""
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
 def main():
     root_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(root_dir)
+    local_ip = get_local_ip()
 
     print("=" * 80)
     print("  🏢 AI VIRTUAL COMPANY OS V4.0 — 통합 운영 런처")
@@ -68,7 +82,9 @@ def main():
 
     # 2. React Vite 프론트엔드 기동
     print("\n  [2/2] 🌐 React Vite 프론트엔드 대시보드 시작 중...")
-    print("        - 웹 대시보드   : http://localhost:5173")
+    print("        - 로컬 PC 접속   : http://localhost:5173")
+    if local_ip != "127.0.0.1":
+        print(f"        - 📱 모바일 접속 : http://{local_ip}:5173 (스마트폰 동일 Wi-Fi 접속)")
     frontend = subprocess.Popen(
         ["npm", "run", "dev", "--prefix", "frontend"],
         cwd=root_dir,
