@@ -107,3 +107,11 @@ export interface AgentInfo {
   status: 'IDLE' | 'WORKING' | 'REVIEW' | 'BLOCKED';
   currentTask?: string;
 }
+
+export interface SecurityAuditData {
+  passed: boolean;
+  security_score: number;
+  vulnerabilities: string[];
+  cve_risk: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | string;
+  recommendations: string;
+}

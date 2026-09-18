@@ -20,6 +20,7 @@ import {
   Award,
   Layers,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -138,6 +139,14 @@ function getAssigneeMeta(assignee: string) {
       icon: Code2,
     };
   }
+  if (norm.includes('security') || norm.includes('보안')) {
+    return {
+      name: 'SecurityAgent',
+      role: '정보보안 심사',
+      badge: 'bg-rose-950/60 border-rose-800/60 text-rose-300',
+      icon: Lock,
+    };
+  }
   if (norm.includes('qa')) {
     return {
       name: 'QAAgent',
@@ -172,6 +181,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('ALL');
+  const [mobileColumn, setMobileColumn] = useState<string>('ALL');
   const [activeModalTask, setActiveModalTask] = useState<TaskItem | null>(selectedDeliverableTask);
   const [copied, setCopied] = useState(false);
 
@@ -310,9 +320,41 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </div>
       </div>
 
+      {/* 모바일 전용 컬럼 탭 필터 (작은 화면에서만 표시, 가로 스크롤 가능) */}
+      <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+        <button
+          onClick={() => setMobileColumn('ALL')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+            mobileColumn === 'ALL'
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'bg-slate-900 text-slate-400 border border-slate-800'
+          }`}
+        >
+          전체 보기 ({filteredTasks.length})
+        </button>
+        {COLUMNS.map((col) => {
+          const count = filteredTasks.filter((t) => col.match(t.status)).length;
+          const isActive = mobileColumn === col.id;
+          return (
+            <button
+              key={col.id}
+              onClick={() => setMobileColumn(col.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-900 text-slate-400 border border-slate-800'
+              }`}
+            >
+              <span>{col.label}</span>
+              <span className="text-[10px] opacity-80 font-mono">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* 6컬럼 칸반 보드 그리드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 items-start">
-        {COLUMNS.map((col) => {
+        {COLUMNS.filter((col) => mobileColumn === 'ALL' || mobileColumn === col.id).map((col) => {
           const colTasks = filteredTasks.filter((t) => col.match(t.status));
           const ColIcon = col.icon;
 

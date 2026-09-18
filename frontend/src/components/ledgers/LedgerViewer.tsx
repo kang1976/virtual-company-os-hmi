@@ -215,6 +215,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
   const [fileError, setFileError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [mobileTab, setMobileTab] = useState<'tree' | 'content'>('tree');
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({
     PROJECTS: true,
     COMMAND_LOG: true,
@@ -318,9 +319,41 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
   }, [tree, searchQuery]);
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[750px] backdrop-blur-sm">
+    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px] sm:h-[750px] backdrop-blur-sm">
+      {/* 모바일 화면 전용 상단 탭 전환 바 (md 미만에서만 표시) */}
+      <div className="flex md:hidden border-b border-slate-800 bg-slate-950 p-2 gap-1.5 shrink-0">
+        <button
+          onClick={() => setMobileTab('tree')}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+            mobileTab === 'tree'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-slate-900 text-slate-400 border border-slate-800'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>원장 목록</span>
+        </button>
+        <button
+          onClick={() => setMobileTab('content')}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+            mobileTab === 'content'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-slate-900 text-slate-400 border border-slate-800'
+          }`}
+        >
+          <FileCode className="w-3.5 h-3.5" />
+          <span className="truncate max-w-[130px]">
+            {selectedFile ? selectedFile : '본문 열람'}
+          </span>
+        </button>
+      </div>
+
       {/* 좌측 패널: 4대 장부 폴더 트리 탐색기 */}
-      <div className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col bg-slate-950/70">
+      <div
+        className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex-col bg-slate-950/70 ${
+          mobileTab === 'tree' ? 'flex flex-1 md:flex-initial' : 'hidden md:flex'
+        }`}
+      >
         {/* 탐색기 상단 헤더 & 새로고침 */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2 text-emerald-400">
@@ -403,6 +436,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                               onClick={() => {
                                 setSelectedFolder(folderKey);
                                 setSelectedFile(file);
+                                setMobileTab('content');
                               }}
                               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-all ${
                                 isSelected
@@ -444,16 +478,28 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
       </div>
 
       {/* 우측 패널: 마크다운 뷰어 */}
-      <div className="flex-1 flex flex-col bg-slate-900/50">
+      <div
+        className={`flex-1 flex-col bg-slate-900/50 ${
+          mobileTab === 'content' ? 'flex' : 'hidden md:flex'
+        }`}
+      >
         {/* 파일 뷰어 상단 헤더 */}
-        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60">
+        <div className="p-3 sm:p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            {/* 모바일 전용 목록으로 돌아가기 버튼 */}
+            <button
+              onClick={() => setMobileTab('tree')}
+              className="md:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs shrink-0"
+              title="원장 목록으로 돌아가기"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
+            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shrink-0">
               <FileCode className="w-4 h-4" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-white text-sm font-mono truncate max-w-sm sm:max-w-md">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-white text-sm font-mono truncate max-w-[200px] sm:max-w-md">
                   {selectedFile || '원장 파일을 선택하세요'}
                 </h3>
                 {selectedFolder && (

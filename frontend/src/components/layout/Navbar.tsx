@@ -10,8 +10,14 @@ import {
   LayoutDashboard,
   RefreshCw,
   AlertCircle,
+  Maximize,
+  Minimize,
+  Moon,
+  Sun,
+  Sparkles,
 } from 'lucide-react';
 import type { HealthResponse } from '../../types';
+import type { ThemeMode } from '../../hooks/useTheme';
 
 export type NavTabId = 'overview' | 'kanban' | 'ledgers' | 'org';
 
@@ -25,6 +31,10 @@ export interface NavbarProps {
   reconnectCount: number;
   onRefreshAll?: () => void;
   isRefreshing?: boolean;
+  theme: ThemeMode;
+  onThemeToggle: () => void;
+  isFullscreen: boolean;
+  onFullscreenToggle: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -37,6 +47,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   reconnectCount,
   onRefreshAll,
   isRefreshing = false,
+  theme,
+  onThemeToggle,
+  isFullscreen,
+  onFullscreenToggle,
 }) => {
   const tabs: { id: NavTabId; label: string; icon: React.ReactNode; desc: string }[] = [
     {
@@ -47,69 +61,155 @@ export const Navbar: React.FC<NavbarProps> = ({
     },
     {
       id: 'kanban',
-      label: '5단계 칸반 보드',
+      label: '5단계 칸반',
       icon: <Kanban className="w-4 h-4" />,
       desc: 'IDLE ~ CLOSED 5단계 검증 워크플로우',
     },
     {
       id: 'ledgers',
-      label: '4대 장부 탐색기',
+      label: '4대 장부',
       icon: <BookOpen className="w-4 h-4" />,
       desc: '지시·업무·회의·특허 원장 동기화',
     },
     {
       id: 'org',
-      label: '가상 조직도',
+      label: '조직도',
       icon: <Users className="w-4 h-4" />,
-      desc: 'COO 및 3대 전문 에이전트 실시간 상태',
+      desc: 'COO, 보안, 개발, QA 에이전트 상태',
     },
   ];
 
+  const getThemeDisplay = () => {
+    switch (theme) {
+      case 'modern-light':
+        return { icon: <Sun className="w-4 h-4 text-amber-500" />, label: '라이트' };
+      case 'oled-black':
+        return { icon: <Sparkles className="w-4 h-4 text-emerald-400" />, label: 'OLED' };
+      case 'cyber-dark':
+      default:
+        return { icon: <Moon className="w-4 h-4 text-sky-400" />, label: '다크' };
+    }
+  };
+
+  const currentTheme = getThemeDisplay();
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 py-3.5 transition-all shadow-lg shadow-black/20">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* 좌측: 로고 및 시스템 타이틀 */}
-        <div className="flex items-center gap-3.5 w-full md:w-auto justify-between md:justify-start">
-          <div className="flex items-center gap-3">
-            <div className="relative group cursor-pointer" onClick={() => onTabChange('overview')}>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 p-[1px] shadow-lg shadow-sky-500/10">
+    <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-900/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 transition-all shadow-lg shadow-black/20">
+      <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:gap-3">
+        {/* 상단 라인: 로고, 시스템 타이틀, 상태 뱃지, 제어 버튼군 */}
+        <div className="flex items-center justify-between gap-2 w-full">
+          {/* 좌측: 로고 및 타이틀 */}
+          <div
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer select-none"
+            onClick={() => onTabChange('overview')}
+          >
+            <div className="relative group">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 p-[1px] shadow-md shadow-sky-500/20">
                 <div className="w-full h-full rounded-[11px] bg-slate-950 flex items-center justify-center text-sky-400 group-hover:text-sky-300 transition-colors">
-                  <Cpu className="w-5 h-5" />
+                  <Cpu className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-slate-900" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-900" />
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                  AI Virtual Company OS
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800">
-                    V4.0
-                  </span>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm sm:text-lg font-bold tracking-tight text-white">
+                  AI Virtual Company
                 </h1>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800">
+                  V4.0
+                </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                자율 멀티 에이전트 가상회사 운영 관제 시스템
+              <p className="text-[11px] text-slate-400 hidden sm:block">
+                초지능 자율운영 멀티에이전트 가상기업 OS
               </p>
             </div>
           </div>
 
-          {/* 모바일 새로고침 버튼 */}
-          {onRefreshAll && (
-            <button
-              onClick={onRefreshAll}
-              disabled={isRefreshing}
-              title="전체 데이터 새로고침"
-              className="md:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 active:scale-95 transition-all"
+          {/* 우측: 상태 뱃지 및 유틸리티 버튼 (전체화면, 테마, 새로고침) */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* API 서버 상태 뱃지 */}
+            <div
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-950/80 border border-slate-800 text-[11px] sm:text-xs"
+              title={healthError ? `오류: ${healthError}` : 'FastAPI 백엔드 서버'}
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`} />
+              <Activity className="w-3 h-3 text-slate-400" />
+              {health ? (
+                <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="hidden xs:inline sm:inline">서버</span> 정상
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-rose-400 font-medium">
+                  <AlertCircle className="w-3 h-3 text-rose-400" />
+                  점검
+                </span>
+              )}
+            </div>
+
+            {/* 실시간 WS 연결 뱃지 */}
+            <div
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-950/80 border border-slate-800 text-[11px] sm:text-xs"
+              title={`실시간 웹소켓 (${wsStatus}${reconnectCount > 0 ? `, 재접속: ${reconnectCount}회` : ''})`}
+            >
+              <Radio className="w-3 h-3 text-slate-400" />
+              <span className="flex items-center gap-1 font-medium">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    wsConnected
+                      ? 'bg-emerald-500 animate-pulse'
+                      : 'bg-amber-400 animate-ping'
+                  }`}
+                />
+                <span className={wsConnected ? 'text-emerald-400' : 'text-amber-400'}>
+                  {wsConnected ? '실시간' : '연결중'}
+                </span>
+              </span>
+            </div>
+
+            {/* 테마 변경 버튼 */}
+            <button
+              onClick={onThemeToggle}
+              title={`테마 변경 (현재: ${currentTheme.label})`}
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 text-xs active:scale-95 transition-all"
+              aria-label="테마 변경"
+            >
+              {currentTheme.icon}
+              <span className="hidden sm:inline text-[11px] font-medium">{currentTheme.label}</span>
             </button>
-          )}
+
+            {/* 전체화면(Fullscreen) 토글 버튼 */}
+            <button
+              onClick={onFullscreenToggle}
+              title={isFullscreen ? '전체화면 종료 (ESC)' : '전체화면 모드로 전환'}
+              className="p-1.5 sm:p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 active:scale-95 transition-all"
+              aria-label="전체화면 전환"
+            >
+              {isFullscreen ? (
+                <Minimize className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
+              ) : (
+                <Maximize className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300 hover:text-white" />
+              )}
+            </button>
+
+            {/* 전체 새로고침 버튼 */}
+            {onRefreshAll && (
+              <button
+                onClick={onRefreshAll}
+                disabled={isRefreshing}
+                title="데이터 수동 새로고침"
+                className="p-1.5 sm:p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/80 active:scale-95 transition-all disabled:opacity-50"
+                aria-label="새로고침"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`} />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* 중앙: 탭 네비게이션 */}
-        <nav className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800/90 w-full md:w-auto overflow-x-auto scrollbar-none">
+        {/* 하단 라인: 모바일 친화적 탭 네비게이션 */}
+        <nav className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800/90 overflow-x-auto scrollbar-none gap-1">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -117,9 +217,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 title={tab.desc}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                className={`flex-1 min-w-[75px] sm:min-w-[100px] flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30'
+                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30 font-semibold'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                 }`}
               >
@@ -129,83 +229,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             );
           })}
         </nav>
-
-        {/* 우측: 시스템 상태 모니터 & 제어 */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
-          {/* 전체 새로고침 버튼 */}
-          {onRefreshAll && (
-            <button
-              onClick={onRefreshAll}
-              disabled={isRefreshing}
-              title="시스템 상태 및 원장 수동 새로고침"
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 text-xs text-slate-300 hover:text-white transition-all active:scale-95 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`} />
-              <span>새로고침</span>
-            </button>
-          )}
-
-          {/* API 서버 상태 뱃지 */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/70 border border-slate-800 text-xs"
-            title={healthError ? `오류: ${healthError}` : 'FastAPI 백엔드 서버 상태'}
-          >
-            <Activity className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-400 hidden lg:inline">API:</span>
-            {health ? (
-              <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                온라인
-              </span>
-            ) : healthError ? (
-              <span className="flex items-center gap-1 text-rose-400 font-medium">
-                <AlertCircle className="w-3 h-3 text-rose-400" />
-                오프라인
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                확인 중
-              </span>
-            )}
-          </div>
-
-          {/* WebSocket 실시간 연결 상태 뱃지 */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/70 border border-slate-800 text-xs"
-            title={`WebSocket 실시간 채널 (${wsStatus})`}
-          >
-            <Radio className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-400 hidden lg:inline">실시간 WS:</span>
-            <span
-              className={`flex items-center gap-1.5 font-medium ${
-                wsConnected
-                  ? 'text-emerald-400'
-                  : wsStatus === 'CONNECTING'
-                  ? 'text-amber-400'
-                  : 'text-slate-400'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  wsConnected
-                    ? 'bg-emerald-500 animate-pulse'
-                    : wsStatus === 'CONNECTING'
-                    ? 'bg-amber-400 animate-ping'
-                    : 'bg-slate-600'
-                }`}
-              />
-              {wsConnected
-                ? '연결됨'
-                : wsStatus === 'CONNECTING'
-                ? '연결 중'
-                : '연결 끊김'}
-              {reconnectCount > 0 && !wsConnected && (
-                <span className="text-[10px] text-amber-400">({reconnectCount}회)</span>
-              )}
-            </span>
-          </div>
-        </div>
       </div>
     </header>
   );

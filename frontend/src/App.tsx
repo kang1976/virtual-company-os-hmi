@@ -19,6 +19,7 @@ import { LedgerViewer } from './components/ledgers/LedgerViewer';
 import { OrgChart } from './components/org/OrgChart';
 import { getHealth, getTasks, postCommand } from './api/client';
 import { useWebSocket } from './hooks/useWebSocket';
+import { useTheme } from './hooks/useTheme';
 import type {
   HealthResponse,
   TaskItem,
@@ -36,6 +37,7 @@ interface LiveEventLog {
 }
 
 export default function App() {
+  const { theme, toggleTheme, isFullscreen, toggleFullscreen } = useTheme();
   const [activeTab, setActiveTab] = useState<NavTabId>('overview');
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
@@ -204,7 +206,7 @@ export default function App() {
   const blockedCount = tasks.filter((t) => t.status === 'BLOCKED').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-sky-900 selection:text-sky-200">
+    <div className={`min-h-screen ${theme} text-slate-100 flex flex-col font-sans selection:bg-sky-900 selection:text-sky-200 transition-colors duration-200`}>
       {/* 글로벌 네비게이션 헤더 */}
       <Navbar
         activeTab={activeTab}
@@ -216,6 +218,10 @@ export default function App() {
         reconnectCount={reconnectCount}
         onRefreshAll={handleRefreshAll}
         isRefreshing={loadingTasks}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        isFullscreen={isFullscreen}
+        onFullscreenToggle={toggleFullscreen}
       />
 
       {/* 메인 관제 콘솔 컨테이너 */}
@@ -420,6 +426,7 @@ export default function App() {
                     { name: 'COOAgent', role: '총괄 운영 및 업무 분해', status: '정상 가동', color: 'text-sky-400' },
                     { name: 'PatentSearchAgent', role: '특허 Gatekeeper (FTO)', status: '정상 가동', color: 'text-purple-400' },
                     { name: 'BackendDevAgent', role: '회피설계 및 시스템 구현', status: '정상 가동', color: 'text-blue-400' },
+                    { name: 'SecurityAgent', role: '정보보안 및 OWASP 취약점 심사', status: '정상 가동', color: 'text-rose-400' },
                     { name: 'QAAgent', role: '독립 품질 및 규격 검수', status: '정상 가동', color: 'text-emerald-400' },
                   ].map((agent) => (
                     <div

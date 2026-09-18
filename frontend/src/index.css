@@ -5,25 +5,66 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --bg-main: #020617;
+    --bg-card: #0f172a;
+    --bg-card-hover: #1e293b;
+    --border-color: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
   }
 
-  body {
-    @apply bg-slate-950 text-slate-100 antialiased min-h-screen font-sans;
+  /* OLED 제트 블랙 모드 */
+  :root[data-theme="oled-black"] {
+    color-scheme: dark;
+    --bg-main: #000000;
+    --bg-card: #0a0a0a;
+    --bg-card-hover: #141414;
+    --border-color: #262626;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
   }
 
-  /* Custom scrollbar for dark theme */
+  /* 모던 라이트 모드 */
+  :root[data-theme="modern-light"] {
+    color-scheme: light;
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --border-color: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+  }
+
+  html, body {
+    @apply antialiased min-h-screen font-sans;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* 모바일 하단 홈 인디케이터 안전 영역 */
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #020617;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
     background: #334155;
-    border-radius: 3px;
+    border-radius: 9999px;
+  }
+
+  :root[data-theme="modern-light"] ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
   }
 
   ::-webkit-scrollbar-thumb:hover {
