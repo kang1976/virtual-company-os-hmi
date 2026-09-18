@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ROOT_DIR: Path = BASE_DIR.parent
     LEDGER_DIR: Path = ROOT_DIR / "COMPANY_LEDGERS"
     DATA_DIR: Path = BASE_DIR / "data"
-    SQLITE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR}/data/virtual_company.db"
+    SQLITE_URL: str = f"sqlite+aiosqlite:///{(BASE_DIR / 'data' / 'virtual_company.db').as_posix()}"
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     DEFAULT_PROVIDER: str = "gemini"
