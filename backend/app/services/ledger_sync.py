@@ -73,15 +73,47 @@ class LedgerSyncService:
                     f"| {t.get('id')} | {t.get('title')} | {t.get('assignee')} | {t.get('priority')} | {status_icon} {t.get('status')} |"
                 )
 
-            lines.append("\n---\n\n## 2. 부서별 세부 업무 내역 및 COO 하달 프롬프트 / 산출물\n")
+            lines.append("\n---\n\n## 2. 부서별 4단계 심층 업무 내역 (상세지시 · 실행계획 · 구현내역 · 검증체크시트)\n")
             for t in tasks:
+                status_icon = {
+                    "IDLE": "⚪",
+                    "WORKING": "🔵",
+                    "SUBMITTED": "🟡",
+                    "REVIEW": "🟣",
+                    "VERIFIED": "🟢",
+                    "CLOSED": "☑️",
+                    "BLOCKED": "🔴",
+                }.get(t.get("status"), "⚪")
                 lines.append(f"### 📌 [{t.get('id')}] {t.get('title')}")
                 lines.append(f"- **담당 에이전트**: `{t.get('assignee')}`")
-                lines.append(f"- **우선순위 / 상태**: `{t.get('priority')}` / `{t.get('status')}`")
-                if t.get("coo_prompt"):
-                    lines.append(f"- **📋 COO 하달 프롬프트 (Directive Prompt)**:\n  > {t.get('coo_prompt')}\n")
-                if t.get("deliverable"):
-                    lines.append(f"- **📦 에이전트 산출물 (Deliverable)**:\n```\n{t.get('deliverable')}\n```\n")
+                lines.append(f"- **우선순위 / 상태**: `{t.get('priority')}` / {status_icon} `{t.get('status')}`")
+                
+                # [Stage 1] COO 상세 지시
+                directive = t.get("detailed_directive") or t.get("coo_prompt")
+                if directive:
+                    lines.append(f"\n#### 📋 [Stage 1] COO 상세 기술 업무 지시서 (Technical Directive Specification)\n{directive}\n")
+
+                # [Stage 2] 에이전트 실행 계획
+                plan = t.get("execution_plan")
+                if plan:
+                    lines.append(f"\n#### 📐 [Stage 2] 에이전트 기술 실행 계획서 (Technical Execution Plan)\n{plan}\n")
+
+                # [Stage 3] 실제 구현 및 변경 내역
+                action = t.get("action_log")
+                deliverable = t.get("deliverable")
+                if action or deliverable:
+                    lines.append(f"\n#### 🛠️ [Stage 3] 실제 구현 및 변경 내역 (Implementation & Executed Actions)")
+                    if action:
+                        lines.append(f"{action}\n")
+                    if deliverable:
+                        lines.append(f"##### 📦 최종 산출물 (Deliverable):\n```\n{deliverable}\n```\n")
+
+                # [Stage 4] 완료 검증 체크리스트
+                checklist = t.get("verification_checklist")
+                if checklist:
+                    lines.append(f"\n#### 🛡️ [Stage 4] 완료 검증 체크리스트 (Verification & QA Checksheet)\n{checklist}\n")
+
+                lines.append("\n---\n")
 
             async with aiofiles.open(md_path, mode="w", encoding="utf-8") as f:
                 await f.write("\n".join(lines) + "\n")

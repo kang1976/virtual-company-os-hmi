@@ -201,6 +201,10 @@ class CompanyOrchestrator:
                     status=t["status"],
                     coo_prompt=t.get("coo_prompt"),
                     deliverable=t.get("deliverable"),
+                    detailed_directive=t.get("detailed_directive"),
+                    execution_plan=t.get("execution_plan"),
+                    action_log=t.get("action_log"),
+                    verification_checklist=t.get("verification_checklist"),
                 )
                 session.add(task_m)
             await session.commit()

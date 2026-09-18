@@ -39,6 +39,10 @@ class TaskModel(Base):
     status = Column(String(50), default="IDLE")
     coo_prompt = Column(Text, nullable=True)
     deliverable = Column(Text, nullable=True)
+    detailed_directive = Column(Text, nullable=True)
+    execution_plan = Column(Text, nullable=True)
+    action_log = Column(Text, nullable=True)
+    verification_checklist = Column(Text, nullable=True)
     created_at = Column(DateTime, default=get_utc_now)
     updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
     project = relationship("ProjectModel", back_populates="tasks")
@@ -73,6 +77,14 @@ async def init_db():
     AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        def migrate_columns(sync_conn):
+            from sqlalchemy import text
+            cursor = sync_conn.execute(text("PRAGMA table_info(tasks)"))
+            existing_cols = {row[1] for row in cursor.fetchall()}
+            for col in ["detailed_directive", "execution_plan", "action_log", "verification_checklist"]:
+                if col not in existing_cols:
+                    sync_conn.execute(text(f"ALTER TABLE tasks ADD COLUMN {col} TEXT"))
+        await conn.run_sync(migrate_columns)
 
 async def get_db():
     if AsyncSessionLocal is None:

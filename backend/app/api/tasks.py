@@ -21,6 +21,10 @@ async def list_tasks():
                 "status": t.status,
                 "coo_prompt": t.coo_prompt,
                 "deliverable": t.deliverable,
+                "detailed_directive": t.detailed_directive,
+                "execution_plan": t.execution_plan,
+                "action_log": t.action_log,
+                "verification_checklist": t.verification_checklist,
             }
             for t in tasks
         ]

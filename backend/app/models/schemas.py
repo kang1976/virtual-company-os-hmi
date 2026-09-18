@@ -36,6 +36,10 @@ class TaskCreate(BaseModel):
     status: TaskStatus = TaskStatus.IDLE
     coo_prompt: Optional[str] = None
     deliverable: Optional[str] = None
+    detailed_directive: Optional[str] = None
+    execution_plan: Optional[str] = None
+    action_log: Optional[str] = None
+    verification_checklist: Optional[str] = None
 
 class TaskResponse(BaseModel):
     id: str
@@ -46,4 +50,8 @@ class TaskResponse(BaseModel):
     status: str
     coo_prompt: Optional[str] = None
     deliverable: Optional[str] = None
+    detailed_directive: Optional[str] = None
+    execution_plan: Optional[str] = None
+    action_log: Optional[str] = None
+    verification_checklist: Optional[str] = None
 
