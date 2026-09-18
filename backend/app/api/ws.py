@@ -23,7 +23,7 @@ class ConnectionManager:
             try:
                 await connection.send_json(payload)
             except Exception:
-                pass
+                self.disconnect(connection)
 
 
 manager = ConnectionManager()
@@ -35,5 +35,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             await websocket.receive_text()
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, Exception):
+        pass
+    finally:
         manager.disconnect(websocket)
