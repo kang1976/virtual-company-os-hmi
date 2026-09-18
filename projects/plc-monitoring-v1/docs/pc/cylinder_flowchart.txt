@@ -1,0 +1,98 @@
+flowchart TD
+
+    %% ── 스타일 정의 ──
+    classDef startNode fill:#2b6cb0,stroke:#2b6cb0,color:#fff,font-weight:bold
+    classDef cancelNode fill:#e53e3e,stroke:#c53030,color:#fff,font-weight:bold
+    classDef optionNode fill:#d69e2e,stroke:#b7791f,color:#fff,font-weight:bold
+    classDef procNode fill:#2d3748,stroke:#4a5568,color:#fff
+    classDef passNode fill:#38a169,stroke:#2f855a,color:#fff,font-weight:bold
+
+    %% ── 1. 진입 및 패스워드 ──
+    Start(["[메인 메뉴]<br>실린더 교환 클릭"]):::startNode
+    PW1{"비밀번호 입력<br>(4321)"}:::optionNode
+    CancelReset["[안전 초기화 / 취소]<br>• 모든 밸브 CLOSE<br>• 상태 IDLE 리셋<br>• 메인 메뉴 복귀"]:::cancelNode
+
+    Start --> PW1
+    PW1 -- "취소 클릭 / 불일치" --> CancelReset
+    PW1 -- "인증 성공 (확인)" --> M1["[Main 1] IdleCheck_v1<br>교환전 사전확인 9단계<br>(실린더/Data/VS/스티커 등)"]:::procNode
+
+    %% ── 2. 사전확인 및 Puls ──
+    M1 -- "진행 중 [취소] 클릭" --> CancelReset
+    M1 -- "9단계 확인 완료" --> M2["[Main 2] Puls_v1<br>잔류가스 Check & Pulse Vent"]:::procNode
+
+    M2 -- "[취소/중지] 클릭" --> CancelReset
+    M2 -- "Puls 완료<br>(HPT 압력 제거)" --> Opt1P1{"[OPTION]<br>1·2차측 Vent Mode<br>사용 여부"}:::optionNode
+
+    %% ── 3. 1P 구간 (4개 세부 옵션 분기) ──
+    Opt1P1 -- "적용" --> M3["[Main 3] OneP_v1<br>1-2차측 Vent Mode"]:::procNode
+    Opt1P1 -- "미적용" --> Opt1P2{"[OPTION]<br>2차측 Purge<br>사용 여부"}:::optionNode
+    M3 -- "[취소/중지]" --> CancelReset
+    M3 --> Opt1P2
+
+    Opt1P2 -- "적용" --> M4["[Main 4] OneP2_v1<br>2차측 Purge"]:::procNode
+    Opt1P2 -- "미적용" --> Opt1P3{"[OPTION]<br>Pumping<br>사용 여부"}:::optionNode
+    M4 -- "[취소/중지]" --> CancelReset
+    M4 --> Opt1P3
+
+    Opt1P3 -- "적용" --> M5["[Main 5] OneP3_v1<br>Pumping 공정"]:::procNode
+    Opt1P3 -- "미적용" --> Opt1P4{"[OPTION]<br>1차측 Purge<br>사용 여부"}:::optionNode
+    M5 -- "[취소/중지]" --> CancelReset
+    M5 --> Opt1P4
+
+    Opt1P4 -- "적용" --> M6["[Main 6] OneP4_v1<br>1차측 Purge"]:::procNode
+    Opt1P4 -- "미적용" --> M7["[Main 7] ExchL_v1<br>교환전 -L 감압시험<br>(안정화 ➔ 본시험)"]:::procNode
+    M6 -- "[취소/중지]" --> CancelReset
+    M6 --> M7
+
+    %% ── 4. -L 및 교환전 VT 옵션 분기 ──
+    M7 -- "[취소/중지/누출알람]" --> CancelReset
+    M7 -- "-L 감압시험 합격" --> OptVT1{"[OPTION]<br>교환전 VT 감압시험<br>사용 여부 (vtUseOption)"}:::optionNode
+
+    OptVT1 -- "적용 (ON)" --> M9["[Main 9] VtTest_v1<br>교환전 -VT 감압시험<br>(고진공 Pumping & 누출)"]:::procNode
+    OptVT1 -- "미적용 (OFF)" --> M8["[Main 8] TwoP_v1<br>교환전 2P 2차 배관청소"]:::procNode
+
+    M9 -- "[취소/중지/누출알람]" --> CancelReset
+    M9 -- "-VT 시험 합격" --> M8
+    M8 -- "[취소/중지]" --> CancelReset
+    M8 -- "2P 완료" --> PW2{"비밀번호 입력<br>(4321)"}:::optionNode
+
+    %% ── 5. 용기교체(CC) ➔ 3P (순서 변경 반영) ──
+    PW2 -- "취소 클릭" --> CancelReset
+    PW2 -- "인증 성공 (확인)" --> M10["[Main 10] CylReplace_v1<br>용기교체(CC) 6화면<br>(실린더 분리/교체/순차 밸브 Open)"]:::procNode
+
+    M10 -- "[취소] 클릭" --> CancelReset
+    M10 -- "용기교체 완료" --> M12["[Main 12] AfterThreeP_v1<br>교환후 3P 배관청소"]:::procNode
+
+    %% ── 6. 3P 완료 후 Bypass 옵션 분기 ──
+    M12 -- "[취소/중지]" --> CancelReset
+    M12 -- "3P 완료" --> OptBypass{"[OPTION]<br>Bypass 사용 여부<br>(bypassUseOption)"}:::optionNode
+
+    OptBypass -- "미적용 (OFF)" --> M13["[Main 13] AfterPlusL_v1<br>교환후 +L 가압시험<br>(안정화 ➔ 본시험)"]:::procNode
+    OptBypass -- "적용 (ON)" --> OptHe{"[OPTION]<br>고압 HE Leak Check<br>라인 유무"}:::optionNode
+
+    OptHe -- "적용" --> M11_1["[Main 11] Bypass_v1<br>• HPIV 밸브 Open<br>• 진공유지 확인"]:::procNode
+    OptHe -- "미적용" --> M11_2["[Main 11] Bypass_v1<br>• PNBV ➔ PIV 순차 Open<br>• 진공유지 확인"]:::procNode
+
+    M11_1 -- "[취소/중지]" --> CancelReset
+    M11_2 -- "[취소/중지]" --> CancelReset
+    M11_1 --> M13
+    M11_2 --> M13
+
+    %% ── 7. +L 가압, 교환후 VT, 4P ──
+    M13 -- "[취소/중지/과압/누출]" --> CancelReset
+    M13 -- "+L 가압 합격" --> OptPostPulse{"[OPTION]<br>가압시험 완료 후<br>Pulse Vent 여부"}:::optionNode
+
+    OptPostPulse -- "적용 (ON)" --> PulseExtra["Pulse Vent 서브시퀀스<br>추가 1회 실행"]:::procNode
+    OptPostPulse -- "미적용 (OFF)" --> OptVT2{"[OPTION]<br>교환후 VT 감압시험<br>사용 여부 (vtUseOption)"}:::optionNode
+    PulseExtra --> OptVT2
+
+    OptVT2 -- "적용 (ON)" --> M14["[Main 14] AfterVtTest_v1<br>교환후 -VT 감압시험"]:::procNode
+    OptVT2 -- "미적용 (OFF)" --> M15["[Main 15] AfterFourP_v1<br>교환후 4P 배관청소"]:::procNode
+
+    M14 -- "[취소/중지/누출알람]" --> CancelReset
+    M14 -- "-VT 합격" --> M15
+    M15 -- "[취소/중지]" --> CancelReset
+
+    %% ── 8. 퍼지 완료 및 가스공급 대기 ──
+    M15 -- "4P 완료" --> PC["[Status: PC]<br>실린더 교환 & 퍼지 완료<br>(패널 알림 및 작업이력 기록)"]:::passNode
+    PC --> Finish(["가스 공급 준비 완료<br>(Service / Standby)"]):::startNode

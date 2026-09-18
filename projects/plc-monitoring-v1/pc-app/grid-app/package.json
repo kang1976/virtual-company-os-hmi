@@ -1,0 +1,25 @@
+{
+  "name": "plc-grid-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:trend": "vite build --config vite.config.trend.js",
+    "build:gms-trend": "vite build --config vite.config.gms-trend.js",
+    "build:gms-user": "vite build --config vite.config.gms-user.js",
+    "build:gms-worklog": "vite build --config vite.config.gms-worklog.js",
+    "build:gms-errorlog": "vite build --config vite.config.gms-errorlog.js",
+    "build:gms-configmode": "vite build --config vite.config.gms-configmode.js",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.1.4"
+  },
+  "dependencies": {
+    "@univerjs/preset-sheets-core": "^0.25.1",
+    "@univerjs/preset-sheets-data-validation": "^0.25.1",
+    "@univerjs/presets": "^0.25.1"
+  }
+}

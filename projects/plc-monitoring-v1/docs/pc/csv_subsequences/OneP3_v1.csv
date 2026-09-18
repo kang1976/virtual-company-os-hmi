@@ -1,0 +1,18 @@
+﻿# 1P 구간 - Pumping v1 (Main: OneP3)
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","5-1","1","1","auto","","[ Pumping Mode ]","Pump 작동을 시작합니다.","",""
+"2","5-2","2","3","auto","PNV:O","","PNV Valve OPEN","",""
+"3","5-3","2","5","auto","LPV_{side}:O","","LPV Valve OPEN","",""
+"4","5-4","2","7","auto","HPI_{side}:O","","HPI Valve OPEN","",""
+"5","5-5","2","9","auto","HPV_{side}:O","","HPV Valve OPEN","",""
+"6","5-6","2","11","auto","PGI_{side}:O","","PGI Valve OPEN","",""
+"7","5-7","60","71","auto","PGII_{side}:O","","Pump 작동중입니다.","HPT_{side} <= 진공하한치_{side}","[Pumping 실시간 안전 감시 및 대기]"
+"7A","5-8","1","72","auto","","","","진행횟수 >= PUMPING 시간[분]_{side}","[Pumping 시간 판정 - 완료 시 Step 7B로 이동]"
+"7B","5-9","2","74","auto","","전체 PT 센서 진공도 Check","전체 PT 센서 진공도 확인 중...","VPT & LPT_{side} & HPT_{side} & NPT_{side} <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","[진행시간 완료 후 VPT, LPT, HPT, NPT 전체 센서 진공하한치 이하 도달 여부 최종 확인]"
+"8","5-10","1","75","auto","PGII_{side}:C","","","",""
+"9","5-11","2","77","auto","PGI_{side}:C","","","",""
+"10","5-12","2","79","auto","HPV_{side}:C","","","",""
+"11","5-13","2","81","auto","HPI_{side}:C","","","",""
+"12","5-14","2","83","auto","LPV_{side}:C","","","",""
+"13","5-15","2","85","auto","PNV:C","","","",""
+"14","5-16","1","84","auto","","[ Pumping Sequence Complet ]","Pumping이 완료되었습니다.","",""

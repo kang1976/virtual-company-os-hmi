@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>메모리 모니터링 — CJ2H-65EIP</title>
+<script>
+  // app.js가 로드되기 전에 먼저 테마를 적용해서(FOUC 방지) 깜빡임 없이 저장된 테마로 시작한다.
+  // 사용자 지정 테마(plcThemeMode='custom')면 바탕 테마 위에 저장해둔 색 변수들을 덮어쓴다.
+  (function () {
+    try {
+      if (localStorage.getItem('plcThemeMode') === 'custom') {
+        var c = JSON.parse(localStorage.getItem('plcCustomTheme') || '{}');
+        document.documentElement.dataset.theme = c.fallback === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-custom-theme', '1');
+        var vars = c.vars || {};
+        var css = ':root[data-custom-theme]{' + Object.keys(vars).map(function (k) { return '--' + k + ':' + vars[k]; }).join(';') + '}';
+        var el = document.createElement('style'); el.id = '__customTheme'; el.textContent = css;
+        document.documentElement.appendChild(el);
+      } else {
+        document.documentElement.dataset.theme = localStorage.getItem('plcTheme') || 'light';
+      }
+    } catch (e) {
+      document.documentElement.dataset.theme = 'light';
+    }
+  })();
+</script>
+<script>
+  // ── 화면 전체 확대/축소 (Ctrl+휠 또는 Ctrl+Alt+휠) ───────────────────────────
+  // 이 앱은 body가 height:100vh + overflow:hidden 레이아웃이라 브라우저 기본 Ctrl+휠
+  // 확대를 쓰면 내용이 잘리거나(확대) 아래에 빈 공간이 생겨서(축소) 잘 맞지 않는다.
+  // 그래서 body에 CSS zoom을 직접 적용하되, 높이를 (100/배율)vh로 보정해 항상 화면에
+  // 꼭 맞게 만든다. 배율은 localStorage(plcUiZoom)에 저장해 새로고침/페이지 이동 후에도 유지.
+  // 세 화면(모니터링/그리드/트렌드)이 같은 origin이라 배율 설정도 공유된다.
+  (function () {
+    var KEY = 'plcUiZoom';
+    var MIN = 0.4, MAX = 2.0, STEP = 1.1;
+    var PRESETS = [40, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200];
+    function clamp(z) { return Math.min(MAX, Math.max(MIN, z)); }
+    function current() { return clamp(parseFloat(localStorage.getItem(KEY)) || 1); }
+    function syncControl(z) {
+      var select = document.getElementById('uiZoomSelect');
+      if (!select) return;
+      var pct = Math.round(z * 100);
+      var opt = select.querySelector('option[value="' + pct + '"]');
+      if (!opt) {
+        opt = document.createElement('option');
+        opt.value = String(pct);
+        opt.textContent = pct + '%';
+        var inserted = false;
+        Array.prototype.forEach.call(select.options, function (o) {
+          if (!inserted && Number(o.value) > pct) { select.insertBefore(opt, o); inserted = true; }
+        });
+        if (!inserted) select.appendChild(opt);
+      }
+      select.value = String(pct);
+    }
+    function apply(z) {
+      if (!document.body) return;
+      if (Math.abs(z - 1) < 0.001) {
+        document.body.style.zoom = '';
+        document.body.style.height = '';   // CSS 기본값(100vh)으로 복귀
+      } else {
+        document.body.style.zoom = String(z);
+        document.body.style.height = (100 / z) + 'vh';
+      }
+      syncControl(z);
+    }
+    // 다른 스크립트(app.js 등)에서 버튼으로 배율을 조절할 수 있도록 전역 함수로 노출
+    window.__setUiZoom = function (z) { z = clamp(z); localStorage.setItem(KEY, String(z)); apply(z); return z; };
+    window.__getUiZoom = current;
+
+    // Ctrl(+Alt) + 휠: 확대/축소. capture 단계에서 먼저 가로채 차트 휠줌보다 우선한다.
+    window.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var z = clamp(e.deltaY < 0 ? current() * STEP : current() / STEP);
+      window.__setUiZoom(z);
+    }, { passive: false, capture: true });
+
+    // Ctrl+0: 원래 크기(100%)로 복원
+    window.addEventListener('keydown', function (e) {
+      if (e.ctrlKey && (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0')) {
+        e.preventDefault();
+        window.__setUiZoom(1);
+      }
+    });
+
+    function wireControls() {
+      var outBtn = document.getElementById('uiZoomOut');
+      var inBtn = document.getElementById('uiZoomIn');
+      var select = document.getElementById('uiZoomSelect');
+      if (outBtn) outBtn.addEventListener('click', function () {
+        var pct = Math.round(current() * 100);
+        var lower = PRESETS.filter(function (p) { return p < pct; }).pop();
+        window.__setUiZoom((lower !== undefined ? lower : Math.max(40, pct - 10)) / 100);
+      });
+      if (inBtn) inBtn.addEventListener('click', function () {
+        var pct = Math.round(current() * 100);
+        var higher = PRESETS.filter(function (p) { return p > pct; })[0];
+        window.__setUiZoom((higher !== undefined ? higher : Math.min(200, pct + 10)) / 100);
+      });
+      if (select) select.addEventListener('change', function (e) { window.__setUiZoom(Number(e.target.value) / 100); });
+      apply(current());
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', wireControls);
+    } else {
+      wireControls();
+    }
+  })();
+</script>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --panel: #ffffff;
+    --panel-border: #d8dee5;
+    --text: #1c232b;
+    --muted: #5b6672;
+    --accent: #1a9b5c;
+    --accent-dim: #cdebd9;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #eef1f5;
+    --bg-alt: #eef1f5;
+    --flash-bg: #e3f7ec;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #7a8794;
+    --primary-text: #0d3d26;
+    --danger-text: #6b1f1f;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  :root[data-theme='dark'] {
+    --bg: #0b0e11;
+    --panel: #171d24;
+    --panel-border: #3d4a59;
+    --text: #e7ecf1;
+    --muted: #9aa7b8;
+    --accent: #3ddc84;
+    --accent-dim: #1f6f45;
+    --warn: #e6b450;
+    --warn-bg: #3a2e12;
+    --warn-text: #ffe9b3;
+    --error: #e65a5a;
+    --input-bg: #232b35;
+    --bg-alt: #0e1216;
+    --flash-bg: #0f1c15;
+    --danger-bg: #4a2323;
+    --send-tag: #6fa8ff;
+    --hex-text: #7c8998;
+    --primary-text: #eafff2;
+    --danger-text: #ffdede;
+  }
+  /* 밝은 배경 + 주황색 강조색 테마 */
+  :root[data-theme='orange'] {
+    --bg: #fdf6f0;
+    --panel: #ffffff;
+    --panel-border: #f0d4b4;
+    --text: #2b1d10;
+    --muted: #8a6a4a;
+    --accent: #ff8a00;
+    --accent-dim: #ffe3bf;
+    --warn: #b45f00;
+    --warn-bg: #fff1dc;
+    --warn-text: #7a3e00;
+    --error: #c23c3c;
+    --input-bg: #fff3e6;
+    --bg-alt: #fff3e6;
+    --flash-bg: #ffedd6;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #a3805e;
+    --primary-text: #7a3d00;
+    --danger-text: #6b1f1f;
+  }
+  /* 밝은 배경 + 파란색 강조색 테마 */
+  :root[data-theme='blue'] {
+    --bg: #eef4fc;
+    --panel: #ffffff;
+    --panel-border: #c7dbf2;
+    --text: #16233a;
+    --muted: #5c7699;
+    --accent: #2f6fed;
+    --accent-dim: #d7e6ff;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #e7f0fb;
+    --bg-alt: #e7f0fb;
+    --flash-bg: #dbe9fc;
+    --danger-bg: #fbe4e4;
+    --send-tag: #7c4dff;
+    --hex-text: #7a92b8;
+    --primary-text: #0b3a8a;
+    --danger-text: #6b1f1f;
+  }
+  /* 밝은 배경 + 초록색 강조색 테마 */
+  :root[data-theme='green'] {
+    --bg: #eefaf3;
+    --panel: #ffffff;
+    --panel-border: #bfe6d0;
+    --text: #123324;
+    --muted: #4f8067;
+    --accent: #16a34a;
+    --accent-dim: #d3f3df;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #e6f7ec;
+    --bg-alt: #e6f7ec;
+    --flash-bg: #d7f4e2;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #6ea183;
+    --primary-text: #0b5c30;
+    --danger-text: #6b1f1f;
+  }
+  /* 밝은 배경 + 회색 강조색 테마 */
+  :root[data-theme='gray'] {
+    --bg: #f2f3f5;
+    --panel: #ffffff;
+    --panel-border: #d6d9de;
+    --text: #202329;
+    --muted: #63676f;
+    --accent: #4b5563;
+    --accent-dim: #e2e4e8;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #eceef1;
+    --bg-alt: #eceef1;
+    --flash-bg: #e4e6ea;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #8a8f99;
+    --primary-text: #1f2937;
+    --danger-text: #6b1f1f;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+  }
+  header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--panel-border);
+    background: var(--panel);
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  header h1 span { color: var(--muted); font-weight: 400; }
+  /* 실제 7세그먼트 글꼴 파일은 오프라인 환경이라 번들링하지 못해, 등폭 글꼴+굵게+발광 효과로
+     디지털 시계 느낌을 최대한 비슷하게 낸다(제목과 같은 굵기/크기). */
+  .clock-display {
+    margin-left: 16px; white-space: nowrap;
+    font-family: 'Consolas', 'SFMono-Regular', var(--mono), monospace;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.06em;
+    background: linear-gradient(90deg, #d2691e, #ffb400);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 8px rgba(255, 150, 0, 0.5);
+  }
+
+  /* 화면 전환 탭 - 책갈피 모양, 현재 화면 탭이 강조되고 위로 올라와 보이도록 */
+  .page-tabs { display: flex; align-items: flex-end; gap: 2px; }
+  .page-tabs .page-tab {
+    padding: 6px 14px; font-size: 13px; text-decoration: none; color: var(--muted);
+    background: var(--bg-alt); border: 1px solid var(--panel-border); border-bottom: none;
+    border-radius: 8px 8px 0 0; position: relative; top: 3px;
+  }
+  .page-tabs .page-tab:hover { color: var(--text); }
+  .page-tabs .page-tab.active {
+    background: var(--accent-dim); color: var(--primary-text); font-weight: 700;
+    border-color: var(--accent); top: 0; z-index: 1;
+  }
+
+  .conn-toolbar {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 20px; border-bottom: 1px solid var(--panel-border); background: var(--bg-alt);
+  }
+  .sep { width: 2px; align-self: stretch; background: var(--panel-border); margin: 0 6px; }
+  select, button, input {
+    background: var(--input-bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  button { cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  select:disabled, button:disabled, input:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
+  button.danger { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+  /* 일시정지 상태처럼 "지금 활성화된 상태"를 나타내는 버튼 강조 (다른 버튼과 구분되는 색+테두리) */
+  button.paused { background: var(--warn-bg); border-color: var(--warn); color: var(--warn-text); }
+  #filterErrorBtn.active { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+  input[type=number] { width: 90px; font-family: var(--mono); }
+
+  /* ── 화면 배율 컨트롤(−/%/+) - 모든 페이지 공통 ── */
+  .ui-zoom { display: inline-flex; align-items: stretch; border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; height: 30px; }
+  .ui-zoom button { border: none; background: var(--input-bg); padding: 0 10px; font-size: 15px; font-weight: 700; line-height: 1; cursor: pointer; color: var(--text); border-radius: 0; }
+  .ui-zoom button:hover { background: var(--bg-alt); color: var(--accent); }
+  .ui-zoom select { border: none; border-left: 1px solid var(--panel-border); border-right: 1px solid var(--panel-border); background: var(--input-bg); font-size: 13px; font-family: var(--mono); color: var(--text); padding: 0 4px; cursor: pointer; border-radius: 0; text-align: center; }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; font-size: 13px; font-family: var(--mono);
+    border: 1px solid var(--panel-border);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .status-pill.connected .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .status-pill.error .dot { background: var(--error); box-shadow: 0 0 6px var(--error); }
+  .status-pill.connected { color: var(--accent); border-color: var(--accent-dim); }
+  .status-pill.error { color: var(--error); border-color: var(--danger-bg); }
+
+  .counters {
+    display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: var(--muted);
+  }
+  .counters span { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  /* 자릿수가 바뀔 때(1자리<->4자리 등) 옆 텍스트가 좌우로 밀리지 않도록 숫자 부분에 고정 너비를 준다 */
+  .counters b {
+    display: inline-block; min-width: 3.5ch; text-align: right;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .counters .ok { color: var(--accent); }
+  .counters .err { color: var(--error); }
+
+  .area-tabs {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+    padding: 8px 20px; border-bottom: 1px solid var(--panel-border); background: var(--panel);
+  }
+  .area-tabs button {
+    padding: 5px 12px; border-radius: 999px 999px 0 0; border-bottom: none;
+  }
+  .area-tabs button.active {
+    background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 600;
+  }
+
+  .sub-toolbar {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 8px 20px; border-bottom: 1px solid var(--panel-border); background: var(--bg-alt);
+  }
+  .sub-toolbar .group { display: flex; align-items: center; gap: 6px; }
+  .sub-toolbar label { font-size: 13px; color: var(--muted); }
+
+  #content-area {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  main {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px 20px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-title {
+    padding: 10px 14px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--panel-border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .last-update { font-family: var(--mono); font-size: 12px; }
+
+  .right-col { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+
+  /* NX 태그 화면은 좌/우 2단 그리드가 필요 없는 단일 패널이라 main의 grid를 덮어쓴다 */
+  #nxMain { display: flex; flex-direction: column; }
+  #nxMain .panel { flex: 1 1 auto; min-height: 0; }
+  #nxTagTable td { border: 1px solid var(--panel-border); padding: 4px 6px; text-align: center; }
+  #nxTagTable td input, #nxTagTable td select { width: 100%; }
+
+  .value-grid {
+    overflow-y: auto;
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 6px;
+    align-content: start;
+  }
+  .value-cell {
+    background: var(--bg-alt);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .value-cell .label { font-size: 11.5px; color: var(--muted); font-family: var(--mono); }
+  .value-cell .value { font-size: 16px; font-family: var(--mono); font-weight: 600; margin-top: 2px; }
+  .value-cell.flash { border-color: var(--accent); background: var(--flash-bg); }
+  .value-cell.edited { border-color: var(--warn); }
+  .value-cell .setval {
+    width: 100%; margin-top: 4px; padding: 2px 4px; font-size: 13px;
+  }
+
+  #bitTableWrap { overflow: auto; padding: 10px 14px; }
+  #bitTable { border-collapse: collapse; font-family: var(--mono); font-size: 13px; width: 100%; }
+  #bitTable th, #bitTable td {
+    border: 1px solid var(--panel-border); padding: 4px 6px; text-align: center; white-space: nowrap;
+  }
+  #bitTable th { color: var(--muted); font-weight: 600; background: var(--bg-alt); }
+  #bitTable td.addr-label { color: var(--muted); font-weight: 600; background: var(--bg-alt); }
+  #bitTable td.hex-col { color: var(--accent); font-weight: 600; }
+  #bitTable td.bit-cell { cursor: pointer; }
+  #bitTable td.bit-cell.on { color: var(--accent); font-weight: 700; }
+  #bitTable td.bit-cell.edited { background: var(--danger-bg); }
+
+  /* 통신 이력 - 다른 두 페이지(변수 관리 그리드/트렌드 모니터링)와 동일하게 화면 맨 아래 전체 폭을 차지 */
+  .log-panel {
+    flex: 0 0 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: row;
+    border-top: 2px solid var(--panel-border);
+    background: var(--panel);
+  }
+  .log-panel .log-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .log-panel #errorLogCol { flex: 0 0 360px; }
+  /* 통신이력 / PLC 에러로그 사이 폭 조절 핸들 */
+  #errorLogSplitter {
+    flex: 0 0 8px;
+    cursor: col-resize;
+    position: relative;
+  }
+  #errorLogSplitter::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0; left: 3px; width: 2px;
+    background: var(--panel-border); border-radius: 1px;
+  }
+  #errorLogSplitter:hover::after, #errorLogSplitter.dragging::after { background: var(--accent); }
+  /* 통신 이력 패널 높이 조절 핸들 (트렌드 페이지의 좌우 스플리터와 동일한 개념, 상하 버전) */
+  #logSplitter {
+    flex: 0 0 8px;
+    cursor: row-resize;
+    position: relative;
+  }
+  #logSplitter::after {
+    content: '';
+    position: absolute; left: 0; right: 0; top: 3px; height: 2px;
+    background: var(--panel-border); border-radius: 1px;
+  }
+  #logSplitter:hover::after, #logSplitter.dragging::after { background: var(--accent); }
+  .log-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 6px 14px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .log-entry { padding: 3px 4px; border-bottom: 1px solid var(--panel-border); white-space: pre-wrap; word-break: break-all; }
+  .log-entry .time { color: var(--muted); }
+  .log-entry.SEND .tag { color: var(--send-tag); }
+  .log-entry.RECV .tag { color: var(--accent); }
+  .log-entry.SYSTEM .tag { color: var(--muted); }
+  .log-entry.WARN .tag { color: var(--warn); }
+  .log-entry.ERROR .tag { color: var(--error); }
+  .log-entry .hex { color: var(--hex-text); display: block; margin-top: 2px; }
+  .tag { font-weight: 700; margin-right: 6px; }
+
+  .area-heading {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    padding-bottom: 2px;
+    border-bottom: 1px dashed var(--panel-border);
+  }
+
+  .write-panel { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .write-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .write-row select, .write-row input { flex: 1; min-width: 70px; }
+  .write-status { font-family: var(--mono); font-size: 12.5px; color: var(--muted); min-height: 16px; }
+  .write-status.ok { color: var(--accent); }
+  .write-status.err { color: var(--error); }
+  .warn-note { font-size: 12px; color: var(--warn); line-height: 1.5; }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--panel); border: 1px solid var(--panel-border);
+    padding: 10px 16px; border-radius: 6px; font-size: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.err { border-color: var(--error); color: var(--danger-text); }
+  .toast.ok { border-color: var(--accent); color: var(--primary-text); }
+
+  #cntLatency { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
+
+  .trend-popup {
+    position: fixed; top: 90px; right: 20px; width: 560px;
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    z-index: 2000; padding: 10px 12px;
+  }
+  .trend-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px; font-weight: 600; margin-bottom: 8px;
+    cursor: move; user-select: none;
+  }
+  .trend-header button { padding: 2px 8px; font-size: 13px; }
+  .trend-toolbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 13px; color: var(--muted); margin-bottom: 8px;
+  }
+  .trend-toolbar label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .trend-toolbar input[type=number] { width: 60px; padding: 3px 6px; font-size: 13px; }
+  #trendCanvas { width: 100%; height: 220px; display: block; background: var(--bg-alt); border-radius: 4px; }
+
+  /* 사용 방법(Operation Manual) 모달 - 3개 페이지 공통 디자인.
+     좌측 목차 + 우측 본문 2단 구조이며, 본문에는 실제 화면과 동일한 테마 변수로 그린
+     UI 목업 그림(hm-*)이 들어가 테마를 바꾸면 그림 색도 실제 화면과 똑같이 바뀐다. */
+  .help-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; }
+  .help-modal.show { display: flex; }
+  .help-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+  .help-modal-box {
+    position: relative; width: min(1080px, 94vw); height: min(860px, 90vh);
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .help-modal-header {
+    flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; border-bottom: 1px solid var(--panel-border); font-weight: 700; font-size: 15px;
+    background: var(--panel);
+  }
+  .help-modal-layout { flex: 1 1 auto; display: flex; min-height: 0; }
+  .help-modal-nav {
+    flex: 0 0 200px; overflow-y: auto; padding: 12px 10px;
+    border-right: 1px solid var(--panel-border); background: var(--bg-alt);
+  }
+  .help-modal-nav a {
+    display: block; padding: 7px 10px; margin-bottom: 2px; border-radius: 6px;
+    font-size: 13px; color: var(--muted); text-decoration: none; line-height: 1.4;
+  }
+  .help-modal-nav a:hover { background: var(--accent-dim); color: var(--primary-text); }
+  .help-modal-body {
+    flex: 1 1 auto; overflow-y: auto; scroll-behavior: smooth;
+    padding: 6px 22px 26px; font-size: 14px; line-height: 1.7; color: var(--text);
+  }
+  .help-modal-body section { scroll-margin-top: 8px; }
+  .help-modal-body h3 { margin: 24px 0 6px; font-size: 15px; color: var(--accent); }
+  .help-modal-body section:first-of-type h3 { margin-top: 14px; }
+  .help-modal-body ul { margin: 4px 0 10px 18px; padding: 0; }
+  .help-modal-body li { margin-bottom: 4px; }
+
+  /* ── 설명서용 UI 목업 그림 (hm- = help mockup) ── */
+  .hm-fig { background: var(--bg); border: 1px dashed var(--panel-border); border-radius: 8px; padding: 14px; margin: 10px 0 4px; overflow-x: auto; }
+  .hm-cap { font-size: 12px; color: var(--muted); margin: 4px 2px 10px; }
+  .hm-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 6px; }
+  .hm-bar + .hm-bar { margin-top: 8px; }
+  .hm-btn, .hm-input, .hm-select {
+    display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; font-size: 13px; white-space: nowrap;
+    background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 4px; color: var(--text);
+  }
+  .hm-input { color: var(--muted); font-family: var(--mono); }
+  .hm-btn.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
+  .hm-btn.danger { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+  .hm-btn.paused { background: var(--warn-bg); border-color: var(--warn); color: var(--warn-text); }
+  .hm-label { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .hm-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-family: var(--mono); border: 1px solid var(--panel-border); white-space: nowrap; }
+  .hm-pill .hm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .hm-pill.ok { color: var(--accent); border-color: var(--accent-dim); }
+  .hm-pill.ok .hm-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .hm-tab { padding: 4px 12px; font-size: 12.5px; background: var(--input-bg); border: 1px solid var(--panel-border); border-bottom: none; border-radius: 999px 999px 0 0; color: var(--muted); }
+  .hm-tab.active { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 600; }
+  .hm-anno { position: relative; display: inline-flex; }
+  .hm-num {
+    position: absolute; top: -10px; right: -10px; z-index: 1; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--accent); color: var(--panel); font-size: 11.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--panel);
+  }
+  .hm-steps { list-style: none; margin: 10px 0 6px; padding: 0; counter-reset: hmstep; }
+  .hm-steps li { counter-increment: hmstep; position: relative; padding-left: 30px; margin-bottom: 7px; }
+  .hm-steps li::before {
+    content: counter(hmstep); position: absolute; left: 0; top: 3px; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--accent); color: var(--panel); font-size: 11.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hm-flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 4px 0; margin: 10px 0; }
+  .hm-flow .fstep { display: flex; flex-direction: column; justify-content: center; gap: 2px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 14px; font-size: 13px; text-align: center; }
+  .hm-flow .fstep small { color: var(--muted); font-size: 11.5px; }
+  .hm-flow .farr { align-self: center; color: var(--accent); font-weight: 700; padding: 0 10px; font-size: 18px; }
+  .hm-note { display: flex; gap: 8px; align-items: flex-start; background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 6px; padding: 8px 12px; font-size: 13px; color: var(--warn-text); margin: 10px 0; line-height: 1.6; }
+  .hm-note.tip { background: var(--flash-bg); border-color: var(--accent); color: var(--text); }
+  .hm-cells { display: grid; grid-template-columns: repeat(4, minmax(92px, 1fr)); gap: 6px; max-width: 470px; }
+  .hm-cell { background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 4px; padding: 5px 8px; }
+  .hm-cell .lb { font-size: 10.5px; color: var(--muted); font-family: var(--mono); }
+  .hm-cell .vl { font-size: 14px; font-family: var(--mono); font-weight: 600; }
+  .hm-cell.flash { border-color: var(--accent); background: var(--flash-bg); }
+  .hm-cell.edited { border-color: var(--warn); }
+  .hm-cell .hm-set { margin-top: 4px; padding: 1px 4px; font-size: 11px; background: var(--input-bg); border: 1px solid var(--warn); border-radius: 3px; color: var(--text); font-family: var(--mono); }
+  .hm-table { border-collapse: collapse; font-size: 12px; }
+  .hm-table th, .hm-table td { border: 1px solid var(--panel-border); padding: 4px 9px; white-space: nowrap; }
+  .hm-table th { background: var(--bg-alt); color: var(--muted); font-weight: 600; }
+  .hm-chip { display: inline-block; padding: 2px 9px; border: 1px solid var(--panel-border); border-radius: 999px; background: var(--input-bg); font-size: 12px; white-space: nowrap; }
+  .hm-log { font-family: var(--mono); font-size: 12px; line-height: 1.9; }
+  .hm-log .tag { display: inline-block; min-width: 46px; text-align: center; border-radius: 3px; padding: 0 5px; font-weight: 700; margin-right: 8px; font-size: 11px; }
+  .hm-log .tag.send { background: var(--send-tag); color: #fff; }
+  .hm-log .tag.recv { background: var(--accent); color: var(--panel); }
+  .hm-log .tag.err { background: var(--error); color: #fff; }
+  .hm-log .hex { color: var(--hex-text); }
+  .hm-zones { display: flex; flex-direction: column; gap: 4px; min-width: 430px; }
+  .hm-zone { border: 1px solid var(--panel-border); border-radius: 6px; padding: 7px 12px; font-size: 12.5px; background: var(--panel); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .hm-zone b { white-space: nowrap; }
+  .hm-zone .zdesc { color: var(--muted); font-size: 12px; }
+  .hm-zsplit { display: flex; gap: 4px; }
+  .hm-zsplit .hm-zone { flex: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>메모리 모니터링 <span id="cpuInfo">— 연결 전</span></h1>
+  <span id="clockDisplay" class="clock-display"></span>
+  <div style="display:flex;align-items:center;gap:14px;margin-left:auto;">
+    <button id="helpBtn" title="사용 방법">❓ 사용법</button>
+    <div class="ui-zoom" title="화면 배율 조절 (Ctrl+휠, Ctrl+0: 100%로 초기화)">
+      <button type="button" id="uiZoomOut" aria-label="축소">−</button>
+      <select id="uiZoomSelect" aria-label="배율 선택">
+        <option value="40">40%</option>
+        <option value="50">50%</option>
+        <option value="67">67%</option>
+        <option value="75">75%</option>
+        <option value="80">80%</option>
+        <option value="90">90%</option>
+        <option value="100" selected>100%</option>
+        <option value="110">110%</option>
+        <option value="125">125%</option>
+        <option value="150">150%</option>
+        <option value="175">175%</option>
+        <option value="200">200%</option>
+      </select>
+      <button type="button" id="uiZoomIn" aria-label="확대">+</button>
+    </div>
+    <div class="page-tabs">
+      <a class="page-tab active" href="/index.html">PLC 모니터링</a>
+      <a class="page-tab" href="/grid/">📊 Recipes &amp; Snapshots</a>
+      <a class="page-tab" href="/monitoring.html">🕒 트렌드 모니터링</a>
+      <a class="page-tab" href="/gms-select.html">⛽ GMS</a>
+      <a class="page-tab" href="/settings.html">⚙ 설정</a>
+    </div>
+  </div>
+</header>
+
+<div id="helpModal" class="help-modal">
+  <div class="help-modal-backdrop"></div>
+  <div class="help-modal-box">
+    <div class="help-modal-header">
+      <span>📖 PLC 모니터링 - 사용 방법</span>
+      <button id="helpCloseBtn">✕</button>
+    </div>
+    <div class="help-modal-layout">
+      <nav class="help-modal-nav">
+        <a href="#hm-overview">🗺 화면 한눈에 보기</a>
+        <a href="#hm-connect">1. 연결하기</a>
+        <a href="#hm-view">2. 메모리 값 보기</a>
+        <a href="#hm-write">3. 값 쓰기</a>
+        <a href="#hm-export">4. Excel 내보내기</a>
+        <a href="#hm-log">5. 에러 로그 · 통신 이력</a>
+        <a href="#hm-latency">6. 지연시간 트렌드</a>
+        <a href="#hm-nx">7. NX 시리즈</a>
+      </nav>
+      <div class="help-modal-body">
+
+      <section id="hm-overview">
+      <h3>🗺 화면 한눈에 보기</h3>
+      <p>이 화면은 PLC 메모리(D/H/W/CIO/EM)를 영역째로 훑어보는 "메모리 탐색기"입니다. 위에서부터 아래 순서로 배치되어 있습니다.</p>
+      <div class="hm-fig">
+        <div class="hm-zones">
+          <div class="hm-zone"><b>① 헤더</b><span class="zdesc">❓ 사용법 · 테마 선택 · 다른 화면(그리드/트렌드)으로 이동하는 탭</span></div>
+          <div class="hm-zone"><b>② 연결 툴바</b><span class="zdesc">PLC 시리즈/IP/방식 선택 → 연결 · 연결 상태 · 통신 카운터(SEND/RECV/에러/지연)</span></div>
+          <div class="hm-zone"><b>③ 폴링 툴바</b><span class="zdesc">폴링주기(ms) · ▶ 시작 / ⏸ 일시정지 / ⏹ 정지 — 연결만으로는 읽기 시작 안 함</span></div>
+          <div class="hm-zone"><b>④ 메모리 영역 탭</b><span class="zdesc">D · H · W · CIO · E0 ~ En 중 보고 싶은 영역 선택 (영역마다 설정을 독립적으로 기억)</span></div>
+          <div class="hm-zone"><b>⑤ 조회 설정</b><span class="zdesc">시작 주소 · 페이지 크기 · 데이터 타입 · ✅ 값 적용(쓰기) · 전체 채우기 · 📊 내보내기</span></div>
+          <div class="hm-zsplit">
+            <div class="hm-zone" style="flex:2;"><b>⑥ 실시간 값 그리드</b><span class="zdesc">▶시작을 눌러야 값이 채워짐. 이후 주기마다 갱신 (값이 바뀌면 초록색 반짝임)</span></div>
+            <div class="hm-zone"><b>⑦ 쓰기 테스트 · PLC 에러 로그</b><span class="zdesc">우측 패널</span></div>
+          </div>
+          <div class="hm-zone"><b>⑧ 통신 이력</b><span class="zdesc">FINS 프로토콜 SEND/RECV 원문(hex) 확인</span></div>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 화면 전체 배치. 아래 각 절에서 번호 순서대로 자세히 설명합니다.</div>
+      </section>
+
+      <section id="hm-connect">
+      <h3>1. 연결하기</h3>
+      <div class="hm-fig">
+        <div class="hm-bar">
+          <span class="hm-anno"><span class="hm-select">CJ 시리즈 ▾</span><span class="hm-num">1</span></span>
+          <span class="hm-anno"><span class="hm-input">PLC IP (예: 192.168.0.80)</span><span class="hm-num">2</span></span>
+          <span class="hm-anno"><span class="hm-input">9600</span><span class="hm-num">3</span></span>
+          <span class="hm-anno"><span class="hm-select">USB ▾</span><span class="hm-num">4</span></span>
+          <span class="hm-anno"><span class="hm-btn primary">연결</span><span class="hm-num">5</span></span>
+          <span class="hm-btn danger">연결 해제</span>
+          <span class="hm-anno"><span class="hm-pill ok"><span class="hm-dot"></span>연결됨</span><span class="hm-num">6</span></span>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 화면 상단의 연결 툴바. 번호 순서대로 설정하고 [연결]을 누릅니다.</div>
+      <ol class="hm-steps">
+        <li><b>PLC 시리즈</b> 선택 — 보통은 <b>CJ 시리즈</b>를 그대로 둡니다. (NX 시리즈는 <a href="#hm-nx">7절</a> 참고)</li>
+        <li><b>PLC IP 주소</b> 입력 — UDP/TCP로 연결할 때만 필요합니다. USB는 비워둬도 됩니다.</li>
+        <li><b>포트</b> — 기본값 9600을 그대로 두면 됩니다.</li>
+        <li><b>연결 방식</b> 선택 — 아래 표를 참고하세요.</li>
+        <li><b>[연결]</b> 클릭 — 성공하면 헤더에 CPU 모델명(예: CJ2H-CPU65-EIP)이 표시됩니다.</li>
+        <li>상태 표시가 <b>초록색 "연결됨"</b>으로 바뀌면 완료. 끝낼 때는 [연결 해제]를 누릅니다.</li>
+      </ol>
+      <div class="hm-fig">
+        <table class="hm-table">
+          <tr><th>방식</th><th>입력할 것</th><th>이런 경우에 사용</th></tr>
+          <tr><td><b>USB</b></td><td>없음 (케이블만 연결)</td><td>PC와 PLC를 USB 케이블로 직접 연결. 최초 1회 WinUSB 드라이버 설치 필요</td></tr>
+          <tr><td><b>UDP</b></td><td>IP 주소, 포트(9600)</td><td>같은 공장 네트워크(LAN)에서 가장 간단하고 빠른 방식</td></tr>
+          <tr><td><b>TCP</b></td><td>IP 주소, 포트(9600)</td><td>공유기 경유 등 안정적인 연결 유지가 필요할 때</td></tr>
+        </table>
+      </div>
+      <div class="hm-note">⚠️ <span>세 화면(PLC 모니터링/변수 관리 그리드/트렌드 모니터링)은 각자 독립된 연결을 가지므로 화면을 옮겨도 통신이 계속됩니다. 단 <b>USB만은 한 번에 한 화면</b>만 쓸 수 있어서, 다른 화면에서 USB로 연결하면 이 화면의 USB 연결이 자동으로 끊깁니다. (UDP/TCP는 세 화면 동시 연결 가능)</span></div>
+      </section>
+
+      <section id="hm-view">
+      <h3>2. 메모리 값 보기</h3>
+      <div class="hm-fig">
+        <div class="hm-bar" style="margin-bottom:8px;">
+          <span class="hm-label">폴링주기</span>
+          <span class="hm-anno"><span class="hm-input">1000</span><span class="hm-num">1</span></span>
+          <span class="hm-label">ms</span>
+          <span class="hm-anno"><span class="hm-btn primary">▶ 시작</span><span class="hm-num">2</span></span>
+          <span class="hm-btn paused">⏸ 일시정지</span>
+          <span class="hm-btn danger">⏹ 정지</span>
+        </div>
+        <div style="display:flex;gap:4px;align-items:flex-end;margin-bottom:8px;">
+          <span class="hm-anno"><span class="hm-tab active">D</span><span class="hm-num">3</span></span>
+          <span class="hm-tab">H</span><span class="hm-tab">W</span><span class="hm-tab">CIO</span><span class="hm-tab">E0</span><span class="hm-tab">E1</span><span class="hm-tab">…</span>
+        </div>
+        <div class="hm-bar">
+          <span class="hm-label">시작 주소</span>
+          <span class="hm-anno"><span class="hm-input">0</span><span class="hm-num">4</span></span>
+          <span class="hm-btn">◀</span><span class="hm-btn">▶</span>
+          <span class="hm-label">페이지 크기</span><span class="hm-input">128</span>
+          <span class="hm-label">데이터 타입</span>
+          <span class="hm-select">WORD ▾</span>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="hm-cells">
+            <div class="hm-cell"><div class="lb">D0</div><div class="vl">120</div></div>
+            <div class="hm-cell flash"><div class="lb">D1</div><div class="vl">4351</div></div>
+            <div class="hm-cell"><div class="lb">D2</div><div class="vl">0</div></div>
+            <div class="hm-cell"><div class="lb">D3</div><div class="vl">77</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 폴링 툴바 → 영역 탭 → 조회 설정 → 실시간 값 그리드. 방금 값이 바뀐 칸은 초록색으로 반짝입니다(D1).</div>
+      <ol class="hm-steps">
+        <li><b>폴링주기</b>(ms)를 정하고 <b>[▶ 시작]</b>을 눌러야 값 읽기가 시작됩니다. 연결만 해서는 값이 자동으로 채워지지 않습니다. [⏸ 일시정지]로 잠시 멈추고 [▶ 시작]으로 이어서 재개하거나, [⏹ 정지]로 완전히 멈출 수 있습니다.</li>
+        <li>보고 싶은 <b>메모리 영역 탭</b>을 클릭합니다. EM 뱅크(E0~En) 개수는 연결된 CPU 모델에 맞춰 자동으로 조정됩니다.</li>
+        <li><b>시작 주소</b>를 입력하거나 ◀ ▶ 버튼으로 페이지를 넘깁니다.</li>
+        <li><b>데이터 타입</b>을 고릅니다 — WORD(기본), INT, DINT, REAL, STRING 등. <b>BOOL</b>을 고르면 각 워드가 16개 비트 표로 펼쳐져 비트별 ON/OFF가 보입니다.</li>
+      </ol>
+      <div class="hm-note tip">💡 <span>시작 주소·페이지 크기·데이터 타입은 <b>영역별로 따로 기억</b>됩니다. D 영역에서 설정을 바꾸고 W 영역으로 갔다가 다시 D로 돌아와도, D에서 마지막에 쓰던 설정 그대로 복원됩니다(다른 화면에 갔다 와도 유지).</span></div>
+      </section>
+
+      <section id="hm-write">
+      <h3>3. 값 쓰기</h3>
+      <div class="hm-fig">
+        <div class="hm-flow">
+          <div class="fstep"><div class="hm-cell edited" style="min-width:86px;"><div class="lb">D1</div><div class="vl">4351</div><div class="hm-set">500</div></div><small>① 칸에 새 값 입력<br/>(테두리가 주황색으로 변함)</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><span class="hm-btn primary">✅ 값 적용(쓰기)</span><small>② 버튼 클릭</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><b>PLC에 반영</b><small>③ 다음 폴링부터 새 값 표시</small></div>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 쓰기 순서. 여러 칸을 한꺼번에 수정한 뒤 한 번에 적용할 수도 있습니다.</div>
+      <ul>
+        <li>BOOL 표시 모드에서는 비트 칸을 클릭해서 ON/OFF를 바꾼 뒤 같은 방법으로 적용합니다. 해당 비트만 바뀌고 같은 워드의 다른 비트는 보존됩니다.</li>
+        <li>우측 "쓰기 테스트" 패널에서는 영역/주소/값을 직접 지정해서 한 워드씩 쓸 수도 있습니다.</li>
+        <li><b>[전체 채우기]</b> — 왼쪽 입력칸에 값(예: 0)을 넣고 누르면, 현재 화면에 보이는 <b>모든 칸의 설정값이 그 값으로 한꺼번에 채워집니다</b>. 이때는 아직 PLC에 쓰지 않은 상태이니, 채워진 값을 확인한 뒤 <b>[✅ 값 적용(쓰기)]을 눌러야 실제로 반영</b>됩니다.</li>
+      </ul>
+      <div class="hm-note">⚠️ <span>실제 설비가 움직이는 PLC에 쓰기 전에, 영향 없는 <b>W 영역</b> 주소로 먼저 테스트하는 것을 권장합니다. [전체 채우기]는 화면에 보이는 범위(페이지 크기) 전체를 한 번에 바꾸는 기능이라 더욱 주의하세요.</span></div>
+      </section>
+
+      <section id="hm-export">
+      <h3>4. Excel 내보내기</h3>
+      <div class="hm-fig">
+        <div class="hm-flow">
+          <div class="fstep"><span class="hm-btn">📊 내보내기</span><small>클릭</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><b>MEM_DM_1720...xlsx</b><small>지금 화면에 보이는 주소·값이 저장됨</small></div>
+        </div>
+      </div>
+      <ul>
+        <li>파일명은 <code>MEM_영역_타임스탬프.xlsx</code> 형식입니다(D 영역은 DM으로 표기).</li>
+        <li>Chrome/Edge에서는 저장 위치를 직접 고르는 창이 뜨고, 그 외 브라우저는 다운로드 폴더로 저장됩니다.</li>
+        <li>연결~연결 해제 구간 동안의 값 변화는 서버가 자동으로 CSV 파일(<code>logs/csv/</code>)에도 기록합니다.</li>
+      </ul>
+      </section>
+
+      <section id="hm-log">
+      <h3>5. 에러 로그 · 통신 이력</h3>
+      <div class="hm-fig">
+        <div class="hm-log">
+          <div><span class="tag send">SEND</span>읽기 요청 (128개 항목, SID=42) <span class="hex">80 00 02 00 50 00 …</span></div>
+          <div><span class="tag recv">RECV</span>응답 수신 (SID=42)</div>
+          <div><span class="tag err">ERROR</span>[D] TCP 응답 타임아웃 (SID=43)</div>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 화면 하단 "통신 이력"의 예 — 파란색 SEND(보냄) / 초록색 RECV(받음) / 빨간색 ERROR(오류).</div>
+      <ul>
+        <li><b>통신 이력</b>(하단 좌측): PLC와 실제로 주고받은 FINS 프로토콜 내용을 원문(hex)까지 보여줍니다. [에러만 보기]로 오류만 필터링하고, [초기화]로 지울 수 있습니다.</li>
+        <li><b>PLC 에러 로그</b>(하단 우측): [조회] 버튼을 누르면 PLC CPU 내부에 저장된 에러 이력(발생 시각·에러 코드·설명)을 읽어옵니다. 통신 오류가 아니라 <b>PLC 자체의 이상 이력</b>을 확인하는 기능입니다.</li>
+      </ul>
+      </section>
+
+      <section id="hm-latency">
+      <h3>6. 지연시간 트렌드</h3>
+      <div class="hm-fig">
+        <div class="hm-bar">
+          <span class="hm-label">SEND: <b>1204</b></span>
+          <span class="hm-label">RECV 성공: <b style="color:var(--accent);">1198</b></span>
+          <span class="hm-label">에러: <b style="color:var(--error);">6</b></span>
+          <span class="hm-anno"><span class="hm-chip">지연: <b>12ms</b> ← 클릭</span><span class="hm-num">1</span></span>
+        </div>
+      </div>
+      <ul>
+        <li>상단 카운터의 <b>"지연" 숫자를 클릭</b>하면 최근 응답 지연시간(왕복 시간)을 선 그래프로 보여주는 팝업이 뜹니다. 통신이 느려지는 순간을 눈으로 확인할 때 사용합니다.</li>
+        <li>팝업 제목줄을 드래그하면 위치를 옮길 수 있고, ▶ 시작/⏸ 일시정지/⏹ 정지로 기록을 제어합니다.</li>
+      </ul>
+      </section>
+
+      <section id="hm-nx">
+      <h3>7. NX 시리즈 (태그 기반 접근)</h3>
+      <div class="hm-fig">
+        <div class="hm-flow">
+          <div class="fstep"><span class="hm-select">NX 시리즈 ▾</span><small>① 시리즈 변경</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><span class="hm-btn">+ 태그 추가</span><small>② 태그 이름·타입 등록</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><span class="hm-btn primary">전체 조회</span> <span class="hm-btn">자동 조회 시작</span><small>③ 값 읽기</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><span class="hm-btn">쓰기</span><small>④ 행별로 값 쓰기</small></div>
+        </div>
+      </div>
+      <ul>
+        <li>NX/NJ 시리즈는 D100 같은 주소 대신 <b>프로그램에 정의한 변수 이름(태그)</b>으로 접근합니다. 시리즈를 "NX 시리즈"로 바꾸면 화면이 태그 목록 화면으로 전환됩니다.</li>
+        <li>태그 이름(예: <code>MyTag</code>, <code>MyStruct.Member</code>)과 CIP 데이터 타입을 입력해 목록에 추가한 뒤 값을 읽고 씁니다. [💾 목록 저장]을 누르면 다음 접속 때 자동으로 불러옵니다.</li>
+      </ul>
+      <div class="hm-note">⚠️ <span>NX(EtherNet/IP-CIP) 통신은 아직 실제 하드웨어로 검증되지 않았습니다. 영향 없는 태그로 먼저 테스트해주세요.</span></div>
+      </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="conn-toolbar">
+  <select id="plcSeriesSelect" title="PLC 시리즈 선택">
+    <option value="CJ" selected>CJ 시리즈</option>
+    <option value="NX">NX 시리즈</option>
+  </select>
+  <input type="text" id="connHost" placeholder="PLC IP (예: 192.168.0.80)" style="width:170px;" />
+  <input type="number" id="connPort" placeholder="Port" min="1" max="65535" value="9600" style="width:80px;" />
+  <select id="connType">
+    <option value="USB" selected>USB</option>
+    <option value="UDP">UDP</option>
+    <option value="TCP">TCP</option>
+  </select>
+  <button id="connectBtn" class="primary">연결</button>
+  <button id="disconnectBtn" class="danger" disabled>연결 해제</button>
+  <span id="statusPill" class="status-pill"><span class="dot"></span><span id="statusText">연결 안 됨</span></span>
+  <div class="sep"></div>
+  <div class="counters">
+    <span>SEND: <b id="cntSend">0</b></span>
+    <span>RECV 성공: <b class="ok" id="cntRecv">0</b></span>
+    <span>에러: <b class="err" id="cntErr">0</b></span>
+    <span>지연: <b id="cntLatency">—</b></span>
+  </div>
+  <button id="resetCountersBtn">카운터 초기화</button>
+</div>
+
+<div class="conn-toolbar" id="pollToolbar">
+  <label style="font-size:13px;color:var(--muted);">폴링주기</label>
+  <input type="number" id="intervalInput" min="1" max="3600000" value="1000" style="width:90px;" />
+  <span style="font-size:13px;color:var(--muted);">ms</span>
+  <div class="sep"></div>
+  <button id="pollStartBtn" class="primary">▶ 시작</button>
+  <button id="pollPauseBtn">⏸ 일시정지</button>
+  <button id="pollStopBtn" class="danger">⏹ 정지</button>
+  <span id="pollStatusText" style="font-size:13px;color:var(--muted);">정지됨</span>
+</div>
+
+<div id="cjToolbars">
+  <div class="area-tabs" id="areaTabs"></div>
+
+  <div class="sub-toolbar">
+    <div class="group">
+      <label>시작 주소</label>
+      <input type="number" id="startAddrInput" min="0" value="0" style="width:100px;" />
+      <button id="prevPageBtn" title="이전 페이지">◀</button>
+      <button id="nextPageBtn" title="다음 페이지">▶</button>
+    </div>
+    <div class="group">
+      <label>페이지 크기</label>
+      <input type="number" id="pageSizeInput" min="1" max="512" value="128" style="width:70px;" />
+    </div>
+    <div class="group">
+      <label>데이터 타입</label>
+      <select id="dataTypeSelect"></select>
+    </div>
+    <div class="group" id="stringLengthGroup" style="display:none;">
+      <label>길이(워드)</label>
+      <input type="number" id="stringLengthInput" min="1" max="64" value="8" style="width:60px;" />
+    </div>
+    <div class="group">
+      <button id="applyMemoryBtn" class="primary">✅ 값 적용(쓰기)</button>
+    </div>
+    <div class="group">
+      <label>전체 채우기</label>
+      <input type="text" id="fillAllInput" placeholder="0" style="width:80px;" title="설정값 열을 이 값으로 전부 채웁니다(쓰기는 별도로 [값 적용(쓰기)]을 눌러야 실행됨)" />
+      <button id="fillAllBtn" title="현재 보이는 모든 칸의 설정값을 왼쪽 입력값으로 채웁니다. 실제 쓰기는 [값 적용(쓰기)]을 눌러야 합니다.">전체 채우기</button>
+    </div>
+    <div class="group">
+      <button id="exportMemoryBtn">📊 내보내기</button>
+    </div>
+  </div>
+</div>
+
+<div class="sub-toolbar" id="nxToolbar" style="display:none;">
+  <div class="group">
+    <label>태그 이름</label>
+    <input type="text" id="nxTagNameInput" placeholder="예: MyTag 또는 MyStruct.Member" style="width:220px;" />
+  </div>
+  <div class="group">
+    <label>타입</label>
+    <select id="nxTagTypeSelect"></select>
+  </div>
+  <div class="group">
+    <button id="nxTagAddBtn" class="primary">+ 태그 추가</button>
+  </div>
+  <div class="group">
+    <label>자동 조회 주기</label>
+    <input type="number" id="nxPollIntervalInput" min="200" max="60000" value="1000" style="width:80px;" />
+    <span style="font-size:13px;color:var(--muted)">ms</span>
+    <button id="nxAutoPollBtn">▶ 자동 조회 시작</button>
+  </div>
+  <div class="group">
+    <button id="nxTagsSaveBtn">💾 목록 저장</button>
+  </div>
+</div>
+
+<div id="content-area">
+  <main>
+    <section class="panel">
+      <div class="panel-title">
+        <span>실시간 값 <span id="viewSummary" style="color:var(--muted);font-weight:400;"></span></span>
+        <span class="last-update" id="lastUpdate">—</span>
+      </div>
+      <div class="value-grid" id="valueGrid"></div>
+      <div id="bitTableWrap" style="display:none;"><table id="bitTable"></table></div>
+    </section>
+  </main>
+
+  <main id="nxMain" style="display:none;">
+    <section class="panel">
+      <div class="panel-title">
+        <span>NX 태그 값</span>
+        <button id="nxReadAllBtn" class="primary" style="font-size:12px;padding:3px 8px;">전체 조회</button>
+      </div>
+      <div id="nxTagTableWrap" style="overflow:auto;padding:10px 14px;">
+        <table id="nxTagTable" style="border-collapse:collapse;font-family:var(--mono);font-size:13px;width:100%;">
+          <thead>
+            <tr>
+              <th style="border:1px solid var(--panel-border);padding:5px 8px;background:var(--bg-alt);color:var(--muted);">태그 이름</th>
+              <th style="border:1px solid var(--panel-border);padding:5px 8px;background:var(--bg-alt);color:var(--muted);">타입</th>
+              <th style="border:1px solid var(--panel-border);padding:5px 8px;background:var(--bg-alt);color:var(--muted);">현재값</th>
+              <th style="border:1px solid var(--panel-border);padding:5px 8px;background:var(--bg-alt);color:var(--muted);">쓸 값</th>
+              <th style="border:1px solid var(--panel-border);padding:5px 8px;background:var(--bg-alt);color:var(--muted);"></th>
+            </tr>
+          </thead>
+          <tbody id="nxTagTableBody"></tbody>
+        </table>
+      </div>
+      <div class="warn-note" style="padding:0 14px 10px;">⚠️ NX(EtherNet/IP-CIP) 통신은 아직 실제 하드웨어로 검증되지 않았습니다. 영향 없는 태그로 먼저 읽기 테스트를 해보세요.</div>
+    </section>
+  </main>
+
+  <div id="logSplitter" title="드래그해서 통신 이력 높이 조절"></div>
+  <div class="log-panel">
+    <div class="log-col">
+      <div class="panel-title">
+        <span>통신 이력</span>
+        <div style="display:flex;gap:6px;">
+          <button id="filterErrorBtn" style="font-size:12px;padding:3px 8px;">🔴 에러만 보기</button>
+          <button id="clearLogBtn" style="font-size:12px;padding:3px 8px;">초기화</button>
+        </div>
+      </div>
+      <div class="log-list" id="logList"></div>
+    </div>
+    <div id="errorLogSplitter" title="드래그해서 PLC 에러 로그 폭 조절"></div>
+    <div class="log-col" id="errorLogCol">
+      <div class="panel-title">
+        <span>PLC 에러 로그</span>
+        <button id="errorLogBtn" style="font-size:12px;padding:3px 8px;">조회</button>
+      </div>
+      <div class="write-panel" style="flex: 1 1 auto; min-height: 0;">
+        <div class="write-status" id="errorLogSummary">연결 후 "조회" 버튼을 눌러주세요.</div>
+        <div id="errorLogList" style="font-family:var(--mono);font-size:12.5px;flex:1 1 auto;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="trendPopup" class="trend-popup" style="display:none;">
+  <div class="trend-header">
+    <span>📈 지연시간 트렌드</span>
+    <button id="trendCloseBtn" title="닫기">✕</button>
+  </div>
+  <div class="trend-toolbar">
+    <button id="trendStartBtn" class="primary">▶ 시작</button>
+    <button id="trendPauseBtn">⏸ 일시정지</button>
+    <button id="trendStopBtn" class="danger">⏹ 정지</button>
+    <div class="sep"></div>
+    <label><input type="checkbox" id="trendYAutoChk" checked /> Y축 자동</label>
+    <label>Y min <input type="number" id="trendYMinInput" value="0" disabled /></label>
+    <label>Y max <input type="number" id="trendYMaxInput" value="100" disabled /></label>
+    <label>구간(초) <input type="number" id="trendWindowInput" value="60" min="5" max="600" /></label>
+  </div>
+  <canvas id="trendCanvas" width="536" height="220"></canvas>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+<script src="appSettings.js"></script>
+<script src="plcInfo.js"></script>
+</body>
+</html>

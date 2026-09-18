@@ -1,0 +1,16 @@
+﻿# 1P 구간 - 1-2차측 Vent Mode v1 (Main: OneP)
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","3-1","1","1","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","[ 1-2차측 Vent Mode ]","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","3-2","2","3","auto","PNV:O","[ 1-2차측 Vent 진행 ]","1-2차측 Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 23의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","3-3","2","5","auto","LPV_{side}:O","","","LPT_{side}  & MPT_{side} <= & <= 진공하한치_{side} & 진공하한치_{side}",""
+"4","3-4","2","7","auto","HPI_{side}:O","","","HPT_{side} <= 진공하한치_{side}",""
+"5","3-5","2","9","auto","HPV_{side}:O","","","",""
+"6","3-6","2","11","auto","PGI_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"7","3-7","2","13","auto","PGII_{side}:O","","","VPT & LPT_{side} & HPT_{side} & NPT_{side} & MPT_{side} <= & <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","예시 - MPT는 아직 설비에 없는 센서라 ""?""로 옵션 처리(값이 없으면 이 항목만 건너뛰고 나머지 4개는 그대로 확인)."
+"8","3-8","2","15","auto","PGII_{side}:C","","","",""
+"9","3-9","2","17","auto","PGI_{side}:C","","","",""
+"10","3-10","2","19","auto","HPV_{side}:C","","","",""
+"11","3-11","2","21","auto","HPI_{side}:C","","","",""
+"12","3-12","2","23","auto","LPV_{side}:C","","","",""
+"13","3-13","2","25","auto","PNV:C","","","",""
+"38","3-14","1","26","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","[ 1-2차측 Vent Sequence Complet ]","1-2차측 Vent가 완료되었습니다.","",""

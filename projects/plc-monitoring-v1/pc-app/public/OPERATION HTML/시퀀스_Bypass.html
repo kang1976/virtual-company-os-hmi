@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>배관 By-pass 체크 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - Status "Bypass"(배관 By-pass
+     체크). 3P 배관청소 다음 가압시험(+L)과 동일한 서브시퀀스 가압/감압 화면 디자인 구조.
+     서브시퀀스 엑셀 엔진(gms-sub-sequence-runner.js, ns='bypass')으로 실행.
+     완료되면 다음 Status(+L)로 넘어간다. 스타일은 ../gms.css를 그대로 참조.
+     gms.js가 fetch해서 id="progressSequenceBypassBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressSequenceBypassBody">
+    <div class="step-badges-lg">
+      <span class="step-badge-lg done">3P</span>
+      <span class="step-badge-lg blinking">+L</span>
+      <span class="step-badge-lg" data-vt-badge>-VT</span>
+      <span class="step-badge-lg">4P</span>
+      <span class="step-badge-lg">PC</span>
+    </div>
+
+    <div id="sequenceBypassIdle">
+      <div class="progress-menu-desc">배관 By-pass 체크 구간을 준비하는 중입니다...</div>
+      <div class="sub-seq-last-alarm" id="sequenceBypassLastAlarm"></div>
+      <div class="purge-count-panel" id="sequenceBypassIdleCycleInfo" style="display:none;">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정시간(분) :</span>
+          <span class="purge-count-box">[ <span id="sequenceBypassIdleCycleTarget" class="purge-count-value">-</span> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행시간(분) :</span>
+          <span class="purge-count-box">[ <span id="sequenceBypassIdleCycleCurrent" class="purge-count-value">-</span> ]</span>
+        </div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="sequenceBypassExecuteBtn" style="margin:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassIdleCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassIdleTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="sequenceBypassIdleExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassIdleExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="sequenceBypassIdleExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="sequenceBypassPanel" style="display:none;">
+      <div class="sub-seq-step-label" id="sequenceBypassStepLabel">Main 1 - Sub 1</div>
+      <div class="sub-seq-operation" id="sequenceBypassOperation">-</div>
+      <div class="sub-seq-message" id="sequenceBypassMessage">-</div>
+      <div class="sub-seq-valve-diff" id="sequenceBypassValveDiff"></div>
+      <div class="sub-seq-timer" id="sequenceBypassTimer">-</div>
+      <div class="sub-seq-acc-time" id="sequenceBypassAccTime">누적 경과시간: 0초</div>
+      <div class="sub-seq-alarm-banner" id="sequenceBypassAlarmBanner" style="display:none;">
+        <div class="sub-seq-last-alarm" id="sequenceBypassPanelAlarmMsg"></div>
+      </div>
+      <div class="progress-btn-group">
+        <!-- 초기값/현재값(HPT_{side})은 안정화 대기 Step에 최초 도달했을 때부터 표시된다
+             (가압시험 화면과 동일한 구성). -->
+        <div class="purge-count-panel" id="sequenceBypassCycleInfo" style="display:none;">
+          <div class="purge-count-row">
+            <span class="purge-count-label" id="sequenceBypassInitialLabel">초기값(NPT) :</span>
+            <span class="purge-count-box">[ <span id="sequenceBypassCaptureInitial" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label" id="sequenceBypassCurrentLabel">현재값(NPT) :</span>
+            <span class="purge-count-box">[ <span id="sequenceBypassCaptureCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">압력변동기준 :</span>
+            <span class="purge-count-box">[ <span id="sequenceBypassCaptureLimit" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정시간(분) :</span>
+            <span class="purge-count-box">[ <span id="sequenceBypassCycleTarget" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행시간(분) :</span>
+            <span class="purge-count-box">[ <span id="sequenceBypassCycleCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+        </div>
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="sequenceBypassAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassPauseBtn" style="margin:0;">일시정지</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassResetBtn" style="margin:0;">초기화</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="sequenceBypassExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="sequenceBypassExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="sequenceBypassExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+  </div>
+</body>
+</html>

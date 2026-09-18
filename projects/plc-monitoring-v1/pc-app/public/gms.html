@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GMS 모니터링</title>
+<script>
+  // 저장된 테마를 먼저 적용(FOUC 방지). 사용자 지정 테마도 복원. (다른 페이지와 동일)
+  (function () {
+    try {
+      if (localStorage.getItem('plcThemeMode') === 'custom') {
+        var c = JSON.parse(localStorage.getItem('plcCustomTheme') || '{}');
+        document.documentElement.dataset.theme = c.fallback === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-custom-theme', '1');
+        var vars = c.vars || {};
+        var css = ':root[data-custom-theme]{' + Object.keys(vars).map(function (k) { return '--' + k + ':' + vars[k]; }).join(';') + '}';
+        var el = document.createElement('style'); el.id = '__customTheme'; el.textContent = css;
+        document.documentElement.appendChild(el);
+      } else {
+        document.documentElement.dataset.theme = localStorage.getItem('plcTheme') || 'light';
+      }
+    } catch (e) { document.documentElement.dataset.theme = 'light'; }
+  })();
+</script>
+<script>
+  // 화면 전체 확대/축소 (Ctrl+휠, 헤더의 −/%/+ 컨트롤) - 다른 페이지와 동일한 공용 패턴.
+  (function () {
+    var KEY = 'plcUiZoom';
+    var MIN = 0.4, MAX = 2.0, STEP = 1.1;
+    var PRESETS = [40, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200];
+    function clamp(z) { return Math.min(MAX, Math.max(MIN, z)); }
+    function current() { return clamp(parseFloat(localStorage.getItem(KEY)) || 1); }
+    function syncControl(z) {
+      var select = document.getElementById('uiZoomSelect');
+      if (!select) return;
+      var pct = Math.round(z * 100);
+      var opt = select.querySelector('option[value="' + pct + '"]');
+      if (!opt) {
+        opt = document.createElement('option');
+        opt.value = String(pct);
+        opt.textContent = pct + '%';
+        var inserted = false;
+        Array.prototype.forEach.call(select.options, function (o) {
+          if (!inserted && Number(o.value) > pct) { select.insertBefore(opt, o); inserted = true; }
+        });
+        if (!inserted) select.appendChild(opt);
+      }
+      select.value = String(pct);
+    }
+    function apply(z) {
+      if (!document.body) return;
+      if (Math.abs(z - 1) < 0.001) { document.body.style.zoom = ''; document.body.style.height = ''; }
+      else { document.body.style.zoom = String(z); document.body.style.height = (100 / z) + 'vh'; }
+      syncControl(z);
+    }
+    window.__setUiZoom = function (z) { z = clamp(z); localStorage.setItem(KEY, String(z)); apply(z); return z; };
+    window.__getUiZoom = current;
+    window.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault(); e.stopPropagation();
+      window.__setUiZoom(clamp(e.deltaY < 0 ? current() * STEP : current() / STEP));
+    }, { passive: false, capture: true });
+    window.addEventListener('keydown', function (e) {
+      if (e.ctrlKey && (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0')) { e.preventDefault(); window.__setUiZoom(1); }
+    });
+    function wireControls() {
+      var outBtn = document.getElementById('uiZoomOut');
+      var inBtn = document.getElementById('uiZoomIn');
+      var select = document.getElementById('uiZoomSelect');
+      if (outBtn) outBtn.addEventListener('click', function () {
+        var pct = Math.round(current() * 100);
+        var lower = PRESETS.filter(function (p) { return p < pct; }).pop();
+        window.__setUiZoom((lower !== undefined ? lower : Math.max(40, pct - 10)) / 100);
+      });
+      if (inBtn) inBtn.addEventListener('click', function () {
+        var pct = Math.round(current() * 100);
+        var higher = PRESETS.filter(function (p) { return p > pct; })[0];
+        window.__setUiZoom((higher !== undefined ? higher : Math.min(200, pct + 10)) / 100);
+      });
+      if (select) select.addEventListener('change', function (e) { window.__setUiZoom(Number(e.target.value) / 100); });
+      apply(current());
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireControls);
+    else wireControls();
+  })();
+</script>
+<link rel="stylesheet" href="gms.css">
+<!-- TREND 화면의 태그 체크리스트용 Univer 그리드(3열: 선택/태그/값) - grid-app/src/gms-trend-widget.js
+     빌드 산출물. gms.js가 openGmsTrend()에서 window.initGmsTrendGrid()를 호출해 마운트한다. -->
+<link rel="stylesheet" href="gms-trend-grid/plc-grid-app.css">
+<!-- USER 등록(성명/Password/권한)용 Univer 그리드 - grid-app/src/gms-user-widget.js 빌드 산출물.
+     gms.js가 USER 탭을 처음 클릭할 때 window.initGmsUserGrid()를 호출해 마운트한다. -->
+<link rel="stylesheet" href="gms-user-grid/plc-grid-app.css">
+<!-- 작업이력용 Univer 그리드 - grid-app/src/gms-worklog-widget.js 빌드 산출물. 보조 메뉴의
+     "작업이력"을 처음 누를 때 Operation.js가 window.initGmsWorkLogGrid()를 호출해 마운트한다. -->
+<link rel="stylesheet" href="gms-worklog-grid/plc-grid-app.css">
+<!-- 에러사항용 Univer 그리드 - grid-app/src/gms-errorlog-widget.js 빌드 산출물. 보조 메뉴의
+     "에러사항"을 처음 누를 때 Operation.js가 window.initGmsErrorLogGrid()를 호출해 마운트한다. -->
+<link rel="stylesheet" href="gms-errorlog-grid/plc-grid-app.css">
+<!-- 설정모드 A/B용 Univer 그리드 - grid-app/src/gms-configmode-widget.js 빌드 산출물. 보조
+     메뉴의 "설정모드 A/B"를 누를 때 Operation.js가 window.initGmsConfigModeGrid()를 호출해
+     마운트한다(A/B가 화면 하나를 공유 - 조정모드 A/B와 동일한 패턴). -->
+<link rel="stylesheet" href="gms-configmode-grid/plc-grid-app.css">
+</head>
+<body>
+
+<header>
+  <h1>GMS 모니터링 <span id="unitLabel"></span> <span id="modeLabel" class="mode-pill"></span>
+    <span class="server-conn-wrap" title="브라우저 ↔ 서버(Node) 연결 상태 - 꺼지면 자동으로 재연결을 시도합니다.">
+      <span id="serverConnLamp" class="server-conn-lamp"></span><span id="serverConnLabel" class="server-conn-label">서버 연결 확인 중</span>
+    </span>
+    <span id="cpuInfo">— 연결 전</span></h1>
+  <div style="display:flex;align-items:center;gap:14px;margin-left:auto;">
+    <div class="ui-zoom" title="화면 배율 조절 (Ctrl+휠, Ctrl+0: 100%로 초기화)">
+      <button type="button" id="uiZoomOut" aria-label="축소">−</button>
+      <select id="uiZoomSelect" aria-label="배율 선택">
+        <option value="40">40%</option>
+        <option value="50">50%</option>
+        <option value="67">67%</option>
+        <option value="75">75%</option>
+        <option value="80">80%</option>
+        <option value="90">90%</option>
+        <option value="100" selected>100%</option>
+        <option value="110">110%</option>
+        <option value="125">125%</option>
+        <option value="150">150%</option>
+        <option value="175">175%</option>
+        <option value="200">200%</option>
+      </select>
+      <button type="button" id="uiZoomIn" aria-label="확대">+</button>
+    </div>
+    <button type="button" id="fullscreenToggleBtn" class="fullscreen-btn" title="전체 화면 전환 (F11)">⛶ 전체 화면</button>
+    <div class="page-tabs">
+      <a class="page-tab" href="/index.html">PLC 모니터링</a>
+      <a class="page-tab" href="/grid/">📊 Recipes &amp; Snapshots</a>
+      <a class="page-tab" href="/monitoring.html">🕒 트렌드 모니터링</a>
+      <a class="page-tab active" href="/gms-select.html">⛽ GMS</a>
+      <a class="page-tab" href="/settings.html">⚙ 설정</a>
+    </div>
+  </div>
+</header>
+
+<div class="equip-status-bar">
+  <div class="equip-info-box panel-box">
+    <div class="box-title">Equipment Info.</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="k">Gas Name</span><span class="v" id="eqGasName">-</span></div>
+      <div class="info-row"><span class="k">Equipment Code</span><span class="v" id="eqCode">-</span></div>
+      <div class="info-row"><span class="k">GMS Standard IO MAP Version</span><span class="v" id="eqIoMapVer">-</span></div>
+    </div>
+  </div>
+  <div id="equipMidSplitter" class="v-splitter" title="드래그해서 BAR CODE/IP ADDR 폭 조절"></div>
+  <div class="equip-io-box panel-box">
+    <div class="box-title">BAR CODE / IP ADDR</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="k">BAR CODE A</span><span class="v" id="progressBarcodeA">-</span></div>
+      <div class="info-row"><span class="k">BAR CODE B</span><span class="v" id="progressBarcodeB">-</span></div>
+      <div class="info-row"><span class="k">IP ADDR</span><span class="v" id="progressIpAddr">-</span></div>
+    </div>
+  </div>
+  <div id="equipRightSplitter" class="v-splitter" title="드래그해서 BAR CODE/IP ADDR 폭 조절"></div>
+  <div class="cyl-step-box panel-box">
+    <div class="cyl-step-status-group">
+      <div class="box-title">Cylinder Step Status <span style="font-weight:400;text-transform:none;">(예시 - 실 태그 연결 전)</span></div>
+      <div class="step-row">
+        <span class="step-side">A Side</span>
+        <div class="step-badges" id="cylStepBadgesA">
+          <!-- 초기 마크업은 Operation.js의 cylinderCurrentStepIndex 기본값(양측 IDLE)과
+               맞춰둔 표시일 뿐, 실제로는 페이지 로드 시 applyCylinderStepStatus()가 항상
+               다시 그린다(지나온 스텝을 왼쪽부터 전부 적색 유지, 현재 스텝만 켜는 게 아님).
+               실린더 교환을 취소하고 나오면 resetCylinderStepStatus()가 IDLE로 되돌린다. -->
+          <span class="step-badge active">IDLE</span><span class="step-badge">Puls</span><span class="step-badge">1P</span><span class="step-badge">-L</span>
+          <span class="step-badge">-VT</span><span class="step-badge">2P</span><span class="step-badge">CC</span>
+          <span class="step-badge">3P</span><span class="step-badge">Bypass</span><span class="step-badge">+L</span><span class="step-badge">Puls 2</span><span class="step-badge">-VT</span>
+          <span class="step-badge">4P</span><span class="step-badge">PC</span><span class="step-badge">HP&LP Pump</span><span class="step-badge">GSP</span><span class="step-badge">RGV</span><span class="step-badge">READY</span><span class="step-badge">Service</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <span class="step-side">B Side</span>
+        <div class="step-badges" id="cylStepBadgesB">
+          <span class="step-badge active">IDLE</span><span class="step-badge">Puls</span><span class="step-badge">1P</span><span class="step-badge">-L</span>
+          <span class="step-badge">-VT</span><span class="step-badge">2P</span><span class="step-badge">CC</span>
+          <span class="step-badge">3P</span><span class="step-badge">Bypass</span><span class="step-badge">+L</span><span class="step-badge">Puls 2</span><span class="step-badge">-VT</span>
+          <span class="step-badge">4P</span><span class="step-badge">PC</span><span class="step-badge">HP&LP Pump</span><span class="step-badge">GSP</span><span class="step-badge">RGV</span><span class="step-badge">READY</span><span class="step-badge">Service</span>
+        </div>
+      </div>
+      <div class="step-row step-etc-row">
+        <span class="step-side">etc</span>
+        <div class="etc-btns">
+          <button class="etc-btn" data-etc="emergency">비상정지</button>
+          <button class="etc-btn" data-etc="force">강제</button>
+          <button class="etc-btn" id="etcPmBtn" data-etc="pm">PM</button>
+          <button class="etc-btn" id="etcSetupBtn" data-etc="setup">SETUP</button>
+        </div>
+      </div>
+    </div>
+    <!-- 우측 패널 탭 전환 버튼 - 상단 바 하단 우측 정렬 -->
+    <div class="tab-switch-bar">
+      <button class="tab-switch-btn active" data-tab="progress">진행 메뉴</button>
+      <button class="tab-switch-btn" data-tab="config">CONFIG.</button>
+      <button class="tab-switch-btn" data-tab="user">USER</button>
+      <button class="tab-switch-btn" data-tab="option">OPTION</button>
+      <button class="tab-switch-btn" data-tab="alarm">ALARM</button>
+      <button class="tab-switch-btn shutdown-tab" data-tab="shutdown">SHUT-DOWN</button>
+      <button class="tab-switch-btn" data-tab="alarmHistory">현재 알람 이력</button>
+      <button class="tab-switch-btn" data-tab="events">Live Events</button>
+      <a class="tab-switch-btn room-link" href="/gms-select.html" title="장비 선택 화면으로 이동">ROOM</a>
+    </div>
+  </div>
+</div>
+<div id="equipStatusSplitter" class="h-splitter" title="드래그해서 Equipment Info / Cylinder Step Status 영역 높이 조절"></div>
+
+<main>
+  <div class="diagram-panel">
+    <button id="mapEditToggle" class="map-edit-toggle" title="맵 편집 모드 - 밸브/PT를 추가·이동·수정합니다">🛠 편집</button>
+    <!-- PM Mode/Set-up Mode 활성화 램프 - 보조 메뉴 "유지보수모드"에서 켜고 끈다(gms.js의
+         applyMaintenanceModeState). 미적용이면 숨김, 적용이면 표시(깜빡임 애니메이션). -->
+    <div class="diagram-mode-lamps">
+      <span class="mode-lamp" id="pmModeLamp">PM MODE 활성화중</span>
+      <span class="mode-lamp" id="setupModeLamp">SET-UP MODE 활성화중</span>
+    </div>
+    <div id="mapEditorBar" class="map-editor-bar" hidden>
+      <span class="map-editor-drag-handle" id="mapEditorDragHandle" title="드래그해서 툴바 이동">⠿</span>
+      <button type="button" class="tool-btn active" data-tool="select">↖ 선택/이동</button>
+      <button type="button" class="tool-btn" data-tool="valve">+ 밸브</button>
+      <button type="button" class="tool-btn" data-tool="pt">+ PT</button>
+      <button type="button" id="editorPropBtn" disabled>✏ 속성</button>
+      <button type="button" id="editorDeleteBtn" disabled>🗑 삭제</button>
+      <span class="editor-hint" id="editorHint">요소 클릭=선택, 드래그=이동, 더블클릭=속성</span>
+      <button type="button" id="editorSaveBtn" class="primary">💾 저장</button>
+      <button type="button" id="editorCancelBtn">취소</button>
+    </div>
+    <!-- 배관도 SVG는 public/gms-diagram.svg 파일에서 서버가 매 요청마다 읽어 이 자리에
+         그대로 끼워넣는다(src/server.js의 GET /gms.html 라우트). Boxy SVG 등 외부 에디터로
+         그 파일만 열어 고쳐 저장하면, 서버 재시작 없이 브라우저 새로고침만으로 바로
+         반영된다 - 이 gms.html 파일 자체는 더 이상 도면 코드를 담지 않는다. -->
+    <!--GMS_DIAGRAM_SVG-->
+    <!-- TREND 모드용 차트 캔버스 - 평소엔 숨겨져 있다가 showGmsTrend()가 #gmsSvg를 숨기고
+         이걸 보여준다(같은 .diagram-panel 자리를 그대로 재사용). monitoring.html의 트렌드
+         차트와 같은 느낌(캔버스 직접 그리기)이지만, GMS는 태그가 고정이라 훨씬 가볍게
+         구현했다 - gms.js의 drawGmsTrendChart() 참고. -->
+    <canvas id="gmsTrendCanvas" hidden></canvas>
+    <!-- Total 트렌드 드래그 확대(사각형 줌) 시 보여줄 선택 영역 - monitoring.html의 #monZoomRect와 동일. -->
+    <div id="gmsZoomRect" class="zoom-rect"></div>
+    <!-- 개별 트렌드 모드 - monitoring.html의 #monChartGrid와 동일하게 태그마다 미니 카드+캔버스를
+         따로 두고, 클릭하면 큰 팝업이 뜬다(gms.js의 openOrFocusGmsTrendPopup 참고). -->
+    <div id="gmsTrendMiniGrid" class="gms-trend-mini-grid" hidden></div>
+  </div>
+
+  <div id="rightSplitter" class="v-splitter" title="드래그해서 우측 패널 폭 조절"></div>
+  <div class="op-panel">
+    <div class="op-section grow" style="padding:0;">
+      <div class="tab-panel" data-tab-panel="progress" style="padding:0;">
+        <div class="progress-panel">
+          <div class="progress-menu-header" id="progressHeader">진행 메뉴</div>
+
+          <!-- 아래 각 조작화면(root/mainMenu/password/유지보수 메뉴/각 하위 화면)의 실제
+               마크업은 더 이상 여기 없다 - `OPERATION HTML/` 폴더에 화면별로 분리된 개별 HTML
+               파일로 옮겼고(피그마 등에서 화면별로 따로 열어 편집 가능), Operation.js가
+               페이지 로드 시 각 파일을 fetch해서 이 컨테이너들 안에 내용을 채워 넣는다
+               (Operation.js의 loadOperationScreens() 참고). id/class는 그대로 유지해야
+               Operation.js 로직이 작동한다. -->
+          <div class="progress-menu-body" id="progressRootBody"></div>
+          <div class="progress-menu-body" id="progressMainMenuBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressPasswordBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressMaintenanceMenuBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressManualValveBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressHeaterBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressMaintenancePurgeBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressPipeCleanBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressLeakTestBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressVtTestBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressPtTestBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressPressureTestBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressBarcodeCheckBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressCylinderLockCheckBody" style="display:none;"></div>
+          <!-- 실린더 잠금 check 화면의 IDLE 사전확인 7단계(ns='idleCheck') 완료 → Status
+               "Puls"(잔류가스 Check, Pulse Vent 2단계, ns='puls') → 완료 시 Status "1P"
+               (2차측 Vent~1차측 Purge 5단계, ns='oneP'). 전부 서브시퀀스 엑셀 엔진 기반. -->
+          <div class="progress-menu-body" id="progressPulsAutoRunBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressOnePAutoRunBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressOnePPurgeAutoRunBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressOnePPumpingAutoRunBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressOnePPrimaryPurgeAutoRunBody" style="display:none;"></div>
+          <!-- 1P 구간(5단계) 완료 → Status가 1P에서 -L(감압시험)로 넘어가는 화면. -->
+          <div class="progress-menu-body" id="progressExchangePressureTestBody" style="display:none;"></div>
+          <!-- 감압시험 "실행" → VT 사용 옵션이 적용이면 Status -L에서 -VT(VT 감압시험)로
+          <div class="progress-menu-body" id="progressExchangePressureTestBody" style="display:none;"></div>
+          <!-- 감압시험 "실행" → VT 사용 옵션이 적용이면 Status -L에서 -VT(VT 감압시험)로
+               넘어가는 화면(미적용이면 건너뛰고 바로 2차 배관청소로). -->
+          <div class="progress-menu-body" id="progressExchangeVtTestBody" style="display:none;"></div>
+          <!-- 감압시험(또는 VT 감압시험) "실행" → Status가 2P(2차 배관청소)로 넘어가는 화면. -->
+          <div class="progress-menu-body" id="progressExchangeSecondPurgeBody" style="display:none;"></div>
+          <!-- 2차 배관청소 "실행" → PASSWORD("실린더 교체") 통과 후 들어오는 용기교체
+               (Status "CC") 6단계. -->
+          <div class="progress-menu-body" id="progressCylReplaceCheckBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressCylReplaceValveOpenBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressCylReplaceAutoGuardOpenBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressCylReplaceSwapBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressCylReplaceGasNameBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressCylReplaceAutoGuardCloseBody" style="display:none;"></div>
+          <!-- Auto Guard 확인(Close) "확인" → "교환후" 자동 진행 4단계
+               (+L 가압시험 → 3차 배관청소 → [VT 옵션] → 4차 배관청소). -->
+          <div class="progress-menu-body" id="progressExchangeAfterPressureTestBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressExchangeAfterPulsBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressExchangeThirdPurgeBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressExchangeAfterVtTestBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressExchangeFourthPurgeBody" style="display:none;"></div>
+          <!-- 4차 배관청소 "실행" → PASSWORD 통과 후 들어오는 마지막 화면(퍼지완료, Status "PC"). -->
+          <div class="progress-menu-body" id="progressExchangePurgeCompleteBody" style="display:none;"></div>
+          <!-- 퍼지완료(PC) 후 가스공급 전 배관 진공을 잡는 Pumping 구간 (Status "HP&LP Pump"). -->
+          <div class="progress-menu-body" id="progressHpLpPumpBody" style="display:none;"></div>
+          <!-- 실린더 확인 "Force Purge" → 들어오는 화면(Status는 CC로 그대로). -->
+          <div class="progress-menu-body" id="progressCylReplaceForcePurgeBody" style="display:none;"></div>
+          <!-- 가스공급 자동 진행 7단계 - PC/가스공급 화면의 "가스공급" 버튼(PASSWORD) →
+               공급 압력 확인 → Valve shutter 장착 → Regulator Close → Cylinder open →
+               Regulator 조정 → PMV open 확인 → 가스공급준비 완료. -->
+          <div class="progress-menu-body" id="progressGasSupplyPressureCheckBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyValveShutterBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyRegulatorCloseBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyCylinderOpenBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyRegulatorAdjustBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyPmvOpenBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyFpvOpenBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressGasSupplyReadyBody" style="display:none;"></div>
+          <!-- 가스공급준비 완료 "확인"(실제 가스공급 시작, Status "READY"→"Service") →
+               들어오는 화면. -->
+          <div class="progress-menu-body" id="progressGasSupplyActiveBody" style="display:none;"></div>
+          <!-- 가스공급 중 화면의 "일시정지"/"공급중지"/"강제 교체" → PASSWORD 통과 후
+               들어오는 공용 재확인 화면. -->
+          <div class="progress-menu-body" id="progressGasSupplyConfirmActionBody" style="display:none;"></div>
+          <!-- TREND - 각 시퀀스 화면의 "TREND" 버튼이 여는 공용 화면. 배관도화면 쪽은
+               gmsTrendCanvas가 대신한다(showGmsTrend() 참고). -->
+          <div class="progress-menu-body" id="progressTrendBody" style="display:none;"></div>
+          <!-- 압력 조정 모드 - 보조 메뉴의 "조정모드 A/B"가 PASSWORD 게이트(adjustMode)를
+               거쳐 여는 화면(팝업이 아니라 유지보수 메뉴와 동일하게 진짜 화면 전환). -->
+          <div class="progress-menu-body" id="progressAdjustModeBody" style="display:none;"></div>
+          <!-- 압력조정 - 조정모드 화면의 "압력조정" 버튼이 여는 PT/Weight 교정(MAX/분해능/
+               ANALOG VALUE/OFFSET) 표 화면(public/gms-pt-calibration.js). -->
+          <div class="progress-menu-body" id="progressPressureAdjustBody" style="display:none;"></div>
+          <!-- 작업이력 - 보조 메뉴의 "작업이력" 버튼이 여는 조작 이력 표 화면
+               (public/gms-worklog-widget.js). -->
+          <div class="progress-menu-body" id="progressWorkLogBody" style="display:none;"></div>
+          <!-- 에러사항 - 보조 메뉴의 "에러사항" 버튼이 여는, 서브시퀀스 실제 알람만 모아 보는
+               표 화면(public/gms-errorlog-widget.js) - DB는 작업이력과 별개(error_log). -->
+          <div class="progress-menu-body" id="progressErrorLogBody" style="display:none;"></div>
+          <!-- 설정모드 - 보조 메뉴의 "설정모드 A/B" 버튼이 여는, CONFIG 탭과 같은 설정값을
+               side/OPTION으로 걸러서 키패드로 편집하는 화면(public/gms-configmode-widget.js +
+               gms-configmode-tab.js) - 조정모드 A/B와 동일하게 버튼 2개가 화면 1개를 공유한다. -->
+          <div class="progress-menu-body" id="progressConfigModeBody" style="display:none;"></div>
+          <!-- OPTION DISPLAY - 보조 메뉴의 "OPTION DISPLAY" 버튼이 여는, OPTION 탭 설정값을
+               읽기 전용으로 한눈에 보여주는 화면(public/gms-option-display.js). 변경 권한 없음. -->
+          <div class="progress-menu-body" id="progressOptionDisplayBody" style="display:none;"></div>
+          <!-- 유지보수모드 - 보조 메뉴의 "유지보수모드" 버튼이 PASSWORD 통과 후 여는 화면
+               (PM Mode/Set-up Mode 적용/미적용). 기존 조작화면의 "유지 보수"와는 별개. -->
+          <div class="progress-menu-body" id="progressAuxMaintenanceModeBody" style="display:none;"></div>
+          <!-- Main Sequence.csv에는 있지만 화면이 없던 3단계 - Main 시퀀스 순서 편집기로
+               순서에 넣고 적용 처리하면 advanceToNextEnabledStatus가 실제로 여기로 보낸다. -->
+          <div class="progress-menu-body" id="progressSequencePulsBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressSequenceBypassBody" style="display:none;"></div>
+          <div class="progress-menu-body" id="progressSequenceRgvBody" style="display:none;"></div>
+        </div>
+      </div>
+      <!-- CONFIG 탭 - 서브시퀀스(자동진행) 조건 판단에 쓰는 설정값(예: 진공하한치)을 조작자가
+           직접 입력/수정한다. data/gmsSubSequenceConfig.json ↔ /api/gms/sub-sequence-config
+           ↔ public/gms-config-tab.js. 서브시퀀스 Step의 "비교문"이 row.id로 이 값을 참조한다
+           (예: "VPT < vacuumLowerLimit"). -->
+      <div class="tab-panel" data-tab-panel="config" hidden>
+        <div class="grid-table-title">CONFIG - 서브시퀀스 설정값</div>
+        <div class="grid-table-note">서브시퀀스(자동진행) Step이 조건 판단에 쓰는 설정값입니다. 값을 수정한 뒤 "저장"을 눌러야 반영됩니다.</div>
+        <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+          <button type="button" id="gmsConfigSaveBtn" class="primary">저장</button>
+          <button type="button" id="gmsConfigReloadBtn">불러오기</button>
+          <button type="button" id="gmsConfigAddRowBtn">+ 행 추가</button>
+          <button type="button" id="gmsConfigExcelExportBtn">📤 엑셀로 내보내기</button>
+          <button type="button" id="gmsConfigExcelImportBtn" title="불러오면 바로 저장까지 됩니다(따로 저장 버튼 안 눌러도 됨)">📥 엑셀 불러오기</button>
+          <input type="file" id="gmsConfigExcelImportFile" accept=".xlsx" hidden />
+        </div>
+        <table class="grid-table" id="gmsConfigTable">
+          <thead><tr><th>구분</th><th>설정명</th><th>ID</th><th>값</th><th>단위</th><th>설명</th><th>측(A/B/공통)</th><th>최소값</th><th>최대값</th><th>인터락</th><th>옵션</th><th></th></tr></thead>
+          <tbody id="gmsConfigTableBody"></tbody>
+        </table>
+      </div>
+      <!-- USER 등록 - 작업자별 성명/Password(4자리 숫자)/권한(MASTER·SUPERVISOR·USER)을
+           관리하는 Univer 그리드. 태그체크리스트(gms-trend-widget.js)처럼 이 탭 자체가
+           기본 숨김(hidden)이라 페이지 로드 시 바로 마운트하면 컨테이너 크기가 0이 되므로,
+           탭을 처음 클릭할 때 gms.js가 window.initGmsUserGrid()를 호출해 그때 마운트한다
+           (grid-app/src/gms-user-widget.js, 관심사 분리 패턴은 gms-trend-widget.js와 동일). -->
+      <div class="tab-panel" data-tab-panel="user" hidden>
+        <div class="grid-table-title">USER 등록</div>
+        <div class="grid-table-note">성명 / Password(4자리 숫자) / 권한(MASTER・SUPERVISOR・USER)을 편집한 뒤 "저장"을 눌러야 서버에 반영됩니다.</div>
+        <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+          <button type="button" id="gmsUserSaveBtn" class="primary">저장</button>
+          <button type="button" id="gmsUserReloadBtn">불러오기</button>
+          <button type="button" id="gmsUserAddRowBtn">+ 행 추가</button>
+          <button type="button" id="gmsUserDeleteSelectedBtn">선택 삭제</button>
+          <button type="button" id="gmsUserExcelExportBtn">📤 엑셀로 내보내기</button>
+          <button type="button" id="gmsUserExcelImportBtn">📥 엑셀에서 불러오기</button>
+          <input type="file" id="gmsUserExcelImportFile" accept=".xlsx" hidden />
+        </div>
+        <div id="gmsUserGridContainer" style="flex:1 1 400px; min-height:400px; width:100%; position:relative; overflow:hidden; background:#fff;"></div>
+        <div class="h-splitter" id="gmsUserGridResizeHandle" title="드래그해서 그리드 높이 조절"></div>
+      </div>
+      <div class="tab-panel" data-tab-panel="option" hidden>
+        <div class="grid-table-title">Option Table</div>
+        <div class="grid-table-note">예시 구성 - 실제 항목/값은 후속 작업에서 그리드(Univer)로 교체 예정</div>
+        <table class="grid-table" id="gmsOptionTable">
+          <thead><tr><th>Item</th><th>Status</th></tr></thead>
+          <tbody id="optionTableBody"></tbody>
+        </table>
+      </div>
+      <div class="tab-panel" data-tab-panel="alarm" hidden>
+        <div class="grid-table-title">Alarm Table</div>
+        <div class="grid-table-note">예시 구성 - 실제 항목/값은 후속 작업에서 그리드(Univer)로 교체 예정</div>
+        <table class="grid-table">
+          <thead><tr><th>Item</th><th>Status</th></tr></thead>
+          <tbody id="alarmTableBody"></tbody>
+        </table>
+      </div>
+      <div class="tab-panel" data-tab-panel="shutdown" hidden>
+        <div class="shutdown-panel">
+          <p>상위 차단(Shutdown)을 내리는 시퀀스입니다. 실제 시퀀스 로직은 후속 작업으로 연결합니다.</p>
+          <button class="danger" id="shutdownTriggerBtn">⛔ SHUT-DOWN 실행</button>
+        </div>
+      </div>
+      <!-- 현재 알람 이력 / Live Events - 예전엔 하단에 항상 떠있어서 배관도 영역을 늘 잡아먹었는데,
+           "필요할 때 버튼으로만 불러오고 평소엔 화면을 차지하지 않게" 요청에 따라 상단 탭 2개로
+           옮겼다(하단 고정 패널은 완전히 제거). 요소 id(alarmHistoryBody 등)는 예전 하단 패널과
+           동일하게 유지해서 gms.js의 loadAlarms/loadEvents/필터/엑셀 내보내기/WS 실시간 갱신
+           로직을 그대로 재사용한다(로직은 안 건드리고 위치만 옮김). -->
+      <div class="tab-panel" data-tab-panel="alarmHistory" hidden>
+        <div class="log-title">
+          <span>현재 알람 이력</span>
+          <span class="log-controls">
+            <select id="alarmGradeFilter" title="등급 필터">
+              <option value="">전체 등급</option>
+              <option value="1">1등급</option>
+              <option value="2">2등급</option>
+              <option value="3">3등급</option>
+            </select>
+            <label style="display:inline-flex;align-items:center;gap:3px;font-size:11px;"><input type="checkbox" id="alarmActiveOnly" />활성만</label>
+            <input type="text" id="alarmSearch" placeholder="검색" />
+            <button id="alarmExportBtn" title="알람 이력 엑셀 내보내기">📊</button>
+          </span>
+        </div>
+        <table class="live-events-table">
+          <thead><tr><th style="width:26%;">발생</th><th style="width:12%;">등급</th><th>Message</th><th style="width:24%;">해제</th></tr></thead>
+          <tbody id="alarmHistoryBody"><tr class="empty-row"><td colspan="4">알람 없음</td></tr></tbody>
+        </table>
+      </div>
+      <div class="tab-panel" data-tab-panel="events" hidden>
+        <div class="log-title">
+          <span>Live Events</span>
+          <span class="log-controls">
+            <select id="eventGradeFilter" title="등급 필터">
+              <option value="">전체</option>
+              <option value="INFO">INFO</option>
+              <option value="WARN">WARN</option>
+              <option value="ERROR">ERROR</option>
+            </select>
+            <input type="text" id="eventSearch" placeholder="검색" />
+            <button id="eventExportBtn" title="Live Events 엑셀 내보내기">📊</button>
+            <button id="worklogExportBtn" title="조작(작업) 이력 엑셀 내보내기">🛠📊</button>
+          </span>
+        </div>
+        <table class="live-events-table">
+          <thead><tr><th style="width:26%;">Time</th><th style="width:14%;">Grade</th><th>Message</th></tr></thead>
+          <tbody id="liveEventsBody"><tr class="empty-row"><td colspan="3">이벤트 없음</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 맵 에디터: 밸브/PT 속성 편집 팝업 -->
+<div id="editorPropModal" class="editor-modal" hidden>
+  <div class="editor-modal-box">
+    <h3 id="propTitle">속성 편집</h3>
+    <div class="prop-grid">
+      <label>태그</label><input type="text" id="propTag" />
+      <label>설명(라벨)</label><input type="text" id="propLabel" />
+    </div>
+    <div class="prop-grid" id="propFieldsValve">
+      <div class="prop-sec">밸브 표시</div>
+      <label>배관 방향</label>
+      <select id="propDir"><option value="v">세로 배관</option><option value="h">가로 배관</option></select>
+      <label>명칭 위치</label>
+      <span class="pos-preset-row">
+        <button type="button" class="pos-preset-btn" data-target="valve" data-side="left" title="왼쪽">◀</button>
+        <button type="button" class="pos-preset-btn" data-target="valve" data-side="top" title="위">▲</button>
+        <button type="button" class="pos-preset-btn" data-target="valve" data-side="bottom" title="아래">▼</button>
+        <button type="button" class="pos-preset-btn" data-target="valve" data-side="right" title="오른쪽">▶</button>
+      </span>
+      <label>태그 위치 dx/dy</label>
+      <span class="addr-row"><input type="number" id="propLabelDx" step="1" /><input type="number" id="propLabelDy" step="1" /></span>
+      <label>태그 정렬</label>
+      <select id="propLabelAnchor"><option value="start">왼쪽 정렬</option><option value="middle">가운데</option><option value="end">오른쪽 정렬</option></select>
+      <div class="prop-sec">제어(쓰기) 비트 - cmd</div>
+      <label>영역/주소/비트</label>
+      <span class="addr-row"><input type="text" id="propCmdArea" placeholder="CIO" /><input type="number" id="propCmdAddr" min="0" /><input type="number" id="propCmdBit" min="0" max="15" /></span>
+      <div class="prop-sec">상태(피드백) 비트 - fb</div>
+      <label>영역/주소/비트</label>
+      <span class="addr-row"><input type="text" id="propFbArea" placeholder="CIO" /><input type="number" id="propFbAddr" min="0" /><input type="number" id="propFbBit" min="0" max="15" /></span>
+    </div>
+    <div class="prop-grid" id="propFieldsPt">
+      <div class="prop-sec">PT(아날로그) 표시</div>
+      <label>데이터 타입</label>
+      <select id="propPtType"><option>INT</option><option>UINT</option><option>DINT</option><option>UDINT</option><option>WORD</option><option>REAL</option></select>
+      <label>소수점 자리</label><input type="number" id="propPtDecimals" min="0" max="4" />
+      <label>경고 표시(적색)</label><input type="checkbox" id="propPtAlert" style="justify-self:start;width:auto;" />
+      <label>명칭 위치</label>
+      <span class="pos-preset-row">
+        <button type="button" class="pos-preset-btn" data-target="pt" data-side="left" title="왼쪽">◀</button>
+        <button type="button" class="pos-preset-btn" data-target="pt" data-side="top" title="위">▲</button>
+        <button type="button" class="pos-preset-btn" data-target="pt" data-side="bottom" title="아래">▼</button>
+        <button type="button" class="pos-preset-btn" data-target="pt" data-side="right" title="오른쪽">▶</button>
+      </span>
+      <label>명칭 위치 dx/dy</label>
+      <span class="addr-row"><input type="number" id="propPtLabelDx" step="1" /><input type="number" id="propPtLabelDy" step="1" /></span>
+      <label>명칭 정렬</label>
+      <select id="propPtLabelAnchor"><option value="start">왼쪽 정렬</option><option value="middle">가운데</option><option value="end">오른쪽 정렬</option></select>
+      <div class="prop-sec">읽기 주소</div>
+      <label>영역/주소</label>
+      <span class="addr-row"><input type="text" id="propReadArea" placeholder="DM" /><input type="number" id="propReadAddr" min="0" /></span>
+    </div>
+    <div class="editor-modal-actions">
+      <button type="button" id="propApplyBtn" class="primary">적용</button>
+      <button type="button" id="propCloseBtn">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 밸브 개폐 확인 팝업 - 브라우저 기본 confirm()은 JS를 멈춰서 점멸 애니메이션이 안
+     돌기 때문에(요청사항: 확인창이 떠 있는 동안 배관도화면+조작화면에서 해당 밸브가
+     0.5초 간격 점멸) 커스텀 모달로 만든다. editor-modal 스타일 재사용. -->
+<div id="valveConfirmModal" class="editor-modal" hidden>
+  <div class="editor-modal-box" style="min-width:300px;text-align:center;">
+    <h3 id="valveConfirmTitle" style="cursor:default;">밸브 확인</h3>
+    <p id="valveConfirmMessage" style="font-size:15px;margin:18px 0;"></p>
+    <div class="editor-modal-actions" style="justify-content:center;">
+      <button type="button" id="valveConfirmYesBtn" class="primary">확인</button>
+      <button type="button" id="valveConfirmNoBtn">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- 수동밸브 조작 화면에서 "취소"를 누를 때 - 열려 있는 밸브가 있으면 나가기 전에
+     유지할지 전부 닫을지 먼저 물어본다(요청사항). 이후 비밀번호를 다시 확인하고
+     유지보수 메뉴로 이동한다. -->
+<div id="manualValveExitModal" class="editor-modal" hidden>
+  <div class="editor-modal-box" style="min-width:320px;text-align:center;">
+    <h3 style="cursor:default;">나가기 전 확인</h3>
+    <p style="font-size:14px;margin:16px 0;">현재 열려 있는 밸브가 있습니다.<br>어떻게 하시겠습니까?</p>
+    <div class="editor-modal-actions" style="justify-content:center;flex-direction:column;gap:8px;">
+      <button type="button" id="manualValveExitCloseBtn" class="primary" style="width:100%;">전부 CLOSE 하고 나가기</button>
+      <button type="button" id="manualValveExitKeepBtn" style="width:100%;">열린 상태 유지하고 나가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 보조 메뉴 팝업 - 진행 메뉴/메인 메뉴/PC(퍼지완료)/가스공급 중 화면의 "보조 메뉴" 버튼이
+     전부 이 팝업을 공용으로 연다(openAuxMenu, Operation.js). 실제 장비 HMI 화면을 그대로
+     재현한 레이아웃(설정모드 A/B・조정모드 A/B・작업이력・에러사항・OPTION DISPLAY・Q.C MODE
+     2열 + 유지보수모드 전체폭 + 취소 전체폭). "유지보수모드"는 기존 유지보수 메뉴로 실제
+     이동하고(PASSWORD 게이트 포함, 메인 메뉴의 "유지 보수"와 동일 동작), "설정모드 A/B"는
+     실제 화면(auxMenuConfigModeABtn/BBtn → Operation.js의 requestConfigMode)으로 연결되어
+     있다. 나머지(Q.C MODE)는 아직 구현 전이라 안내 토스트만 뜬다. -->
+<div id="auxMenuModal" class="editor-modal" hidden>
+  <div class="aux-menu-box">
+    <div class="aux-menu-title">보조 메뉴</div>
+    <div class="aux-menu-grid">
+      <button type="button" class="aux-menu-btn" id="auxMenuConfigModeABtn">⚙ 설정모드 A</button>
+      <button type="button" class="aux-menu-btn" id="auxMenuConfigModeBBtn">⚙ 설정모드 B</button>
+      <button type="button" class="aux-menu-btn" id="auxMenuAdjustABtn">🔧 조정모드 A</button>
+      <button type="button" class="aux-menu-btn" id="auxMenuAdjustBBtn">🔧 조정모드 B</button>
+      <button type="button" class="aux-menu-btn" id="auxMenuWorkLogBtn">📋 작업이력</button>
+      <button type="button" class="aux-menu-btn" id="auxMenuErrorLogBtn">📢 에러사항</button>
+      <button type="button" class="aux-menu-btn" id="auxMenuOptionDisplayBtn">⚙ OPTION DISPLAY</button>
+      <button type="button" class="aux-menu-btn" data-aux="Q.C MODE">📋 Q.C MODE</button>
+      <button type="button" class="aux-menu-btn full" id="auxMenuMaintenanceBtn">🔧 유지보수모드</button>
+    </div>
+    <button type="button" class="aux-menu-cancel" id="auxMenuCancelBtn">취 소</button>
+  </div>
+</div>
+
+<!-- Main 시퀀스(CYLINDER STEP STATUS) 순서 편집 팝업 - OPTION 탭의 "Main 시퀀스 순서" 편집
+     버튼이 연다(gms-sequence-editor.js). 칩 목록을 드래그로 재정렬하고 +추가/×삭제할 수
+     있으며(같은 타입 중복 허용), 아래 표에서 타입별 적용/미적용을 토글한다. 저장하면
+     서버(data/gmsMainSequence.json)에 반영되고 CYLINDER_STEP_ORDER가 다시 계산된다
+     (Operation.js의 rebuildCylinderStepOrder). -->
+<div id="mainSequenceEditorModal" class="editor-modal" hidden>
+  <div class="editor-modal-box" style="min-width:640px;max-width:94vw;">
+    <h3 style="cursor:default;">Main 시퀀스 순서 편집</h3>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.6;">
+      칩을 드래그해서 순서를 바꾸거나 ×로 삭제하십시오. "+ 추가"로 같은 타입을 원하는 위치에
+      여러 번 넣을 수 있습니다(예: -L 두 번). 실린더 교환이 진행 중(IDLE이 아님)일 때 저장하면
+      그 측의 진행 인덱스가 어긋날 수 있으니, 양측 모두 IDLE일 때 편집하는 것을 권장합니다.
+    </p>
+    <div id="mainSequenceChipList" class="seq-chip-list"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin:12px 0;">
+      <select id="mainSequenceAddSelect" style="flex:1 1 auto;"></select>
+      <button type="button" id="mainSequenceAddBtn">+ 추가</button>
+    </div>
+    <table class="grid-table" style="width:100%;margin-bottom:10px;">
+      <thead><tr><th>타입</th><th style="width:80px;">적용</th></tr></thead>
+      <tbody id="mainSequenceEnabledBody"></tbody>
+    </table>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <button type="button" id="mainSequenceExcelExportBtn">📤 엑셀로 내보내기</button>
+      <button type="button" id="mainSequenceExcelImportBtn">📥 엑셀에서 불러오기</button>
+      <input type="file" id="mainSequenceExcelImportFile" accept=".xlsx" hidden />
+      <span style="font-size:11px;color:var(--muted);">엑셀의 "대표심볼"(필수)/"적용"(Y·N) 열로 순서·항목·적용여부를 한번에 수정할 수 있습니다. 불러온 뒤에도 "저장"을 눌러야 실제 반영됩니다.</span>
+    </div>
+    <div class="editor-modal-actions">
+      <button type="button" id="mainSequenceResetBtn">기본값으로 초기화</button>
+      <button type="button" id="mainSequenceCancelBtn">취소</button>
+      <button type="button" id="mainSequenceSaveBtn" class="primary">저장</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="appSettings.js"></script>
+<script>window.__plcApiPrefix = '/api/gms';</script>
+<script src="plcInfo.js"></script>
+<!-- TREND/USER/작업이력/에러사항/설정모드 Univer 위젯은 더 이상 여기서 즉시 불러오지 않는다 -
+     위젯 하나당 13MB(대부분 안 쓰는 다국어 로케일)라 5개를 매번 다 불러오면 페이지 열 때마다
+     약 65MB를 내려받고 파싱해야 했다(부하 원인). 이제 gms.js의 loadGmsWidgetModule()이 각
+     화면을 실제로 처음 열 때만 dynamic import()로 불러온다(gms.js/Operation.js 참고). -->
+<script src="gms.js"></script>
+<script src="gms-config-tab.js"></script>
+<script src="Operation.js"></script>
+<script src="gms-sequence-editor.js"></script>
+<script src="gms-pt-calibration.js"></script>
+<script src="gms-configmode-tab.js"></script>
+<script src="gms-sub-sequence-runner.js"></script>
+<script src="gms-editor.js"></script>
+<script src="gms-option-display.js"></script>
+</body>
+</html>

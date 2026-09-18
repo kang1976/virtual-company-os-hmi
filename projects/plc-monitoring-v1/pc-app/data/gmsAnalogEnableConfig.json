@@ -1,0 +1,95 @@
+{
+  "rows": [
+    {
+      "tag": "VT",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "VPT",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "FPT",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "LPT_A",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "LPT_B",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "NPT_A",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "NPT_B",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "HPT_A",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "HPT_B",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "MPT_A",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "MPT_B",
+      "category": "PT",
+      "enabled": true
+    },
+    {
+      "tag": "WI_A",
+      "category": "Weight",
+      "enabled": true
+    },
+    {
+      "tag": "WI_B",
+      "category": "Weight",
+      "enabled": true
+    },
+    {
+      "tag": "M/H_A",
+      "category": "Heater",
+      "enabled": true
+    },
+    {
+      "tag": "M/H_B",
+      "category": "Heater",
+      "enabled": true
+    },
+    {
+      "tag": "J/H_A",
+      "category": "Heater",
+      "enabled": true
+    },
+    {
+      "tag": "J/H_B",
+      "category": "Heater",
+      "enabled": true
+    },
+    {
+      "tag": "L/H_2nd",
+      "category": "Heater",
+      "enabled": true
+    }
+  ],
+  "savedAt": "2026-08-23T20:42:48.357+09:00"
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3차 배관청소 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 용기교체(CC) 완료 다음,
+     "교환후" 자동 진행의 첫 번째 화면(Status "3P" - 3P → +L → [VT 옵션] → 4P 순서).
+     서브시퀀스 엑셀 엔진(gms-sub-sequence-runner.js, ns='afterThreeP')으로 실행 - 사용자
+     확인(2026-08-09): 교환전 2P(twoP)와 완전히 동일한 구조. 실제 내용은
+     data/gmsSubSequences/AfterThreeP_v1.json(TwoP_v1.json 값 그대로 복제, 반복 종료 CONFIG만
+     "교환 후 1차 Purge 횟수_{side}"). 완료되면 곧장 다음 화면(+L 가압시험)으로 넘어간다
+     (VT 분기 없음). 스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressExchangeThirdPurgeBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressExchangeThirdPurgeBody">
+    <div class="step-badges-lg">
+      <span class="step-badge-lg blinking">3P</span>
+      <span class="step-badge-lg">+L</span>
+      <span class="step-badge-lg" data-vt-badge>-VT</span>
+      <span class="step-badge-lg">4P</span>
+      <span class="step-badge-lg">PC</span>
+    </div>
+
+    <div id="exchangeThirdPurgeIdle">
+      <div class="progress-menu-desc">3차 배관청소 구간을 준비하는 중입니다...</div>
+      <div class="sub-seq-last-alarm" id="exchangeThirdPurgeLastAlarm"></div>
+      <div class="purge-count-panel" id="exchangeThirdPurgeIdleCycleInfo" style="display:none;">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정 횟수 :</span>
+          <span class="purge-count-box">[ <span id="exchangeThirdPurgeIdleCycleTarget" class="purge-count-value">-</span> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행 횟수 :</span>
+          <span class="purge-count-box">[ <span id="exchangeThirdPurgeIdleCycleCurrent" class="purge-count-value">-</span> ]</span>
+        </div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="exchangeThirdPurgeExecuteBtn" style="margin:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeIdleCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeIdleTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeIdleExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeIdleExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="exchangeThirdPurgeIdleExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="exchangeThirdPurgePanel" style="display:none;">
+      <div class="sub-seq-step-label" id="exchangeThirdPurgeStepLabel">Main 1 - Sub 1</div>
+      <div class="sub-seq-operation" id="exchangeThirdPurgeOperation">-</div>
+      <div class="sub-seq-message" id="exchangeThirdPurgeMessage">-</div>
+      <div class="sub-seq-valve-diff" id="exchangeThirdPurgeValveDiff"></div>
+      <div class="sub-seq-timer" id="exchangeThirdPurgeTimer">-</div>
+      <div class="sub-seq-acc-time" id="exchangeThirdPurgeAccTime">누적 경과시간: 0초</div>
+      <div class="sub-seq-alarm-banner" id="exchangeThirdPurgeAlarmBanner" style="display:none;">
+        <div class="sub-seq-last-alarm" id="exchangeThirdPurgePanelAlarmMsg"></div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="purge-count-panel" id="exchangeThirdPurgeCycleInfo" style="display:none;">
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정 횟수 :</span>
+            <span class="purge-count-box">[ <span id="exchangeThirdPurgeCycleTarget" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행 횟수 :</span>
+            <span class="purge-count-box">[ <span id="exchangeThirdPurgeCycleCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+        </div>
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="exchangeThirdPurgeAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgePauseBtn" style="margin:0;">일시정지</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeResetBtn" style="margin:0;">초기화</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="exchangeThirdPurgeExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="exchangeThirdPurgeExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+  </div>
+</body>
+</html>

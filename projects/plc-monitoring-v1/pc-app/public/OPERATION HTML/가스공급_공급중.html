@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>가스공급 중 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 가스공급준비 완료 화면의
+     "확인"(실제 가스공급 시작, Status "READY"→"Service") 다음에 들어오는 화면. 4색
+     팬휠 아이콘(.gas-flow-icon, ../gms.css)과 "[측] Cylinder flow!" 문구로 가스가 흐르고
+     있음을 나타낸다(측 표시는 Operation.js가 진입 시 갱신). 실제 유량/제어 로직은 아직
+     없음(뼈대) - "일시정지"/"강제 교체"/"보조메뉴"/TREND는 토스트만, "공급중지"는 공급을
+     끝내고 Status를 PC로 되돌린 뒤 PC/가스공급 화면으로 나간다, "B"/"A" 선택은 다른
+     화면들과 동일하게 반대 측의 실제 현재 Status 화면으로 전환한다(showScreenForSideStatus).
+     스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressGasSupplyActiveBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressGasSupplyActiveBody">
+    <div class="gas-flow-icon">
+      <div class="gas-flow-blade tl"></div>
+      <div class="gas-flow-blade tr"></div>
+      <div class="gas-flow-blade bl"></div>
+      <div class="gas-flow-blade br"></div>
+    </div>
+    <div class="gas-flow-desc" id="gasSupplyActiveFlowLabel">A Cylinder flow!</div>
+    <div class="progress-btn-group">
+      <div class="gas-flow-btn-grid">
+        <button type="button" class="progress-btn" id="gasSupplyActivePauseBtn">일시정지</button>
+        <button type="button" class="progress-btn" id="gasSupplyActiveStopBtn">공급중지</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyActiveSwitchSideBtn">"B" 선택</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyActiveForceChangeBtn">강제 교체</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyActiveAuxBtn">보조메뉴</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyActiveTrendBtn">TREND</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

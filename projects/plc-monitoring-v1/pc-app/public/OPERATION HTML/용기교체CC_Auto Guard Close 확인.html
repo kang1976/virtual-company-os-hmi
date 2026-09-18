@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auto Guard 확인(Close) - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 용기교체(Status "CC") 6단계 중
+     여섯(현재 마지막) 번째, "Gas name 확인" 다음. 실린더 재장착 후 Auto Guard가 Close
+     되었는지 확인하는 화면 - 앞서 나온 "Auto Guard 확인(Open)"과 이름은 같지만 파일/
+     컨테이너는 분리해 둔다(문구·역할이 다름). 화면 진입 시 Operation.js의 applyCcStepValves가
+     CylReplace_v1.json Step6을 읽어 SVG 배관도에 반영한다(AG_{side}/PIV는 즉시 Close,
+     PGII_{side}/PGI_{side}는 2초 간격으로 순차 Close, 텍스트 배지 아님) - "확인"을 누르면
+     용기교체 완료 토스트 후 실린더 잠금 check로 되돌아간다(교환후 - +L 이후 - 시퀀스는
+     아직 없어 Status는 CC에 그대로 둔다). "취소"는 용기교체를 그만두고 Status를 2P로
+     되돌린 뒤 실린더 잠금 check로 나간다. 스타일은 ../gms.css를 그대로 참조(복사 아님).
+     gms.js가 fetch해서 id="progressCylReplaceAutoGuardCloseBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylReplaceAutoGuardCloseBody">
+    <div class="barcode-check-title">[ Auto Guard 확인 ]</div>
+    <div class="progress-menu-desc">실린더 교체를 위한<br>Auto Guard와 Valve가<br>순차적으로 Close 됩니다.</div>
+    <div class="progress-btn-group">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="cylReplaceAutoGuardCloseConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceAutoGuardCloseCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="36.2188 22 914.7813 817.2626" width="914.781px" height="817.263px" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <style>
+        .pipe { stroke: #1a1a1a; stroke-width: 4.5; fill: none; stroke-linecap: round; stroke-linejoin: miter; }
+        .pipe-thin { stroke: #1a1a1a; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: miter; }
+        .text-label { font-size: 13px; font-family: Arial, sans-serif; font-weight: bold; fill: #000000; text-anchor: middle; }
+        .text-left-side { text-anchor: end; }
+        .text-right-side { text-anchor: start; }
+        .filter { fill: #ffffff; stroke: #1a1a1a; stroke-width: 2.5; }
+        .regulator { fill: #e9ecef; stroke: #1a1a1a; stroke-width: 2.5; }
+    </style>
+  </defs>
+  <!-- 2026-07-20 배관도 수정본(gc_svg_01.svg) 반영. 원본은 로컬 좌표계가 이 마스터 파일과
+       (17.423658, 176.26178)만큼 어긋나 있어(밸브/PT 등 변하지 않은 심볼로 대조 검증 완료),
+       전체를 이 하나의 <g> 안에 넣어 좌표계를 맞췄다 - 개별 요소를 손대지 않았다. -->
+  <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+    <path d="M 132.576 27.163 L 132.576 -41.493" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 203.802 -40.581 L 203.802 386.169" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 349.576 -32.262 L 349.576 517.303" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 682.871 -3.262 L 682.871 517.639" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 534.114 29.256 L 534.114 387.806" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 492.404 -32.262 L 681.987 -32.262" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 258.7 188.738 L 291.078 188.738" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <polygon points="309.722 361 309.722 381 339.722 361 339.722 381" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <g>
+      <polygon points="241.576 188.738 256.576 178.738 256.576 198.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+      <path d="M 241.576 181.738 L 241.576 195.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"/>
+      <text x="267.15" y="214.738" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 70.6406px 99.25px; text-anchor: end;">CV3A</text>
+    </g>
+    <path d="M 203.916 188.738 L 240.418 188.738" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 323.53 188.738 L 349.335 188.738" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 818.576 -39.954 L 818.576 117.091" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 898.576 63.123 L 898.576 445.738" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <g transform="matrix(1, 0, 0, 1, -41.42366, -182.26178)">
+      <path d="M 940 95 L 975 95 L 975 155 L 940 155" class="pipe-thin" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 2.5px;"/>
+      <g>
+        <polygon points="930 110 950 110 930 140 950 140" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+      </g>
+    </g>
+    <path d="M 56.576 -112.26 L 62.576 -122.26 L 68.576 -112.26" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <text x="62.576" y="-142.26" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 23.5938px 8.5px; text-anchor: middle; stroke-width: 1;">PUMP</text>
+    <path d="M 126.576 -112.26 L 132.576 -122.26 L 138.576 -112.26" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <text x="132.576" y="-142.26" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 41.0938px 8.5px; text-anchor: middle; stroke-width: 1;">VENT</text>
+    <path d="M 467.576 -112.26 L 473.576 -122.26 L 479.576 -112.26" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <text x="472.962" y="-142.08" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 128.898px 8.53906px; text-anchor: middle; stroke-width: 1;">CAL VENT</text>
+    <text x="818.576" y="-142.26" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 213.5px 8.5px; text-anchor: middle; stroke-width: 1;">L/C He</text>
+    <text x="898.576" y="-142.26" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 231.695px 8.5px; text-anchor: middle; stroke-width: 1;">SN2</text>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -176.26178)">
+      <text x="498.178" y="128.124" class="text-label" style="font-size: 11px; white-space: pre; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 127.242px 32.0234px; text-anchor: middle;">LF2</text>
+      <g>
+        <rect x="485" y="134" width="26" height="20" class="filter" style="fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26); stroke-width: 2.5px;"/>
+        <polygon points="489 136 489 153 509 144" fill="#d8d8d8" stroke="#1a1a1a" stroke-width="1"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g>
+        <polygon points="70,110 90,110 70,140 90,140" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g>
+        <polygon points="140,110 160,110 140,140 160,140" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g transform="matrix(1, 0, 0, 1, 1, 0)">
+        <polygon points="210,110 230,110 210,140 230,140" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 49.57634, -149.26178)">
+      <polygon points="290 214 310 214 290 244 310 244" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 49.57634, -149.26178)">
+      <polygon points="290,295 310,295 290,325 310,325" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 49.57634, -149.26178)">
+      <circle cx="300" cy="370" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"/>
+      <circle cx="300" cy="370" r="8" fill="none" stroke="#1a1a1a"/>
+      <text x="314.693" y="392" class="text-label text-right-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 87.6719px 98px;">REG2A</text>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 49.57634, -149.26178)">
+      <circle cx="300" cy="430" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"/>
+      <circle cx="300" cy="430" r="8" fill="none" stroke="#1a1a1a"/>
+      <text x="314.693" y="456" class="text-label text-right-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 87.6719px 114px;">REG1A</text>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 49.57634, -149.26178)">
+      <polygon points="290,485 310,485 290,515 310,515" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g transform="matrix(1, 0, 0, 1, 0, -3)">
+        <polygon points="690 247 710 247 690 277 710 277" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g>
+        <polygon points="690 328 710 328 690 358 710 358" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g>
+        <circle cx="700" cy="403" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"/>
+        <circle cx="700" cy="403" r="8" fill="none" stroke="#1a1a1a"/>
+        <text x="758.002" y="425" class="text-label text-left-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 189.5px 106.25px; text-anchor: end;">REG2B</text>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g>
+        <circle cx="700" cy="463" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"/>
+        <circle cx="700" cy="463" r="8" fill="none" stroke="#1a1a1a"/>
+        <text x="758.002" y="489" class="text-label text-left-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 189.5px 122.25px; text-anchor: end;">REG1B</text>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <polygon points="690 518 710 518 690 548 710 548" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -41.42366, -182.26178)">
+      <polygon points="850 110 870 110 850 140 870 140" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -41.42366, -182.26178)">
+      <g>
+        <polygon points="930 247 950 247 930 277 950 277" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -41.42366, -182.26178)">
+      <g>
+        <polygon points="930 188 950 188 940 203" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8"/>
+        <path d="M 933 206 L 947 206" stroke="#1a1a1a" stroke-width="2"/>
+        <text x="927.227" y="222" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 231.805px 55.5px; text-anchor: end;">CV1</text>
+      </g>
+    </g>
+    <path d="M 350.888 -3.262 L 682.696 -3.262" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 682.575 -33.031 L 682.576 -118.03" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 676.09 -113.26 L 682.09 -123.26 L 688.09 -113.26" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 62.884 -74.646 L 62.884 -119.26" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 62.884 27.752 L 62.884 -40.723" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 132.422 -74.646 L 132.422 -119.26" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <text x="682.141" y="-142.08" class="text-label" style="white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 181.188px 8.53906px; text-anchor: middle;">PROCESS</text>
+    <path d="M 812.322 -123.26 L 818.322 -113.26 L 824.322 -123.26" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 818.322 -73.344 L 818.322 -117.96" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 351.566 -32.296 L 464.329 -32.296" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-origin: 407.947px -32.296px;"/>
+    <path d="M 892.576 -123.26 L 898.576 -113.26 L 904.576 -123.26" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 898.576 -73.498 L 898.576 -118.11" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 898.578 62.771 L 898.576 22.427" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 898.576px 42.599px;"/>
+    <path d="M 898.576 3.439 L 898.576 -41.177" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 258.7 388.437 L 291.078 388.437" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <polygon points="309.722 560.7 309.722 580.7 339.722 560.7 339.722 580.7" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <g>
+      <polygon points="241.576 388.738 256.576 378.738 256.576 398.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+      <path d="M 241.576 381.738 L 241.576 395.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"/>
+      <text x="265.15" y="414.438" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 70.6406px 149.172px; text-anchor: end;">CV2A</text>
+    </g>
+    <path d="M 203.916 388.438 L 240.418 388.438" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 324.119 388.438 L 349.335 388.438" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 589.091 188.605 L 621.469 188.605" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <polygon points="640.113 360.867 640.113 380.867 670.113 360.867 670.113 380.867" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <g>
+      <polygon points="591.576 178.738 576.576 188.738 591.576 198.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+      <path d="M 575.576 181.738 L 575.576 195.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"/>
+      <text x="599.541" y="214.605" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 153.234px 99.2109px; text-anchor: end;">CV3B</text>
+    </g>
+    <path d="M 534.307 188.605 L 573.961 188.605" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 653.921 188.605 L 679.726 188.605" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 589.083 388.287 L 621.46 388.286" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 605.271px 388.286px;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -182.26178)">
+      <g transform="matrix(1, 0, 0, 1, 330.391266, 199.567154)">
+        <polygon points="309.722 361 309.722 381 339.722 361 339.722 381" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+      </g>
+    </g>
+    <g>
+      <polygon points="591.576 378.738 576.576 388.738 591.576 398.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+      <path d="M 576.576 381.739 L 576.576 395.739" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"/>
+      <text x="599.541" y="414.305" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 153.234px 149.141px; text-anchor: end;">CV2B</text>
+    </g>
+    <path d="M 534.306 388.318 L 576.233 388.318" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 575.283px 564.574px;"/>
+    <path d="M 653.922 388.299 L 679.726 388.3" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 666.824px 388.299px;" transform="matrix(1, 0.000001, -0.000001, 1, 0, 0)"/>
+    <path d="M 359.885 28.726 L 533.837 28.726" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 63.54 28.726 L 338.177 28.726" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 204.33 -88.501 L 472.518 -88.501" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 203.802 -74.057 L 203.802 -88.63" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 473.6 -89.373 L 473.6 -116.32" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -176.26178)">
+      <g transform="matrix(1, 0, 0, 1, 0, -28)">
+        <rect x="209.272" y="610.23" width="26.149" height="20" class="filter" style="stroke-width: 1.976; fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26);" transform="matrix(0, -1, 1, 0, -252.009918, 849.00177)"/>
+        <path d="M 368.434 615.389 L 376.975 637.639 L 359.892 637.639 L 368.434 615.389 Z" bx:shape="triangle 359.892 615.389 17.083 22.25 0.5 0 1@31273ec8" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 0.791; transform-origin: 368.434px 626.514px;"/>
+      </g>
+      <text x="398.838" y="601.361" class="text-label" style="font-size: 11px; white-space: pre; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 103.305px 150.336px; text-anchor: middle;">LF1A</text>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -16.423658, -176.26178)">
+      <g transform="matrix(1, 0, 0, 1, 330.157318, -28)">
+        <rect x="209.272" y="610.23" width="26.149" height="20" class="filter" style="stroke-width: 1.976; fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26);" transform="matrix(0, -1, 1, 0, -252.009918, 849.00177)"/>
+        <path d="M 368.434 615.389 L 376.975 637.639 L 359.892 637.639 L 368.434 615.389 Z" bx:shape="triangle 359.892 615.389 17.083 22.25 0.5 0 1@31273ec8" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 0.791; transform-origin: 368.434px 626.514px;"/>
+      </g>
+      <text x="729.025" y="601.361" class="text-label" style="font-size: 11px; white-space: pre; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 185.852px 150.336px; text-anchor: middle;">LF1B</text>
+    </g>
+    <path d="M 758.271 118.855 L 897.451 118.855" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 758.098 117.881 L 758.098 104.009" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <rect x="751.973" y="97.48" width="11.782" height="5.302" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 1;"/>
+    <g transform="matrix(1, 0, 0, 1, -78.127953, -175.672699)">
+      <polygon points="417.355 693.799 437.355 693.799 417.355 723.799 437.355 723.799" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <path d="M 818.576 -39.954 L 818.576 117.091" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"/>
+    <path d="M 258.7 388.437 L 291.078 388.437" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 409.969 462.835 L 409.969 449.31" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 427.355px 632.344px;"/>
+    <path d="M 409.694 447.498 L 672.989 447.49" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 541.341px 447.498px;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -176.26178)">
+      <polygon points="417.355 638.425 437.355 638.425 417.355 668.425 437.355 668.425" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <path d="M 409.931 447.498 L 409.931 460.179" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"/>
+    <path d="M 692.211 447.498 L 899.339 447.49" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 795.25px 447.498px;"/>
+    <path d="M 409.93 570.971 L 409.937 494.415" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 108.769px 237.83px;"/>
+    <path d="M 350.309 572.741 L 409.972 572.739" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 380.141px 572.741px;"/>
+    <g transform="matrix(1, 0, 0, 1, 40.697571, -177.26178)">
+      <polygon points="632.173 695.476 652.173 695.476 632.173 725.476 652.173 725.476" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <path d="M 743.014 461.091 L 743.013 448.155" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 527.735px 381.868px;"/>
+    <g transform="matrix(1, 0, 0, 1, -17.423658, -176.26178)">
+      <polygon points="750.399 639.513 770.399 639.513 750.399 669.513 770.399 669.513" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <path d="M 743.149 571.059 L 743.156 494.503" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 441.988px 237.918px;"/>
+    <path d="M 683.042 572.741 L 743.016 572.739" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 713.03px 572.741px;"/>
+    <path d="M 238.275 469.811 L 349.54 469.807" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 293.908px 469.811px;"/>
+    <path d="M 237.483 480.127 L 237.484 470.795" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 200.774px 439.519px;"/>
+    <g transform="matrix(1, 0, 0, 1, -16.423658, -145.471161)">
+      <rect x="219.895" y="636.569" width="68" height="171.903" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" rx="34" ry="34"/>
+      <rect x="246.557" y="626.585" width="14.705" height="10.504" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"/>
+    </g>
+    <path d="M 569.834 469.811 L 680.577 469.807" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 625.207px 469.811px;"/>
+    <path d="M 569.042 480.127 L 569.043 470.795" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 532.333px 439.519px;"/>
+    <g transform="matrix(1, 0, 0, 1, 315.13504, -145.471161)">
+      <rect x="219.895" y="636.569" width="68" height="171.903" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" rx="34" ry="34"/>
+      <rect x="246.557" y="626.585" width="14.705" height="10.504" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"/>
+    </g>
+    <path d="M 348.942 572.458 L 348.944 549.854" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 260.023px 474.096px;"/>
+    <path d="M 17932.9 373.958 L 17933.1 396.769" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 9307.9px 473.224px;" transform="matrix(-1, 0, 0, -1, -0.000401, 0.000003)"/>
+    <g transform="matrix(1, 0, 0, 1, -58.238178, -101.133095)">
+      <polygon points="309.722 560.7 309.722 580.7 339.722 560.7 339.722 580.7" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 271.006714, -100.281693)">
+      <polygon points="309.722 560.7 309.722 580.7 339.722 560.7 339.722 580.7" fill="#e0e0e0" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"/>
+    </g>
+    <path d="M 672.846 446.911 C 674.422 458.29 692.556 457.414 692.556 446.91" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 685.065px 446.911px;"/>
+    <path d="M 339.084 28.853 C 340.66 40.232 358.794 39.356 358.794 28.852" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 351.303px 28.853px;"/>
+  </g>
+
+  <!-- 밸브 클릭/상태 오버레이는 gms.js가 data/gmsValves/<unitId>.json 좌표를 읽어 여기 채워 넣는다
+       (좌표는 이 도면의 실제 밸브 심볼 위치에 맞춰 재정렬 완료됨). -->
+  <g id="valveLayer"></g>
+  <!-- PT(압력 트랜스미터) 등 아날로그 표시값 - unit1.json의 pts 좌표를 읽어 채워 넣는다. -->
+  <g id="ptLayer"></g>
+</svg>

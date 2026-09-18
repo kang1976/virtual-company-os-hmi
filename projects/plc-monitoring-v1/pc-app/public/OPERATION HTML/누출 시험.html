@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수동 누출 시험 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 수동 누출 시험"(누출 시험 종류 선택) 화면 분리 파일 -
+     Maintenance Purge 화면의 "누출 시험" 버튼으로 들어온다. 배관 청소 화면(현재
+     "수동 배관 청소.html", 헤더 "[A] 수동 배관 청소")과는 별도 화면이라 파일도 분리했다.
+     스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressLeakTestBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 누출 시험 종류 선택 - VT 감압 시험/PT 감압 시험/가압 시험 중 하나를 고르고 확인.
+       실제 시퀀스 로직은 아직 없음(뼈대) - 선택 상태(강조 표시)만 실제로 동작하고,
+       확인은 토스트만 뜬다. 취소는 이미지에는 없지만 다른 화면들과의 일관성을 위해
+       추가했다(Maintenance Purge 화면으로 되돌아감). -->
+  <div class="progress-menu-body" id="progressLeakTestBody">
+    <div class="progress-menu-desc">진행할 메뉴들<br>선택 하십시오.</div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn leak-test-btn" data-leak-test="VT 감압 시험">VT 감압 시험</button>
+      <button type="button" class="progress-btn leak-test-btn" data-leak-test="PT 감압 시험">PT 감압 시험</button>
+      <button type="button" class="progress-btn leak-test-btn" data-leak-test="가압 시험">가압 시험</button>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button type="button" class="progress-btn" id="leakTestConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="leakTestCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

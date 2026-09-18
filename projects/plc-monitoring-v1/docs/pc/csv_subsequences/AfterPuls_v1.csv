@@ -1,0 +1,11 @@
+﻿# Puls 2 구간 (가압시험 후 Pulse Vent) v1 (Main: AfterPuls)
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","14-1","2","2","auto","PNV:O","[ Puls Vent 진행 ]","가압 완료후 Puls Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 6의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"2","14-2","2","4","auto","PNV:C","","Pump 배관 진공 Check","","PNV Valve Close"
+"3","14-3","2","6","auto","HPV_{side}:O","","HPV Valve Open","","HPV Valve Open"
+"4","14-4","2","8","auto","HPV_{side}:C","","HPV Valve Close","","HPV Valve Close"
+"5","14-5","2","10","auto","","배관내 잔류 가스 Check","배관내 잔류 가스 Check중","HPT_{side} <= Pulse Vent Stop (psi)_{side}","HPT_{side} <= Pulse Vent Stop(psi) 이면(참) Next Step(8)로 진행 - Puls Vent 정상 종료. 거짓이면 Alarm Goto(6)으로 이동."
+"6","14-6","2","12","auto","","Pulse Vent 진행 횟수 Check","","진행횟수 >= Puls vent 설정횟수_{side}","진행횟수 >= 설정횟수(참/소진)면 Next Step(7)에서 정지. 거짓(미달)이면 Alarm Goto(1)로 Step 1부터 다시 반복."
+"7","14-7","1","13","auto","","Puls Vent 설정횟수 초과","설정횟수를 초과하여 Puls Vent를 정지합니다.","진행횟수 < Puls vent 설정횟수_{side}","정지 전용 Step, Alarm Seq 1 발동."
+"8","14-8","1","14","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","Pulse Vent 마무리 - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","밸브 전체 Close"
+"9","14-9","1","15","auto","","Puls Vent Sequence Complet","Puls Vent가 완료되었습니다.","","Puls 2 완료 -> 다음 Status(-VT 또는 4P)로 자동 진행."

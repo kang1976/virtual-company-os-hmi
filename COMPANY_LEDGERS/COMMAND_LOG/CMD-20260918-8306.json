@@ -1,0 +1,9 @@
+{
+  "id": "CMD-20260918-8306",
+  "project_id": "PRJ-20260918-8306",
+  "sender": "CEO",
+  "recipient": "COO",
+  "instruction": "진행해주세요",
+  "priority": "P0",
+  "status": "PROCESSING"
+}

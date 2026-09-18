@@ -1,0 +1,15 @@
+/* GMS 조작화면 TREND(gms.html)에 임베드되는 Univer 태그 체크리스트 그리드.
+   monitoring.html의 #trendGridContainer와 동일한 이유로 flex-grow 높이 규칙이 필요하다 -
+   규칙이 없으면 빈 div의 자연 높이(0에 가까움)로 눌려서 캔버스가 제대로 안 보인다.
+   다만 이 패널(#progressTrendBody)은 위에 툴바 행이 많아(폴링주기/시작·일시정지·정지/
+   기록 불러오기·내보내기/개별·Total/AutoFit/Y·X 범위) flex:1 0px만으로는 남는 공간이
+   음수가 되어 그리드가 0px로 눌릴 수 있다 - min-height로 최소 크기를 보장하고, 공간이
+   모자라면(overflow-y:auto인 부모 안에서) 패널 전체가 스크롤되게 한다. */
+#gmsTrendGridContainer {
+  flex: 1 1 260px;
+  min-height: 260px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}

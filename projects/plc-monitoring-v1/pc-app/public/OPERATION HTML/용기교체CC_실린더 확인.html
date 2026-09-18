@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>실린더 확인 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - PASSWORD("실린더 교체") 통과
+     후 들어오는 "용기교체"(Status "CC") 6단계 중 첫 번째 화면. 이 단계들은 배지(step-badges-lg)
+     없이 안내문/버튼만 보여준다(참고 사진에 배지가 없음). 실제 시퀀스/검증 로직은 아직
+     없음(뼈대) - "준비전 모드변경"/"Force Purge"는 토스트만, "확인"은 다음 화면(Valve
+     Open 확인)으로, "취소"는 용기교체 자체를 그만두고 Status를 2P로 되돌린 뒤 실린더
+     잠금 check로 나간다. 스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressCylReplaceCheckBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylReplaceCheckBody">
+    <div class="barcode-check-title">[ 실린더 확인 ]</div>
+    <div class="progress-menu-desc">실린더의 충진 일자를<br>확인해 주시기 바랍니다.</div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-aux-btn" id="cylReplaceCheckModeBtn" style="margin-bottom:12px;">준비전 모드변경</button>
+      <button type="button" class="progress-aux-btn" id="cylReplaceCheckForcePurgeBtn" style="margin-bottom:22px;">Force Purge</button>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="cylReplaceCheckConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceCheckCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+      <!-- CC 6화면 전체의 밸브 순서 데이터를 이 화면에서 엑셀로 내보내서 편집하고,
+           편집한 파일을 다시 불러와 그대로 반영한다(gms-sub-sequence-runner.js의
+           subSeqWireExcelButtons 재사용 - Operation.js wireOperationScreens 참고). -->
+      <div class="adjust-mode-actions" style="margin-top:8px;">
+        <button type="button" class="progress-aux-btn" id="cylReplaceCheckExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceCheckExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+      </div>
+      <input type="file" id="cylReplaceCheckExcelFileInput" accept=".xlsx" style="display:none;" />
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PLC 원격 제어</title>
+<meta name="theme-color" content="#0b1220" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" href="/icons/icon.svg" />
+<link rel="stylesheet" href="/style.css" />
+<script>
+  // FOUC 방지 — 저장된 테마/글자크기를 스타일 적용 전에 먼저 반영 (S5 설정)
+  try {
+    var t = localStorage.getItem('plcTheme');
+    if (t === 'light' || t === 'dark' || t === 'oled-black') document.documentElement.dataset.theme = t;
+    var f = localStorage.getItem('plcFontSize');
+    if (f) document.documentElement.style.setProperty('--fs-base', parseInt(f, 10) + 'px');
+  } catch (e) {}
+</script>
+</head>
+<body>
+  <!-- ── 로그인 ── -->
+  <div id="login-view" class="view">
+    <form id="login-form" class="login-card">
+      <h1>PLC 원격 제어</h1>
+      <input id="loginId" type="text" placeholder="아이디" autocomplete="username" required />
+      <input id="password" type="password" placeholder="비밀번호" autocomplete="current-password" required />
+      <button type="submit">로그인</button>
+      <p id="login-error" class="error"></p>
+      <p id="login-ver" class="login-ver">—</p>
+    </form>
+  </div>
+
+  <!-- ── 앱 (로그인 후) ── -->
+  <div id="app-view" class="view hidden">
+    <header class="appbar">
+      <span class="appbar-title">PLC 원격 제어</span>
+      <span id="app-ver" class="appbar-ver" title="앱 / 서비스워커 캐시 버전">—</span>
+      <span id="conn-dot" class="conn-dot" title="PLC 연결 상태"></span>
+    </header>
+
+    <!-- 홈 (S1) -->
+    <main id="tab-home" class="tab-panel">
+      <section class="card">
+        <h2 class="card-title">PLC 연결 상태</h2>
+        <div class="stat-row">
+          <span class="stat-label">상태</span>
+          <span id="home-conn-state" class="stat-value">확인 중…</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">주소</span>
+          <span id="home-host" class="stat-value mono">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">서버 응답</span>
+          <span id="home-latency" class="stat-value mono">—</span>
+        </div>
+        <div class="stat-row link-row" id="open-cpu-info">
+          <span class="stat-label">CPU · 펌웨어 정보</span>
+          <span class="stat-value link"><span id="home-cpu-model">—</span> ›</span>
+        </div>
+        <div class="stat-row link-row" id="open-config">
+          <span class="stat-label">연결 설정</span>
+          <span class="stat-value link"><span id="home-poll">—</span> ›</span>
+        </div>
+        <button id="home-refresh" class="btn-secondary">새로고침</button>
+        <button id="home-link-btn" class="btn-secondary admin-only hidden">연결 해제</button>
+      </section>
+
+      <nav class="home-tiles">
+        <button class="tile" data-goto="mon"><span class="tile-icon">📋</span>모니터링</button>
+        <button class="tile" data-goto="trend"><span class="tile-icon">📈</span>트렌드</button>
+        <button class="tile" data-goto="gms"><span class="tile-icon">🖥️</span>GMS</button>
+        <button class="tile" data-goto="settings"><span class="tile-icon">⚙️</span>설정</button>
+      </nav>
+    </main>
+
+    <!-- 모니터링 (S2) -->
+    <main id="tab-mon" class="tab-panel hidden">
+      <input id="search" type="text" inputmode="search" placeholder="태그 검색 (심볼/이름/설명)" />
+      <p class="hint">총 <span id="tag-total">0</span>개 태그 중 <span id="tag-shown">0</span>개 표시 · <span id="poll-status">—</span></p>
+      <div id="tag-list"></div>
+      <div id="pager" class="hidden">
+        <button id="prev-page" class="btn-secondary">이전</button>
+        <span id="page-info"></span>
+        <button id="next-page" class="btn-secondary">다음</button>
+      </div>
+    </main>
+
+    <!-- 트렌드 (S3 — 예정) -->
+    <main id="tab-trend" class="tab-panel hidden">
+      <div class="trend-controls">
+        <select id="trend-window" aria-label="시간 창">
+          <option value="60">1분</option>
+          <option value="300" selected>5분</option>
+          <option value="600">10분</option>
+          <option value="1800">30분</option>
+          <option value="3600">1시간</option>
+          <option value="21600">6시간</option>
+          <option value="86400">24시간</option>
+          <option value="259200">72시간</option>
+        </select>
+        <button id="trend-add" class="btn-secondary">＋ 변수</button>
+        <button id="trend-full" class="btn-secondary">전체 보기</button>
+        <button id="trend-axis" class="btn-secondary">축 설정</button>
+        <button id="trend-log-toggle" class="btn-secondary admin-only hidden">🔴 기록 중</button>
+      </div>
+      <div class="trend-controls">
+        <button id="trend-export" class="btn-secondary">⬇ CSV</button>
+        <button id="trend-png" class="btn-secondary">⬇ PNG</button>
+        <button id="trend-import-btn" class="btn-secondary admin-only hidden">⬆ CSV 가져오기</button>
+        <input id="trend-import-file" type="file" accept=".csv,text/csv,text/plain" class="hidden" />
+      </div>
+      <p class="hint">차트: 한 손가락 드래그 = 좌우 이동 · 두 손가락 가로 = 시간축 확대 · 두 손가락 세로 = 값축 확대 · 꾹 누르기 = 십자선(시간·값). "전체 보기"로 실시간 복귀.</p>
+      <p id="trend-status" class="hint"></p>
+      <div id="trend-chart-wrap">
+        <svg id="trend-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="trend-cross" class="hidden" aria-hidden="true">
+          <div class="tc-vline"></div>
+          <div class="tc-hline"></div>
+          <div class="tc-label"></div>
+        </div>
+        <p id="trend-empty" class="hint">＋ 변수로 메모리 주소(영역·워드·타입·비트)를 추가하면<br>1초 간격으로 기록되고 그래프로 표시됩니다.</p>
+      </div>
+      <div id="trend-legend"></div>
+    </main>
+
+    <!-- GMS (S4 — 예정) -->
+    <main id="tab-gms" class="tab-panel hidden">
+      <div class="placeholder">
+        <p class="placeholder-icon">🖥️</p>
+        <p>GMS 배관도(P&amp;ID)</p>
+        <p class="hint">다음 단계(S4)에서 포팅 예정</p>
+      </div>
+    </main>
+
+    <!-- 설정 (S5 — 일부) -->
+    <main id="tab-settings" class="tab-panel hidden">
+      <section class="card">
+        <h2 class="card-title">화면</h2>
+        <div class="stat-row">
+          <span class="stat-label">테마</span>
+          <span class="seg" id="seg-theme">
+            <button type="button" data-theme="dark">다크</button>
+            <button type="button" data-theme="light">라이트</button>
+            <button type="button" data-theme="oled-black">OLED</button>
+          </span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">글자 크기</span>
+          <span class="seg" id="seg-fs">
+            <button type="button" data-fs="15">작게</button>
+            <button type="button" data-fs="16">보통</button>
+            <button type="button" data-fs="18">크게</button>
+          </span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">화면 항상 켜기</span>
+          <label class="switch"><input type="checkbox" id="chk-wakelock" /><span></span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">계정</h2>
+        <div class="stat-row">
+          <span class="stat-label">사용자</span>
+          <span class="stat-value"><span id="user-name"></span> <span id="user-role" class="badge"></span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">서버</span>
+          <span id="settings-host" class="stat-value mono">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">앱 버전</span>
+          <span id="app-ver-full" class="stat-value mono">—</span>
+        </div>
+        <button id="logout-btn" class="btn-danger">로그아웃</button>
+      </section>
+    </main>
+
+    <!-- 하단 탭 바 -->
+    <nav class="tabbar">
+      <button class="tabbtn" data-tab="home"><span class="tabbtn-icon">🏠</span>홈</button>
+      <button class="tabbtn" data-tab="mon"><span class="tabbtn-icon">📋</span>모니터링</button>
+      <button class="tabbtn" data-tab="trend"><span class="tabbtn-icon">📈</span>트렌드</button>
+      <button class="tabbtn" data-tab="gms"><span class="tabbtn-icon">🖥️</span>GMS</button>
+      <button class="tabbtn" data-tab="settings"><span class="tabbtn-icon">⚙️</span>설정</button>
+    </nav>
+  </div>
+
+  <!-- CPU · 펌웨어 · 운전상태 · 시계 상세 (기존 PC GMS 'CPU 정보' 화면 대응) -->
+  <div id="detail-view" class="detail-view hidden">
+    <header class="appbar">
+      <button id="detail-back" class="link-btn">‹ 뒤로</button>
+      <span class="appbar-title">CPU · 펌웨어 정보</span>
+      <button id="detail-refresh" class="link-btn">새로고침</button>
+    </header>
+    <div class="detail-body">
+      <section class="card">
+        <h2 class="card-title">CPU 및 시스템 정보</h2>
+        <div class="stat-row"><span class="stat-label">CPU 모델명</span><span id="d-model" class="stat-value mono">—</span></div>
+        <div class="stat-row"><span class="stat-label">내부 시스템 버전</span><span id="d-version" class="stat-value mono">—</span></div>
+        <div class="stat-row"><span class="stat-label">연결 방식</span><span id="d-transport" class="stat-value mono">—</span></div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">운전 상태 · 에러 상태</h2>
+        <div class="stat-row"><span class="stat-label">운전 상태</span><span id="d-run" class="stat-value mono">—</span></div>
+        <div class="stat-row"><span class="stat-label">운전 모드</span><span class="stat-value"><span id="d-mode" class="risk-badge">—</span></span></div>
+        <div class="stat-row"><span class="stat-label">치명적 에러</span><span id="d-fatal" class="stat-value">—</span></div>
+        <div class="stat-row"><span class="stat-label">비치명 에러</span><span id="d-nonfatal" class="stat-value">—</span></div>
+        <div class="stat-row"><span class="stat-label">FAL/FALS 코드</span><span id="d-fal" class="stat-value mono">—</span></div>
+        <div class="stat-row"><span class="stat-label">등록 에러 메시지</span><span id="d-errmsg" class="stat-value">—</span></div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">시계 (RTC)</h2>
+        <div class="stat-row"><span class="stat-label">PLC 현재 시각</span><span id="d-clock" class="stat-value mono">—</span></div>
+        <button id="d-clock-set" class="btn-secondary admin-only hidden">PC 시각으로 설정</button>
+      </section>
+
+      <section class="card admin-only hidden" id="d-mode-card">
+        <h2 class="card-title">운전 모드 변경</h2>
+        <p class="warn">⚠️ 실제 PLC에 즉시 반영됩니다. PROGRAM(정지)은 <b>안전 시스템 동작을 멈춥니다.</b></p>
+        <div class="mode-btns">
+          <button class="btn-secondary" data-mode="RUN">RUN</button>
+          <button class="btn-secondary" data-mode="MONITOR">MONITOR</button>
+          <button class="btn-danger" data-mode="PROGRAM">PROGRAM (정지)</button>
+        </div>
+      </section>
+
+      <section class="card" id="d-memory-card">
+        <h2 class="card-title">메모리 영역</h2>
+        <div id="d-memory"></div>
+      </section>
+
+      <p class="hint non-admin-only" style="padding:0 4px">운전 모드 변경 · 시계 설정은 ADMIN만 가능합니다.</p>
+    </div>
+  </div>
+
+  <!-- 위험 조작 확인창 (운전 모드 변경 / 시계 설정): 사유 + 비밀번호 필수 -->
+  <div id="danger-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2 id="dg-title">확인</h2>
+      <p id="dg-warn" class="warn"></p>
+      <label class="field-label">사유 (필수, 5자 이상)</label>
+      <input id="dg-reason" type="text" autocomplete="off" placeholder="예: 정기 점검을 위한 일시 정지" />
+      <label class="field-label">비밀번호 재입력 (필수)</label>
+      <input id="dg-password" type="password" autocomplete="current-password" placeholder="본인 로그인 비밀번호" />
+      <p id="dg-error" class="error"></p>
+      <div class="modal-actions">
+        <button id="dg-cancel" class="btn-secondary">취소</button>
+        <button id="dg-exec" class="btn-danger">실행</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 연결 설정 (PLC 주소 / 포트 / 폴링 주기) -->
+  <div id="config-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>연결 설정</h2>
+      <label class="field-label">PLC 주소 (IP)</label>
+      <input id="cfg-host" type="text" inputmode="url" autocomplete="off" placeholder="192.168.0.80" />
+      <label class="field-label">포트</label>
+      <input id="cfg-port" type="text" inputmode="numeric" autocomplete="off" placeholder="9600" />
+      <label class="field-label">폴링 주기 (ms)</label>
+      <input id="cfg-poll" type="text" inputmode="numeric" autocomplete="off" placeholder="3000" />
+      <p id="cfg-note" class="hint"></p>
+      <p id="cfg-error" class="error"></p>
+      <div class="modal-actions">
+        <button id="cfg-cancel" class="btn-secondary">취소</button>
+        <button id="cfg-save" class="btn-primary">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 트렌드 축 설정 -->
+  <div id="trend-axis-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>축 설정</h2>
+      <label class="field-label">표시 구간 (분) — X축</label>
+      <input id="tx-min" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 5" />
+      <label class="field-label">Y축</label>
+      <span class="seg" id="ty-mode">
+        <button type="button" data-ym="auto">자동</button>
+        <button type="button" data-ym="fixed">고정</button>
+      </span>
+      <div id="ty-fixed-row" class="hidden">
+        <label class="field-label">Y 최소 / 최대</label>
+        <div style="display:flex;gap:8px">
+          <input id="ty-lo" type="text" inputmode="decimal" autocomplete="off" placeholder="최소" />
+          <input id="ty-hi" type="text" inputmode="decimal" autocomplete="off" placeholder="최대" />
+        </div>
+      </div>
+      <p id="trend-axis-error" class="error"></p>
+      <div class="modal-actions">
+        <button id="trend-axis-cancel" class="btn-secondary">취소</button>
+        <button id="trend-axis-ok" class="btn-primary">적용</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 트렌드 변수 추가 (메모리 주소 직접 지정 — 모니터링의 주소 배정과 동일) -->
+  <div id="trend-add-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>트렌드 변수 추가</h2>
+      <label class="field-label">표시 이름</label>
+      <input id="ts-label" type="text" autocomplete="off" placeholder="예: NH3 유량" />
+      <label class="field-label">메모리 영역</label>
+      <select id="ts-area"></select>
+      <label class="field-label">워드 주소</label>
+      <input id="ts-num" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 0" />
+      <label class="field-label">데이터 타입 (CX-Programmer 기준)</label>
+      <select id="ts-dtype"></select>
+      <label class="field-label">비트 (선택)</label>
+      <input id="ts-bit" type="text" inputmode="numeric" autocomplete="off" placeholder="0~15 · 입력 시 비트(0/1)" />
+      <p id="ts-error" class="error"></p>
+      <div class="modal-actions">
+        <button id="ts-cancel" class="btn-secondary">취소</button>
+        <button id="ts-save" class="btn-primary">추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLC 주소 배정 (ADMIN, 매핑표 도착 전 소수 태그 검증용) -->
+  <div id="addr-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>태그 편집</h2>
+      <p id="addr-tag" class="mono"></p>
+      <label class="field-label">심볼(이름)</label>
+      <input id="addr-symbol" type="text" autocomplete="off" />
+      <label class="field-label">설명</label>
+      <input id="addr-desc" type="text" autocomplete="off" placeholder="(선택)" />
+      <hr class="modal-sep" />
+      <label class="field-label">메모리 영역</label>
+      <select id="addr-area">
+        <option value="">(주소 해제)</option>
+        <option value="D">D (DM)</option>
+        <option value="W">W (Work)</option>
+        <option value="CIO">CIO</option>
+        <option value="H">H (Holding)</option>
+        <option value="E0">E0 (확장 DM)</option>
+        <option value="A">A (Auxiliary · 읽기전용)</option>
+      </select>
+      <label class="field-label">워드 주소</label>
+      <input id="addr-num" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 0" />
+      <label class="field-label">데이터 타입 (CX-Programmer 기준)</label>
+      <select id="addr-dtype">
+        <optgroup label="비트">
+          <option value="BOOL">BOOL · On/Off</option>
+        </optgroup>
+        <optgroup label="정수(부호 있음)">
+          <option value="INT">INT · 1워드</option>
+          <option value="DINT">DINT · 2워드</option>
+          <option value="LINT">LINT · 4워드</option>
+        </optgroup>
+        <optgroup label="정수(부호 없음)">
+          <option value="UINT">UINT · 1워드</option>
+          <option value="UDINT">UDINT · 2워드</option>
+          <option value="ULINT">ULINT · 4워드</option>
+        </optgroup>
+        <optgroup label="BCD">
+          <option value="UINT_BCD">UINT_BCD · 1워드</option>
+          <option value="UDINT_BCD">UDINT_BCD · 2워드</option>
+          <option value="ULINT_BCD">ULINT_BCD · 4워드</option>
+        </optgroup>
+        <optgroup label="실수">
+          <option value="REAL">REAL · 2워드</option>
+          <option value="LREAL">LREAL · 4워드</option>
+        </optgroup>
+        <optgroup label="HEX · 비트열">
+          <option value="WORD">WORD · 1워드</option>
+          <option value="DWORD">DWORD · 2워드</option>
+          <option value="LWORD">LWORD · 4워드</option>
+          <option value="CHANNEL">CHANNEL · 1워드</option>
+          <option value="16BIT">16BIT · 2진수</option>
+        </optgroup>
+        <optgroup label="문자">
+          <option value="ASCII">ASCII · 1워드</option>
+          <option value="STRING">STRING · 최대 16워드</option>
+        </optgroup>
+        <optgroup label="타이머 · 카운터">
+          <option value="TIMER">TIMER · 현재값 BCD</option>
+          <option value="COUNTER">COUNTER · 현재값 BCD</option>
+        </optgroup>
+      </select>
+      <p class="hint">2워드 이상 타입은 지정 주소부터 연속으로 읽습니다(하위 워드=낮은 주소). 실수·BCD·64비트·STRING 해석은 실기 미검증 — 실제 매핑표 도착 후 값 대조 필요.</p>
+      <label class="field-label">비트 (선택)</label>
+      <input id="addr-bit" type="text" inputmode="numeric" autocomplete="off" placeholder="0~15 · 입력 시 비트(0/1) 읽기" />
+      <p id="addr-error" class="error"></p>
+      <div class="modal-actions">
+        <button id="addr-cancel" class="btn-secondary">취소</button>
+        <button id="addr-save" class="btn-primary">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 값 쓰기 입력 -->
+  <div id="write-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>값 쓰기</h2>
+      <p id="write-tag" class="mono"></p>
+      <input id="write-value" type="text" inputmode="numeric" autocomplete="off" placeholder="쓸 값 (예: 0 또는 1)" />
+      <p id="write-error" class="error"></p>
+      <div class="modal-actions">
+        <button id="write-cancel" class="btn-secondary">취소</button>
+        <button id="write-next" class="btn-primary">다음</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 위험명령 2단계 확인 (Design Ref: design.md §4) -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2 id="confirm-title">정말 실행하시겠습니까?</h2>
+      <p id="confirm-detail"></p>
+      <p class="warn" id="confirm-warn">이 조작은 실제 설비에 즉시 반영됩니다.</p>
+      <div class="modal-actions">
+        <button id="confirm-cancel" class="btn-secondary">취소</button>
+        <button id="confirm-ok" class="btn-danger">실행</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

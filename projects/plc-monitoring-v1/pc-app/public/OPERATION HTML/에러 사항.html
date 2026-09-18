@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>에러사항 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "에러사항" 화면 분리 파일. 보조 메뉴의 "📢 에러사항" 버튼으로 들어온다
+     (Operation.js의 auxMenuErrorLogBtn/showProgressErrorLog). "작업이력" 화면(작업이력.html)과
+     완전히 같은 구조(Univer 그리드, A/B 탭, 기간 필터, Data Clear, 엑셀 내보내기, 복귀, 열폭
+     자동맞춤)이지만 DB는 별개(error_log 테이블)다(요청사항). public/gms-sub-sequence-runner.js가
+     서브시퀀스(조정모드 등)에서 실제 Alarm Seq. 동작(초기화/이어서재진행/SHUTDOWN)을 수행할
+     때만 기록한다 - Alarm Goto로 가볍게 다른 Step으로 이동하는 반복문/Option 분기는 알람이
+     아니므로 여기 안 남는다(그 Step 자신의 엑셀 Alarm Seq. 열이 비어있으면 기록 안 됨). 열
+     구성(왼쪽부터): 시각 / HTML화면 / Step / 측 / 조작자 / 권한 / Alarm Seq. / 알람 메시지 /
+     누적시간(초) / PT·Weight·히터 센서 개별 열(작업이력 화면과 동일한 OPTION 반영 규칙).
+     작업이력과 달리 "구분"(터치키/자동진행) 열과 구분 필터가 없다 - 이 화면의 행은 전부
+     서브시퀀스 알람이라 구분이 필요 없다. 이 화면도 배관도를 숨기고 그리드가 화면 전체
+     폭을 쓴다(Operation.js의 FULL_WIDTH_SCREENS 참고) - "닫기"를 눌러야 배관도가 돌아온다.
+     스타일은 ../gms.css를 그대로 참조. gms.js가 fetch해서 id="progressErrorLogBody" 컨테이너에
+     주입하고, public/gms-errorlog-widget.js가 표 렌더링/탭 전환/열너비+행높이 조절/엑셀
+     내보내기/행별 "복귀"를 전담한다(gms-worklog-widget.js와 같은 관심사 분리 패턴). -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressErrorLogBody">
+    <div class="progress-menu-desc">서브시퀀스(조정모드 등)에서 실제 알람(Alarm Seq. 초기화/이어서재진행/SHUTDOWN)이 발생할 때마다 자동으로 기록됩니다.</div>
+    <div class="pt-calib-tabs">
+      <button type="button" class="pt-calib-tab" id="errorLogTabABtn">에러사항 A</button>
+      <button type="button" class="pt-calib-tab" id="errorLogTabBBtn">에러사항 B</button>
+    </div>
+    <div class="trend-range-row">
+      <label>시작 <input type="datetime-local" id="errorLogFromInput" step="1" /></label>
+      <label>종료 <input type="datetime-local" id="errorLogToInput" step="1" /></label>
+      <button type="button" class="trend-toolbar-btn" id="errorLogFilterBtn">🔍 기간 조회</button>
+      <button type="button" class="trend-toolbar-btn" id="errorLogFilterResetBtn">전체보기</button>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+      <button type="button" id="errorLogRefreshBtn">🔄 새로고침</button>
+      <button type="button" id="errorLogReturnBtn" class="primary">↩ 선택한 행 화면으로 복귀</button>
+      <button type="button" id="errorLogDataClearBtn" title="PASSWORD 확인 후 지금 탭(A/B)의 화면만 지웁니다. 서버 DB 기록은 지워지지 않고, 새로고침/기간조회로 언제든 다시 불러올 수 있습니다.">🧹 Data Clear</button>
+      <button type="button" id="errorLogExcelExportBtn">📤 엑셀로 내보내기</button>
+      <button type="button" id="errorLogCloseBtn" style="margin-left:auto;">✕ 닫기</button>
+    </div>
+    <div id="gmsErrorLogGridContainer" style="flex:1 1 400px; min-height:400px; width:100%; position:relative; overflow:hidden; background:#fff;"></div>
+    <div class="h-splitter" id="gmsErrorLogGridResizeHandle" title="드래그해서 그리드 높이 조절"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,422 @@
+﻿=== GMS 전체 서브시퀀스 마스터 통합 CSV ===
+
+
+
+--- [ AdjustMode_v1 : 조정모드 시퀀스 v1 (샘플) ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","16-1","1","1","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","조정모드 진입 - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","16-2","2","3","auto","PNV:O","Pump 배관 진공 Check","조정 모드 진행중 입니다.","VPT <= 진공하한치_{side}","Step 23의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","16-3","2","5","auto","LPV_{side}:O","","","LPT_{side}  & MPT_{side} <= & <= 진공하한치_{side} & 진공하한치_{side}",""
+"4","16-4","2","7","auto","HPI_{side}:O","","","HPT_{side} <= 진공하한치_{side}",""
+"5","16-5","2","9","auto","HPV_{side}:O","","","",""
+"6","16-6","2","11","auto","PGI_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"7","16-7","2","13","auto","PGII_{side}:O","","","VPT & LPT_{side} & HPT_{side} & NPT_{side} & MPT_{side} <= & <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","예시 - MPT는 아직 설비에 없는 센서라 ""?""로 옵션 처리(값이 없으면 이 항목만 건너뛰고 나머지 4개는 그대로 확인)."
+"8","16-8","2","15","auto","PGII_{side}:C","","","",""
+"9","16-9","2","17","auto","PGI_{side}:C","","","",""
+"10","16-10","2","19","auto","HPV_{side}:C","","","",""
+"11","16-11","2","21","auto","HPI_{side}:C","","","",""
+"12","16-12","2","23","auto","LPV_{side}:C","","","",""
+"13","16-13","2","25","auto","PNV:C","","","",""
+"14","16-14","2","27","auto","PNBV:O","Purge N2 공급 Check","","",""
+"15","16-15","2","29","auto","PIV:O","","","",""
+"16","16-16","2","31","auto","PGII_{side}:O","","","NPT_{side} >= 질소공급하한치_{side}",""
+"17","16-17","2","33","auto","PGI_{side}:O","","","HPT_{side} >= 질소공급하한치_{side}",""
+"18","16-18","5","38","auto","HPI_{side}:O","","","NPT_{side} & HPT_{side} & LPT_{side}  & MPT_{side} >= & >= & >= & >= 질소공급하한치_{side} & 질소공급하한치_{side} & 질소공급하한치_{side} & 질소공급하한치_{side}",""
+"19","16-19","2","40","auto","HPI_{side}:C","","","",""
+"20","16-20","2","42","auto","PGI_{side}:C","","","",""
+"21","16-21","2","44","auto","PGII_{side}:C","","","",""
+"22","16-22","2","46","auto","PIV:C","","","",""
+"23","16-23","2","48","auto","PNBV:C","","","",""
+"24","16-24","2","50","auto","GNV:O","배관 대기압 형성","","",""
+"25","16-25","2","52","auto","LPV_{side}:O","","","",""
+"26","16-26","2","54","auto","HPI_{side}:O","","","",""
+"27","16-27","2","56","auto","HPV_{side}:O","","","",""
+"28","16-28","2","58","auto","PGI_{side}:O","","","",""
+"29","16-29","2","60","auto","PGII_{side}:O","대기압 안정화 시간","","",""
+"30","16-30","2","62","auto","PGII_{side}:C","","","",""
+"31","16-31","2","64","auto","PGI_{side}:C","","","",""
+"32","16-32","2","66","auto","HPV_{side}:C","","","",""
+"33","16-33","2","68","auto","HPI_{side}:C","","","",""
+"34","16-34","2","70","auto","LPV_{side}:C","","","",""
+"35","16-35","1","71","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","조정모드마무리 - 밸브 초기화(전체 Close)","","",""
+"36","16-36","2","73","auto","","Offset 반영","PT 값을 대기압에 맞춰 Offset을 자동으로 반영하고 있습니다.","NPT_{side} & HPT_{side} & MPT_{side} & LPT_{side} & VPT ZERO & ZERO & ZERO & ZERO & ZERO ","[Offset 자동 반영] 확인 버튼이 아니라 자동으로 처리된다 - 비교연산자에 ""ZERO""를 쓰면(비교대상 칸은 안 씀) 그 태그의 압력조정 표 현재값을 읽어 정확히 0이 되도록 offset을 다시 계산해서 즉시 저장한다(gms-sub-sequence-runner.js의 subSeqApplyAutoZero). conditionValue를 비워둬서 subSeqEvalCondition은 이 Step을 '조건 없음'으로 조용히 지나간다 - 비교가 아니라 동작이기 때문."
+"37","16-37","1","74","auto","","","Offset 값 Alarm Check","NPT_{side}:OFFSET & HPT_{side}:OFFSET & MPT_{side}:OFFSET & LPT_{side}:OFFSET & VPT:OFFSET <= & <= & <=? & <= & <= NPT_{side}:MAX3% & HPT_{side}:MAX3% & MPT_{side}:MAX3% & LPT_{side}:MAX3% & VPT:MAX3%","[Offset 확인 예시] "":OFFSET"" = 원시 PLC 값이 아니라 압력조정 표(analogValue/offset/maxValue)로 계산한 현재값의 절댓값. "":MAX3%"" = 같은 태그의 압력조정 표 Max값의 3%. 5개 전부 3% 이내면 정상 진행(38번), 하나라도 벗어나면 Alarm Seq.1 발동 + 에러사항 화면의 알람 메시지에 원인 PT 이름이 자동으로 붙는다(예: ""PT Sensor Range Over (NPT_A, HPT_A)""). MPT는 아직 설비에 없는 센서라 비교연산자에만 ""?""를 붙여 옵션 처리(태그 자체에는 ""?""를 붙이지 않음 - 붙이면 태그명이 깨져서 항상 스킵됨)."
+"38","16-38","1","75","auto","","조정모드 Sequence Complet","PT Calibration이 완료되었습니다.","",""
+
+
+--- [ AfterFourP_v1 : 4P 구간 - 교환 후 2차 배관청소 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","15-1","1","1","auto","","[ 교환 후 2차 배관청소 Mode ]","교환 후 2차 배관청소를 시작합니다.","","TwoP_v1.json(2차 배관청소)과 동일 구조 - 반복 종료 조건 CONFIG만 다름."
+"2","15-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}","Step 17의 반복문 진입점 - 설정 횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","15-3","2","5","auto","HPV_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"4","15-4","2","7","auto","PGI_{side}:O","","","VPT & HPT_{side} & NPT_{side} <= & <= & <= & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}",""
+"5","15-5","2","9","auto","PGII_{side}:O","","","",""
+"6","15-6","2","11","auto","PGII_{side}:C","","","",""
+"7","15-7","2","13","auto","PGI_{side}:C","","","",""
+"8","15-8","2","15","auto","HPV_{side}:C","","","",""
+"9","15-9","2","17","auto","PNV:C","","","",""
+"10","15-10","2","19","auto","PNBV:O","","Purge N2 공급 Check","",""
+"11","15-11","2","21","auto","PIV:O","","","",""
+"12","15-12","2","23","auto","PGII_{side}:O","","","",""
+"13","15-13","2","25","auto","PGI_{side}:O","","","",""
+"14","15-14","2","27","auto","PGI_{side}:C","","","",""
+"15","15-15","2","29","auto","PIV:C PGII_{side}:C","","","",""
+"16","15-16","2","31","auto","PNBV:C","","","",""
+"17","15-17","2","33","auto","","","","진행횟수 >= 교환 후 2차 Purge 횟수_{side}","[반복 사용법] 이 Step의 'Alarm Monitoring' 열 값이 예약어 '진행횟수'이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다. 진행횟수>=교환 후 2차 Purge 횟수_{side}(CONFIG 탭, 기존 시드 항목 재사용) 이면 참 -> Next Step(20)으로 진행(반복 종료, 완료 화면). 거짓(아직 반복 중)이면 Alarm Goto(2)로 되돌아감. 반복 횟수는 CONFIG 탭의 '교환 후 2차 Purge 횟수_A'/'_B' 행에서 바꾼다. TwoP_v1.json Step 17과 동일 패턴, CONFIG 이름·측별 분리 방식만 다름."
+"20","15-18","1","34","auto","","[ 교환 후 2차 배관청소 Sequence Complet ]","교환 후 2차 배관청소가 완료되었습니다.","","완료 시 PASSWORD(exchangeFourthPurgeDone) 확인 후 Status PC(퍼지완료/가스공급 메뉴)로 전환."
+
+
+--- [ AfterPlusL_v1 : +L 구간 - 교환 후 가압시험 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","13-1","1","1","auto","","[ 고압 HE Leak check 라인 확인 ]","고압 HE Leak check 라인 옵션 확인중 (On: HPIV Open -> PGII / Off: PNBV -> PIV Open -> PGII)","고압HELeakCheck ON -","OPTION 분기: ON이면 Next Step(1A, HPIV Open), OFF이면 Alarm Goto(1B, PNBV Open)로 분기"
+"1A","13-2","2","3","auto","HPIV:O","","HPIV Valve Open (고압 HE Leak check 라인 사용)","","고압 HE Leak check 라인 On 분기: HPIV Open 후 Step 3(PGII Open)으로 이동"
+"1B","13-3","2","3","auto","PNBV:O","","PNBV Valve Open","","고압 HE Leak check 라인 Off 분기 1단계 -> Step 2(PIV Open)로 이동"
+"2","13-4","2","5","auto","PIV:O","","PIV Valve Open","","고압 HE Leak check 라인 Off 분기 2단계: PIV Open 후 Step 3(PGII Open)으로 이동"
+"3","13-5","2","7","auto","PGII_{side}:O","","PGII Valve Open","","공통 합류: PGII Valve Open 후 NPT 압력범위 확인(Step 4)으로 이동"
+"4","13-6","2","9","auto","","[ NPT 압력범위 확인 ]","NPT 압력범위 확인중","NPT_{side} & NPT_{side} >= & <= 가압 시험-압력 하한_{side} & 가압 시험-압력 상한_{side}","NPT 압력 확인: 가압 시험-압력 하한 <= NPT <= 가압 시험-압력 상한"
+"5","13-7","2","11","auto","PGI_{side}:O","","PGI Valve Open","","PGI Valve Open 후 HPT 압력범위 확인(Step 6)으로 이동"
+"6","13-8","2","13","auto","","[ HPT 압력범위 확인 ]","HPT 압력범위 확인중","HPT_{side} & HPT_{side} >= & <= 가압 시험-압력 하한_{side} & 가압 시험-압력 상한_{side}","HPT 압력 확인: 가압 시험-압력 하한 <= HPT <= 가압 시험-압력 상한"
+"7","13-9","2","15","auto","PGI_{side}:C","","PGI Valve Close (역순 Close 1단계)","","밸브 역순 Close 1단계: PGI Valve Close"
+"8","13-10","2","17","auto","PGII_{side}:C","","PGII Valve Close (역순 Close 2단계)","","밸브 역순 Close 2단계: PGII Valve Close"
+"9","13-11","2","19","auto","HPIV:C PIV:C PNBV:C","","공급 밸브 전체 Close (HPIV/PIV/PNBV)","","밸브 역순 Close 3단계: 공급측 밸브 전 차단 후 안정화 시간 루틴(Step 10)으로 이동"
+"10","13-12","60","79","auto","","[ HPT 압력 안정화 시간 확인 ]","HPT 압력 안정화 시간중","HPT_{side} >= 가압 시험-압력 하한_{side}","[CAPTURE+실시간 안전감시] HPT 초기값 캡처 및 실시간 안전감시(HPT >= 가압 시험-압력 하한)"
+"10A","13-13","1","80","auto","","","","진행횟수 >= 가압 시험-안정화 시간_{side}","[분단위 카운트] 진행시간 >= 가압 시험-안정화 시간_{side} 이면 Step 11(본 가압시험) 진입. 미달 시 10으로 되돌아가 반복."
+"11","13-14","60","140","auto","","[ 가압시험 진행 (압력강하 확인) ]","가압 시험중 (압력강하 누출 감시)","HPT_{side}:CAPOFFSET >= -가압 시험-압력 변동 기준_{side}","[CAPOFFSET] 초기값 대비 압력 강하폭 감시 (HPT:CAPOFFSET >= -가압 시험-압력 변동 기준)"
+"11A","13-15","1","141","auto","","","","진행횟수 >= 가압 시험-시험 시간_{side}","[분단위 카운트] 진행시간 >= 가압 시험-시험 시간_{side} 이면 Step 12(마무리)로 통과. 미달 시 11로 되돌아가 반복."
+"12","13-16","1","142","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","가압시험 마무리 - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","밸브 전체 Close"
+"13","13-17","1","143","auto","","[ 교환 후 가압시험 Sequence Complet ]","교환 후 가압시험이 완료되었습니다.","","가압시험 완료 -> 다음 Status(Puls 2 등)로 자동 진행."
+
+
+--- [ AfterPuls_v1 : Puls 2 구간 (가압시험 후 Pulse Vent) v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","14-1","2","2","auto","PNV:O","[ Puls Vent 진행 ]","가압 완료후 Puls Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 6의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"2","14-2","2","4","auto","PNV:C","","Pump 배관 진공 Check","","PNV Valve Close"
+"3","14-3","2","6","auto","HPV_{side}:O","","HPV Valve Open","","HPV Valve Open"
+"4","14-4","2","8","auto","HPV_{side}:C","","HPV Valve Close","","HPV Valve Close"
+"5","14-5","2","10","auto","","배관내 잔류 가스 Check","배관내 잔류 가스 Check중","HPT_{side} <= Pulse Vent Stop (psi)_{side}","HPT_{side} <= Pulse Vent Stop(psi) 이면(참) Next Step(8)로 진행 - Puls Vent 정상 종료. 거짓이면 Alarm Goto(6)으로 이동."
+"6","14-6","2","12","auto","","Pulse Vent 진행 횟수 Check","","진행횟수 >= Puls vent 설정횟수_{side}","진행횟수 >= 설정횟수(참/소진)면 Next Step(7)에서 정지. 거짓(미달)이면 Alarm Goto(1)로 Step 1부터 다시 반복."
+"7","14-7","1","13","auto","","Puls Vent 설정횟수 초과","설정횟수를 초과하여 Puls Vent를 정지합니다.","진행횟수 < Puls vent 설정횟수_{side}","정지 전용 Step, Alarm Seq 1 발동."
+"8","14-8","1","14","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","Pulse Vent 마무리 - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","밸브 전체 Close"
+"9","14-9","1","15","auto","","Puls Vent Sequence Complet","Puls Vent가 완료되었습니다.","","Puls 2 완료 -> 다음 Status(-VT 또는 4P)로 자동 진행."
+
+
+--- [ AfterThreeP_v1 : 3P 구간 - 교환 후 1차 배관청소 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","12-1","1","1","auto","","[ 교환 후 1차 배관청소 Mode ]","교환 후 1차 배관청소를 시작합니다.","","TwoP_v1.json(2차 배관청소)과 동일 구조 - 반복 종료 조건 CONFIG만 다름."
+"2","12-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}","Step 17의 반복문 진입점 - 설정 횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","12-3","2","5","auto","HPV_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"4","12-4","2","7","auto","PGI_{side}:O","","","VPT & HPT_{side} & NPT_{side} <= & <= & <= & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}",""
+"5","12-5","2","9","auto","PGII_{side}:O","","","",""
+"6","12-6","2","11","auto","PGII_{side}:C","","","",""
+"7","12-7","2","13","auto","PGI_{side}:C","","","",""
+"8","12-8","2","15","auto","HPV_{side}:C","","","",""
+"9","12-9","2","17","auto","PNV:C","","","",""
+"10","12-10","2","19","auto","PNBV:O","","Purge N2 공급 Check","",""
+"11","12-11","2","21","auto","PIV:O","","","",""
+"12","12-12","2","23","auto","PGII_{side}:O","","","",""
+"13","12-13","2","25","auto","PGI_{side}:O","","","",""
+"14","12-14","2","27","auto","PGI_{side}:C","","","",""
+"15","12-15","2","29","auto","PIV:C PGII_{side}:C","","","",""
+"16","12-16","2","31","auto","PNBV:C","","","",""
+"17","12-17","2","33","auto","","","","진행횟수 >= 교환 후 1차 Purge 횟수_{side}","[반복 사용법] 이 Step의 'Alarm Monitoring' 열 값이 예약어 '진행횟수'이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다. 진행횟수>=교환 후 1차 Purge 횟수_{side}(CONFIG 탭, 기존 시드 항목 재사용) 이면 참 -> Next Step(20)으로 진행(반복 종료, 완료 화면). 거짓(아직 반복 중)이면 Alarm Goto(2)로 되돌아감 - 밸브 상태/누적시간/진행 횟수는 그대로 유지된 채 가볍게 이동만 함. 반복 횟수는 CONFIG 탭의 '교환 후 1차 Purge 횟수_A'/'_B' 행에서 바꾼다. TwoP_v1.json Step 17과 동일 패턴, CONFIG 이름·측별 분리 방식만 다름."
+"20","12-18","1","34","auto","","[ 교환 후 1차 배관청소 Sequence Complet ]","교환 후 1차 배관청소가 완료되었습니다.","",""
+
+
+--- [ AfterVtTest_v1 : 교환후-VT VT감압시험 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","14-1","1","1","auto","","[ VT 감압시험 Mode ]","VT 감압시험을 시작합니다.","","뼈대 Step - 실제 밸브/조건은 첨부 플로우차트(VT SubSequence_VT.xlsx) 기준으로 채움. 1단계(VT Process Pumping)~3단계(VT 점검/누출시험) 전체 구조는 Remarks 참고."
+"2","14-2","4","5","auto","PNV:O","","","",""
+"3","14-3","2","7","auto","LPV_{side}:O","","","",""
+"4","14-4","6","13","auto","HPV_{side}:O","","VT PUMPING TIME...","",""
+"5","14-5","60","73","auto","","","","진행횟수 >= VT Process Pumping 시간_{side}","[1단계 - VT Process Pumping] 예약어 ""진행횟수""로 60초=1분마다 자기 자신(Step 5)에 Alarm Goto 하며 진행시간을 센다. 진행시간>=VT Process Pumping 시간_{side}(CONFIG) 이면 Next Step(6)으로 - 이 단계는 별도 진공 판정 없이 시간만 채우면 통과한다(원본 플로우차트에도 이 단계엔 알람 분기가 없음)."
+"6","14-6","2","75","auto","HPV_{side}:C","","","",""
+"7","14-7","4","79","auto","LPV_{side}:C","","","",""
+"8","14-8","2","81","auto","PNV:C","","1단계(VT Process Pumping)를 완료하고 2단계(VT 1/2차측 Pumping)를 시작합니다.","",""
+"9","14-9","4","85","auto","VTV:O","","","",""
+"10","14-10","2","87","auto","VTI:O","","","",""
+"11","14-11","2","89","auto","LPV_{side}:O","","","",""
+"12","14-12","4","93","auto","HPV_{side}:O","","VT PUMPING TIME...","",""
+"13","14-13","60","153","auto","","","","진행횟수 >= VT 1/2차측 Pumping 시간_{side}","[2단계 - VT 1/2차측 Pumping] Step 5와 동일한 예약어 ""진행횟수"" 반복(자기 자신에 Alarm Goto) - 진행시간>=VT 1/2차측 Pumping 시간_{side}(CONFIG)이면 Next Step(14)로 진행해 진공 판정(Step 15)으로 넘어간다."
+"14","14-14","1","154","auto","VTV:C","","","",""
+"15","14-15","4","158","auto","","","","VT_{side} < VT 진공 상한 설정_{side}","[2단계 진공 판정] VTV를 닫아 시험 대상 배관을 격리한 뒤 VT_{side}(현재값) < VT 진공 상한 설정_{side}(CONFIG)인지 즉시 판정한다. 참(정상)이면 Next Step(16)으로 밸브 Close 후 3단계로 진행. 거짓(비정상 - 진공이 상한을 넘음)이면 Alarm Goto가 비어 있으므로 실제 Alarm Seq. 1이 발생해 시퀀스가 멈춘다(원본 플로우차트의 ""All Valve Close→VT Vacuum Error→Restart"" 그대로 - 운영자가 RESET/실행/P·W 재입력으로 수동 재시작해야 한다)."
+"16","14-16","2","160","auto","HPV_{side}:C","","","",""
+"17","14-17","4","164","auto","LPV_{side}:C","","","",""
+"18","14-18","1","165","auto","","","2단계(VT 1/2차측 Pumping)를 완료하고 3단계(VT 점검 - 누출시험)를 시작합니다.","",""
+"19","14-19","2","167","auto","LPV_{side}:O","","","",""
+"20","14-20","2","169","auto","HPV_{side}:O","","","",""
+"21","14-21","2","171","auto","","","VT 점검(누출시험) 중","","[3단계 - VT 점검(누출시험)] Cycle 열 ""CAPTURE:VT_{side}""로 이 Step에 최초 도달한 순간의 VT_{side} 값을 ""초기값""(화면 표시)으로 한 번만 저장한다(gms-sub-sequence-runner.js subSeqApplyCapture) - 원본 플로우차트의 ""d = VT(현재값) + c""에서 이 시점의 VT 값이 곧 d 계산의 기준값이다."
+"22","14-22","60","231","auto","","","","진행횟수 >= VT 점검 시간_{side}","[3단계 시간 카운트] Step 5/13과 동일한 예약어 ""진행횟수"" 반복 - 진행시간>=VT 점검 시간_{side}(CONFIG)이면 Next Step(23)에서 누출 판정을 한다."
+"23","14-23","2","233","auto","","","","VT_{side}:CAPOFFSET < VT 누출 압력 변동 기준_{side}","[3단계 누출 판정 - 신규 예약 문법 "":CAPOFFSET""] ""VT_{side}:CAPOFFSET""은 Step 21에서 캡처해 둔 초기값에 비교대상 CONFIG(VT 누출 압력 변동 기준_{side})를 더한 값을 목표(d = 초기값 + c)로 삼아 지금의 VT_{side} 실시간 값과 비교한다(원본 플로우차트 ""VT < d"" 그대로). 참(정상 - 누출 없음)이면 Next Step(24)로 밸브 Close 후 완료. 거짓(비정상 - 압력이 허용 변동폭 이상 상승 = 누출 의심)이면 Alarm Goto가 비어 있어 실제 Alarm Seq. 1이 발생해 시퀀스가 멈춘다(수동 재시작 필요, Step 15와 동일 정책). 이 "":CAPOFFSET"" 문법은 "":OFFSET""(압력조정 캘리브레이션표 기반)의 자매 문법으로, ""이번 실행에서 캡처한 값"" 기준이라는 점만 다르다."
+"24","14-24","2","235","auto","HPV_{side}:C","","","",""
+"25","14-25","2","237","auto","LPV_{side}:C","","","",""
+"26","14-26","2","239","auto","VTI:C","","","",""
+"27","14-27","1","240","auto","","[ VT 감압시험 Sequence Complet ]","VT 감압시험이 완료되었습니다.","",""
+
+
+--- [ Bypass_v1 : Bypass 구간 - 배관 By-pass 체크 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","11-1","1","1","auto","","[ Bypass - 2차측 Purge Mode ]","Bypass 진행 - 2차측 Purge를 시작합니다.","","OneP2_v1.json(1P 구간 2차측 Purge)과 동일 구조/CONFIG 재사용 - TASK.md 지시 ""1P_2차측Purge 시퀀스 진행""."
+"2","11-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}","Step 22의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","11-3","2","5","auto","LPV_{side}:O","","","LPT_{side} <= 진공하한치_{side}",""
+"4","11-4","2","7","auto","","","","HPT_{side} <= 진공하한치_{side}",""
+"5","11-5","2","9","auto","HPI_{side}:O","","","",""
+"6","11-6","2","11","auto","HPV_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"7","11-7","2","13","auto","PGI_{side}:O","","","VPT & LPT_{side} & HPT_{side} & NPT_{side} <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}",""
+"8","11-8","2","15","auto","PGII_{side}:O","","","",""
+"9","11-9","2","17","auto","PGII_{side}:C","","","",""
+"10","11-10","2","19","auto","PGI_{side}:C","","","",""
+"11","11-11","2","21","auto","HPV_{side}:C","","","",""
+"12","11-12","2","23","auto","HPI_{side}:C","","","",""
+"13","11-13","2","25","auto","LPV_{side}:C","","","",""
+"14","11-14","2","27","auto","PNV:C","","","",""
+"15","11-15","1","28","auto","","[ 2차측 배관 Purge 완료 ]","2차측 배관 Purge 완료. 고압 HE Leak check 라인 옵션을 확인합니다.","",""
+"16","11-16","1","29","auto","","[ 고압 HE Leak check 라인 확인 ]","고압 HE Leak check 라인 옵션 확인중 (On: HPIV Open -> Step 19 / Off: PNBV -> PIV Open -> Step 19)","고압HELeakCheck ON -","OPTION 분기: ON이면 Next Step(16A, HPIV Open), OFF이면 Alarm Goto(16B, PNBV Open)로 분기"
+"16A","11-17","2","31","auto","HPIV:O","","HPIV Valve Open (고압 HE Leak check 라인 사용)","","고압 HE Leak check 라인 On 분기: HPIV Open 후 Step 19로 이동"
+"16B","11-18","2","31","auto","PNBV:O","","PNBV Valve Open","","고압 HE Leak check 라인 Off 분기 1단계 -> Step 17(PIV Open)로 이동"
+"17","11-19","2","33","auto","PIV:O","","PIV Valve Open","","고압 HE Leak check 라인 Off 분기 2단계: PIV Open 후 Step 19로 이동"
+"19","11-20","60","93","auto","","[ NPT 진공유지 확인 ]","NPT 진공유지 확인중","NPT_{side} <= 진공하한치_{side}","[안전 감시 및 CAPTURE] NPT 초기값 캡처 및 실시간 현재값 변화량 확인"
+"19A","11-21","1","94","auto","","","","진행횟수 >= Bypass 진공유지 확인시간[분]_{side}","[분단위 카운트] 진행시간 >= Bypass 진공유지 확인시간[분] 이면 Next Step(20, PGII Open)로 진행. 미달 시 19로 되돌아가 반복."
+"20","11-22","2","96","auto","PGII_{side}:O","","PGII Valve Open","","PGII Valve Open 후 HPT 진공유지 확인(Step 21)으로 이동"
+"21","11-23","60","156","auto","","[ HPT 진공유지 확인 ]","HPT 진공유지 확인중","HPT_{side} & NPT_{side} <= & > 진공하한치_{side} & 가압 시험-압력 하한_{side}","[안전 감시 및 CAPTURE] HPT_{side} <= 진공하한치 및 NPT_{side} > 가압 시험-압력 하한 중복 조건 감시, HPT 초기값 캡처 및 실시간 모니터링"
+"21A","11-24","1","157","auto","","","","진행횟수 >= Bypass 진공유지 확인시간[분]_{side}","[분단위 카운트] 진행시간 >= Bypass 진공유지 확인시간[분] 이면 Next Step(22, 완료)로 진행. 미달 시 21로 되돌아가 반복."
+"22","11-25","1","158","auto","","[ Bypass Sequence Complet ]","Bypass 시퀀스가 완료되었습니다(현재 밸브 상태 유지).","","Bypass 완료 후 현재 Valve Open 상태 유지한 채 다음 Status로 진행"
+
+
+--- [ CylReplace_v1 : 용기교체(CC) 진입화면 Step 데이터 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","10-1","1","1","ack","HPIV:C","[ 실린더 확인 ]","실린더의 충진 일자를 확인해 주시기 바랍니다.","","화면: 용기교체CC_실린더 확인.html(cylReplaceCheck) - 밸브 변화 없음, 충진일자 육안 확인용."
+"2","10-2","1","2","ack","PIV:O PGI_{side}:O+4 PGII_{side}:O+2 HPIV:C","","실린더 교체용 Valve가 순차적으로 Open 됩니다(PIV -> PGII -> PGI, 2초 간격). HPIV는 Close 유지.","","화면: 용기교체CC_Valve Open 확인.html(cylReplaceValveOpen) - PIV(즉시)/PGII_{side}(+2초)/PGI_{side}(+4초) 순차 Open, HPIV는 즉시 Close 유지. SVG 배관도 밸브 아이콘에 실시간 반영(applyCcStepValves)."
+"3","10-3","1","3","ack","AG_{side}:O","","실린더 교체전 Auto Guard가 Open 되었는지 확인해 주시기 바랍니다.","","화면: 용기교체CC_Auto Guard Open 확인.html(cylReplaceAutoGuardOpen)."
+"4","10-4","1","4","ack","","","이전 실린더를 분리하고, 새로운 실린더를 장착하십시오.","","화면: 용기교체CC_실린더 분리 및 교체.html(cylReplaceSwap) - 밸브 변화 없음(물리적 교체 작업)."
+"5","10-5","1","5","ack","","","바코드 스캐너를 이용하여 실린더 바코드를 읽어 주시기 바랍니다.","","화면: 용기교체CC_Gas name 확인.html(cylReplaceGasName) - 밸브 변화 없음(바코드 확인용)."
+"6","10-6","1","6","ack","PIV:C PGI_{side}:C+4 PGII_{side}:C+2 AG_{side}:C","[ 용기교체 Sequence Complet ]","실린더 교체를 위한 Auto Guard가 Close 되며, PIV/PGII/PGI도 순차적으로 Close 됩니다(2초 간격).","","화면: 용기교체CC_Auto Guard Close 확인.html(cylReplaceAutoGuardClose) - AG_{side}/PIV는 즉시 Close, PGII_{side}(+2초)/PGI_{side}(+4초) 순차 Close. 확인 시 용기교체 완료. SVG 배관도 밸브 아이콘에 실시간 반영(applyCcStepValves)."
+
+
+--- [ ExchL_v1 : 교환전-L 감압시험 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","7-1","1","1","auto","","[ 감압시험 Mode ]","교환전 감압 시험을 시작합니다.","","뼈대 Step - 실제 밸브/조건 미정"
+"2","7-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}",""
+"3","7-3","2","5","auto","HPV_{side}:O","","","HPT_{side} <= 진공하한치_{side}",""
+"4","7-4","2","7","auto","HPV_{side}:C","","","",""
+"5","7-5","2","9","auto","PNV:C","","","",""
+"6","7-6","60","69","auto","","","PT 안정화 시간중","HPT_{side} <= 진공하한치_{side}","[Pumping 재사용 패턴 1/2 - 값 캡처 + 실시간 안전 감시] Cycle 열의 'CAPTURE:HPT_{side}'는 이 Step에 최초로 도달했을 때(반복 재진입 시엔 무시) HPT_{side} 현재값을 화면의 '초기값'에 한 번만 저장하고, '현재값'란은 계속 실시간 HPT_{side} 값을 보여준다(gms-sub-sequence-runner.js subSeqApplyCapture/subSeqRefreshLiveCaptures 참고). HPT_{side}<=진공하한치_{side} 안전 조건은 60초 타이머 만료 시점뿐 아니라 PT 값이 새로 들어올 때마다(약 1초 주기) 실시간으로 검사한다(subSeqCheckLiveSafety) - 정상(참)이면 계속 대기하다 60초가 차면 Next Step(6A)에서 누적 시간이 설정 시간에 도달했는지 판정하고, 비정상(거짓 - 배관 진공이 하한치를 벗어남)이면 60초를 기다리지 않고 그 즉시 Alarm Seq. 1(배관라인불량)이 발생해 시퀀스가 멈춘다. [다른 시퀀스에서 재사용하려면] ① 이 Step처럼 Cycle 열에 CAPTURE:<태그>를 적고(=이 태그가 실시간 안전 감시 대상도 된다) ② Alarm Monitoring/비교연산자/설정명(비교대상ID)에 실시간으로 감시할 안전 조건을 적은 뒤 ③ 바로 다음 Step(6A 참고)에 예약어 '진행횟수'로 분 단위 시간 판정을 둔다."
+"6A","7-7","1","70","auto","","","","진행횟수 >= 감압 안정화 시간[분]_{side}","[Pumping 재사용 패턴 2/2 - 분 단위 카운트, 즉시 판정] Alarm Monitoring 열 값이 예약어 '진행횟수'이므로, 바로 앞 Step(6)이 60초 대기+안전 검사를 한 번 마치고 여기 도달할 때마다 진행 시간이 자동으로 +1분 된다. 진행시간>=감압 안정화 시간[분](CONFIG 탭) 이면 참 -> Next Step(7)로 진행(2단계, 감압 시간 구간 시작). 거짓(아직 시간 남음)이면 Alarm Goto(6)로 되돌아가 Step 6에서 다시 60초 대기+안전 검사를 반복한다(밸브/누적시간은 그대로 유지된 채 가볍게 이동만 함. 진행 횟수는 이 구간이 끝나고 다음 반복구간(7A)으로 넘어갈 때 엔진이 자동으로 0부터 새로 센다). Time(Sec)=1은 판정 자체는 즉시 이루어지되 엔진이 조건 평가를 실행할 최소한의 타이머다."
+"7","7-8","60","130","auto","","","감압 시험중","HPT_{side} <= 진공하한치_{side}","[Pumping 재사용 패턴 1/2 - 값 캡처 + 실시간 안전 감시] Cycle 열의 'CAPTURE:HPT_{side}'는 이 Step에 최초로 도달했을 때(반복 재진입 시엔 무시) HPT_{side} 현재값을 화면의 '초기값'에 한 번만 저장하고, '현재값'란은 계속 실시간 HPT_{side} 값을 보여준다(gms-sub-sequence-runner.js subSeqApplyCapture/subSeqRefreshLiveCaptures 참고). HPT_{side}<=진공하한치_{side} 안전 조건은 60초 타이머 만료 시점뿐 아니라 PT 값이 새로 들어올 때마다(약 1초 주기) 실시간으로 검사한다(subSeqCheckLiveSafety) - 정상(참)이면 계속 대기하다 60초가 차면 Next Step(7A)에서 누적 시간이 설정 시간에 도달했는지 판정하고, 비정상(거짓 - 배관 진공이 하한치를 벗어남)이면 60초를 기다리지 않고 그 즉시 Alarm Seq. 1(배관라인불량)이 발생해 시퀀스가 멈춘다. [다른 시퀀스에서 재사용하려면] ① 이 Step처럼 Cycle 열에 CAPTURE:<태그>를 적고(=이 태그가 실시간 안전 감시 대상도 된다) ② Alarm Monitoring/비교연산자/설정명(비교대상ID)에 실시간으로 감시할 안전 조건을 적은 뒤 ③ 바로 다음 Step(7A 참고)에 예약어 '진행횟수'로 분 단위 시간 판정을 둔다."
+"7A","7-9","1","131","auto","","","","진행횟수 >= 감압 시간[분]_{side}","[Pumping 재사용 패턴 2/2 - 분 단위 카운트, 즉시 판정] Alarm Monitoring 열 값이 예약어 '진행횟수'이므로, 바로 앞 Step(7)이 60초 대기+안전 검사를 한 번 마치고 여기 도달할 때마다 진행 시간이 자동으로 +1분 된다. 이 Step에 처음 도달하는 순간(=6A 구간이 끝난 직후) 진행 횟수는 자동으로 0부터 새로 시작한다(엔진이 카운트하는 Step 번호가 바뀌면 자동 리셋). 진행시간>=감압 시간[분](CONFIG 탭) 이면 참 -> Next Step(8)로 진행(밸브 Close 후 완료). 거짓(아직 시간 남음)이면 Alarm Goto(7)로 되돌아가 Step 7에서 다시 60초 대기+안전 검사를 반복한다(밸브/누적시간/진행 횟수는 그대로 유지된 채 가볍게 이동만 함). Time(Sec)=1은 판정 자체는 즉시 이루어지되 엔진이 조건 평가를 실행할 최소한의 타이머다."
+"8","7-10","1","132","auto","","[ 감압시험 Sequence Complet ]","감압시험이 완료되었습니다.","",""
+
+
+--- [ HpLpPump_v1 : HP&LP Pump v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","15-1","1","1","auto","","[ HP&LP Pump Mode ]","Pump 작동을 시작합니다.","",""
+"2","15-2","2","3","auto","PNV:O","","PNV Valve OPEN","",""
+"3","15-3","2","5","auto","LPV_{side}:O","","LPV Valve OPEN","",""
+"4","15-4","2","7","auto","HPI_{side}:O","","HPI Valve OPEN","",""
+"5","15-5","2","9","auto","HPV_{side}:O","","HPV Valve OPEN","",""
+"6","15-6","2","11","auto","PGI_{side}:O","","PGI Valve OPEN","",""
+"7","15-7","60","71","auto","PGII_{side}:O","","Pump 작동중입니다.","HPT_{side} <= 진공하한치_{side}","[HP&LP Pump 분 단위 대기 및 실시간 안전 감시]"
+"7A","15-8","1","72","auto","","","","진행횟수 >= PUMPING 시간[분]_{side}","[HP&LP Pump 분 단위 시간 판정 - 완료 시 Step 7B로 이동]"
+"7B","15-9","2","74","auto","","전체 PT 센서 진공도 Check","전체 PT 센서 진공도 확인 중...","VPT & LPT_{side} & HPT_{side} & NPT_{side} <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","[진행시간 완료 후 VPT, LPT, HPT, NPT 전체 센서 진공하한치 이하 도달 여부 최종 확인]"
+"8","15-10","1","75","auto","PGII_{side}:C","","","",""
+"9","15-11","2","77","auto","PGI_{side}:C","","","",""
+"10","15-12","2","79","auto","HPV_{side}:C","","","",""
+"11","15-13","2","81","auto","HPI_{side}:C","","","",""
+"12","15-14","2","83","auto","LPV_{side}:C","","","",""
+"13","15-15","2","85","auto","PNV:C","","","",""
+"14","15-16","1","86","auto","","[ HP&LP Pump Sequence Complet ]","HP&LP Pumping이 완료되었습니다.","",""
+
+
+--- [ IdleCheck_v1 : 실린더교환 사전확인 7단계(IDLE 상태 유지) v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","1-1","","[object Object]","ack","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","[ 실린더 확인 ]","""{side}"" 실린더를 선택 하셨습니다.
+공급 중 Cylinder에 보호 Cover를 장착하세요.
+(NG시 Cover 장착 후 실시) *Valve Shutter 설비는 제외","","Purge 대상(탈착) 채널 확인 및 공급중 Cylinder 보호 Cover 장착 내용 추가 (실린더교환.xlsx 4.①)"
+"2","1-2","","[object Object]","ack","","[ DATA 확인 ]","교환될 실린더의 압력과 무게를 확인해 주십시요.
+HPT(PT1): -- psi / LPT(PT3): -- psi / W/S: -- Kg","","Purge 전 공급 압력 확인(Data). W/S는 W/S 사용 옵션에 따름. HPT는 저압가스 사용시만 소수점 한자리, LPT는 항시 소수점 한자리(실린더교환.xlsx 5). 값 Reading/표시 로직은 아직 미구현."
+"3","1-3","","[object Object]","ack","","[ VALVE SHUTTER 확인 ]","AUTO VALVE SHUTTER는 완전히 CLOSE가 되었는지
+확인후 제거해 주십시요.","","V/S 대상 GAS의 경우에만 추가(V/S Close 확인 후 제거) - 옵션 적용 Step, 실린더교환.xlsx 6.(V/S). OPTION 연동은 아직 미구현(항상 표시)."
+"4","1-4","","[object Object]","ack","","[ 실린더 VALVE 확인 ]","실린더 MAIN VALVE를 시계 방향으로 완전히 CLOSE
+하여 주십시요.
+(Pneumatic 경우 Air Hose 제거 및 Lock 설정)","","Cylinder Main Valve Close(Pneumatic 경우 Air Hose 제거 및 Lock 설정), 실린더교환.xlsx 7.②"
+"5","1-5","","[object Object]","ack","","[ 실린더 스티커 제거 ]","탈착 실린더(사용중) 스티커 제거 → 공병
+공급 실린더(실병) 스티커 제거 → (사용중)","","탈착/공급 실린더 스티커 제거 내용 추가, Maker 3社 공통 추가 필요(실린더교환.xlsx 8.③)"
+"6","1-6","","[object Object]","ack","","[ PUMP 확인 ]","PUMP 동작이 정상 입니까?
+VPT(PT4): -- psig
+(Vent {side} Spec : -14 ~ -15 psig)","","PT4(VPT) 값이 Reading 되도록 추가(Data)(Spec 표시), 정수로만 표시. Spec -14~-15psig Default(진공 상태 하한치와 별개). 원본 문서: ""Spec Out시 다음 Step 진행 불가"" - 확인(ack) Step은 아직 조건으로 막는 기능이 없어 값 표시만 하고 인터락은 미구현(실린더교환.xlsx 9.④)."
+"7","1-7","","[object Object]","ack","","[ Scrubber 확인]","Scrubber 동작이 정상 입니까? 다른 연결된 장비가 실린더 교환 자동진행 중인지 확인 하세요! (배기 {side} Spec : 50 ~ 500 pa)","","공급 측 PT1(HPT) 압력 확인(Data). 원본 문서: 이 Step은 반대편이 공급중일 때만 진입 - 그 분기 로직은 아직 미구현(항상 표시), 실린더교환.xlsx 10. 마지막 Step - 완료 시 Operation.js가 1P로 진입시키고 1P 배지가 점멸을 시작한다."
+"8","1-8","","[object Object]","ack","","[ 반대편 공급 압력 확인 ]","실린더 교환전 배관청소를 진행하려고 합니다.
+공급중인 실린더의 1차측 압력을 확인해 주십시요.
+HPT B(PT2B): -- psi","","공급 측 PT1(HPT) 압력 확인(Data). 원본 문서: 이 Step은 반대편이 공급중일 때만 진입 - 그 분기 로직은 아직 미구현(항상 표시), 실린더교환.xlsx 10. 마지막 Step - 완료 시 Operation.js가 1P로 진입시키고 2P 배지가 점멸을 시작한다."
+"9","1-9","","[object Object]","ack","","[ 교환전 자동진행 예상 시간 ]","실린더 교환전 자동진행 예상 시간
+자동 진행 동안 공급중 실린더 충전량은 충분한가요?
+남은 시간 : -- 시간 --분 --초 / 교환전 청소 완료 예정 시간 : ----년 --월 --일 --시 --분 --초","","공급 측 PT1(HPT) 압력 확인(Data). 원본 문서: 이 Step은 반대편이 공급중일 때만 진입 - 그 분기 로직은 아직 미구현(항상 표시), 실린더교환.xlsx 10. 마지막 Step - 완료 시 Operation.js가 1P로 진입시키고 3P 배지가 점멸을 시작한다."
+
+
+--- [ OneP2_v1 : 1P 구간 - 2차측 Purge v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","4-1","1","1","auto","","[ 2차측 Purge Mode ]","2차측 Purge를 시작합니다.","","뼈대 Step - 실제 밸브/조건 미정"
+"2","4-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}","Step 23의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","4-3","2","5","auto","LPV_{side}:O","","","LPT_{side} <= 진공하한치_{side}",""
+"4","4-4","2","7","auto","","","","HPT_{side} <= 진공하한치_{side}",""
+"5","4-5","2","9","auto","HPI_{side}:O","","","",""
+"6","4-6","2","11","auto","HPV_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"7","4-7","2","13","auto","PGI_{side}:O","","","VPT & LPT_{side} & HPT_{side} & NPT_{side} & MPT_{side}? <= & <= & <= & <= & <=? 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","예시 - MPT는 아직 설비에 없는 센서라 ""?""로 옵션 처리(값이 없으면 이 항목만 건너뛰고 나머지 4개는 그대로 확인)."
+"8","4-8","2","15","auto","PGII_{side}:O","","","",""
+"9","4-9","2","17","auto","PGII_{side}:C","","","",""
+"10","4-10","2","19","auto","PGI_{side}:C","","","",""
+"11","4-11","2","21","auto","HPV_{side}:C","","","",""
+"12","4-12","2","23","auto","HPI_{side}:C","","","",""
+"13","4-13","2","25","auto","LPV_{side}:C","","","",""
+"14","4-14","2","27","auto","PNV:C","","","",""
+"15","4-15","2","29","auto","PNBV:O","","Purge N2 공급 Check","",""
+"16","4-16","2","31","auto","PIV:O","","","",""
+"17","4-17","2","33","auto","PGII_{side}:O","","","",""
+"18","4-18","2","35","auto","PGI_{side}:O","","","",""
+"19","4-19","2","37","auto","PGI_{side}:C","","","",""
+"20","4-20","2","39","auto","PIV:C PGII_{side}:C","","","",""
+"21","4-21","2","41","auto","PNBV:C","","","",""
+"22","4-22","2","43","auto","","","","진행횟수 >= 교환전 2차측 퍼지 횟수_{side}","[반복 사용법] 이 Step의 'Alarm Monitoring' 열 값이 예약어 '진행횟수'이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다. 진행횟수>=교환전 2차측 퍼지 횟수(CONFIG 탭) 이면 참 -> Next Step(23)으로 진행(반복 종료). 거짓(아직 반복 중)이면 Alarm Goto(2)로 되돌아감 - 밸브 상태/누적시간/진행 횟수는 그대로 유지된 채 가볍게 이동만 함(Alarm Seq. 코드 1/2/3의 초기화/CLOSE 동작 없음). 반복 횟수는 CONFIG 탭의 '교환전 2차측 퍼지 횟수' 행에서 바꾼다."
+"23","4-23","2","45","auto","","","","","뼈대 Step - 실제 밸브/조건 미정"
+"24","4-24","1","46","auto","","[ 2차측 Purge Sequence Complet ]","2차측 Purge가 완료되었습니다.","",""
+
+
+--- [ OneP3_v1 : 1P 구간 - Pumping v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","5-1","1","1","auto","","[ Pumping Mode ]","Pump 작동을 시작합니다.","",""
+"2","5-2","2","3","auto","PNV:O","","PNV Valve OPEN","",""
+"3","5-3","2","5","auto","LPV_{side}:O","","LPV Valve OPEN","",""
+"4","5-4","2","7","auto","HPI_{side}:O","","HPI Valve OPEN","",""
+"5","5-5","2","9","auto","HPV_{side}:O","","HPV Valve OPEN","",""
+"6","5-6","2","11","auto","PGI_{side}:O","","PGI Valve OPEN","",""
+"7","5-7","60","71","auto","PGII_{side}:O","","Pump 작동중입니다.","HPT_{side} <= 진공하한치_{side}","[Pumping 실시간 안전 감시 및 대기]"
+"7A","5-8","1","72","auto","","","","진행횟수 >= PUMPING 시간[분]_{side}","[Pumping 시간 판정 - 완료 시 Step 7B로 이동]"
+"7B","5-9","2","74","auto","","전체 PT 센서 진공도 Check","전체 PT 센서 진공도 확인 중...","VPT & LPT_{side} & HPT_{side} & NPT_{side} <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","[진행시간 완료 후 VPT, LPT, HPT, NPT 전체 센서 진공하한치 이하 도달 여부 최종 확인]"
+"8","5-10","1","75","auto","PGII_{side}:C","","","",""
+"9","5-11","2","77","auto","PGI_{side}:C","","","",""
+"10","5-12","2","79","auto","HPV_{side}:C","","","",""
+"11","5-13","2","81","auto","HPI_{side}:C","","","",""
+"12","5-14","2","83","auto","LPV_{side}:C","","","",""
+"13","5-15","2","85","auto","PNV:C","","","",""
+"14","5-16","1","84","auto","","[ Pumping Sequence Complet ]","Pumping이 완료되었습니다.","",""
+
+
+--- [ OneP4_v1 : 1P 구간 - 1차측 Purge v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","6-1","1","1","auto","","[ 1차측 Purge Mode ]","1차측 Purge를 시작합니다.","","뼈대 Step - 실제 밸브/조건 미정"
+"2","6-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}","Step 23의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","6-3","2","5","auto","HPV_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"4","6-4","2","7","auto","PGI_{side}:O","","","VPT & HPT_{side} & NPT_{side} <= & <= & <= & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","예시 - MPT는 아직 설비에 없는 센서라 ""?""로 옵션 처리(값이 없으면 이 항목만 건너뛰고 나머지 4개는 그대로 확인)."
+"5","6-5","2","9","auto","PGII_{side}:O","","","",""
+"6","6-6","2","11","auto","PGII_{side}:C","","","",""
+"7","6-7","2","13","auto","PGI_{side}:C","","","",""
+"8","6-8","2","15","auto","HPV_{side}:C","","","",""
+"9","6-9","2","17","auto","PNV:C","","","",""
+"10","6-10","2","19","auto","PNBV:O","","Purge N2 공급 Check","",""
+"11","6-11","2","21","auto","PIV:O","","","",""
+"12","6-12","2","23","auto","PGII_{side}:O","","","",""
+"13","6-13","2","25","auto","PGI_{side}:O","","","",""
+"14","6-14","2","27","auto","PGI_{side}:C","","","",""
+"15","6-15","2","29","auto","PIV:C PGII_{side}:C","","","",""
+"16","6-16","2","31","auto","PNBV:C","","","",""
+"17","6-17","2","33","auto","","","","진행횟수 >= 교환전 1차 퍼지진행 횟수_{side}","[반복 사용법] 이 Step의 'Alarm Monitoring' 열 값이 예약어 '진행횟수'이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다. 진행횟수>=교환전 1차 퍼지진행 횟수(CONFIG 탭) 이면 참 -> Next Step(20)으로 진행(반복 종료, 완료 화면). 거짓(아직 반복 중)이면 Alarm Goto(2)로 되돌아감 - 밸브 상태/누적시간/진행 횟수는 그대로 유지된 채 가볍게 이동만 함(Alarm Seq. 코드 1/2/3의 초기화/CLOSE 동작 없음). 반복 횟수는 CONFIG 탭의 '교환전 1차 퍼지진행 횟수' 행에서 바꾼다."
+"20","6-18","1","34","auto","","[ 1차측 Purge Sequence Complet ]","1차측 Purge가 완료되었습니다. 1P 구간을 모두 마칩니다.","",""
+
+
+--- [ OneP_v1 : 1P 구간 - 1-2차측 Vent Mode v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","3-1","1","1","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","[ 1-2차측 Vent Mode ]","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","3-2","2","3","auto","PNV:O","[ 1-2차측 Vent 진행 ]","1-2차측 Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 23의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","3-3","2","5","auto","LPV_{side}:O","","","LPT_{side}  & MPT_{side} <= & <= 진공하한치_{side} & 진공하한치_{side}",""
+"4","3-4","2","7","auto","HPI_{side}:O","","","HPT_{side} <= 진공하한치_{side}",""
+"5","3-5","2","9","auto","HPV_{side}:O","","","",""
+"6","3-6","2","11","auto","PGI_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"7","3-7","2","13","auto","PGII_{side}:O","","","VPT & LPT_{side} & HPT_{side} & NPT_{side} & MPT_{side} <= & <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","예시 - MPT는 아직 설비에 없는 센서라 ""?""로 옵션 처리(값이 없으면 이 항목만 건너뛰고 나머지 4개는 그대로 확인)."
+"8","3-8","2","15","auto","PGII_{side}:C","","","",""
+"9","3-9","2","17","auto","PGI_{side}:C","","","",""
+"10","3-10","2","19","auto","HPV_{side}:C","","","",""
+"11","3-11","2","21","auto","HPI_{side}:C","","","",""
+"12","3-12","2","23","auto","LPV_{side}:C","","","",""
+"13","3-13","2","25","auto","PNV:C","","","",""
+"38","3-14","1","26","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","[ 1-2차측 Vent Sequence Complet ]","1-2차측 Vent가 완료되었습니다.","",""
+
+
+--- [ Puls_Mode_v1 : Puls_Mode_v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","10-1","1","1","ack","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","배관내 잔류 CHECK를 시작 합니다. - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","10-2","2","3","auto","PNV:O","Pump 배관 진공 Check","Puls Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 7의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","10-3","2","5","auto","PNV:C","","","",""
+"4","10-4","2","7","auto","LPV_{side}:O","","","",""
+"5","10-5","2","9","auto","LPV_{side}:C","","","",""
+"6","10-6","2","11","auto","HPI_{side}:O","","","",""
+"7","10-7","2","13","auto","HPI_{side}:C","배관내 잔류 가스 Check","","HPT_{side} <= Pulse Vent Stop (psi)_{side}","[반복 사용법] HPT_{side} <= Pulse Vent Stop(psi) 이면(참) Next Step(8)로 진행 - Puls Vent 정상 종료. 거짓(아직 압력이 안 낮음)이면 Alarm Goto(7A)로 이동해 진행횟수를 확인한다(밸브/누적시간 유지, 가벼운 이동)."
+"7A","10-7","2","15","auto","","Pulse Vent 진행 횟수 Check","","진행횟수 >= Puls vent 설정횟수_{side}","[반복 사용법] Step 7(HPT 조건 거짓)에서만 도달. 진행횟수 >= 설정횟수(참, 소진됨)이면 Next Step 없음 - 바로 다음 행인 Step 8로 진행(더 반복하지 않고 종료). 거짓(아직 설정횟수 미만)이면 Alarm Goto(2)로 Step 2부터 다시 반복(이때 진행횟수가 1 늘어난다)."
+"8","10-8","1","16","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","Pulse Vent 마무리 - 밸브 초기화(전체 Close)","","",""
+"9","10-9","1","17","ack","","Puls Vent Sequence Complet","PT Calibration이 완료되었습니다.","",""
+
+
+--- [ Puls_v1 : Puls 구간(잔류가스 Check ~ Pulse Vent) v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","2-1","1","1","ack","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","배관내 잔류 CHECK를 시작 합니다. - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","2-2","2","3","auto","PNV:O","[ Puls Vent 진행 ]","Puls Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 7의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","2-3","2","5","auto","PNV:C","","Pump 배관 진공 Check","",""
+"4","2-4","2","7","auto","LPV_{side}:O","","","",""
+"5","2-5","2","9","auto","LPV_{side}:C","","","",""
+"6","2-6","2","11","auto","HPI_{side}:O","","","",""
+"7","2-7","2","13","auto","HPI_{side}:C","배관내 잔류 가스 Check","","HPT_{side} <= Pulse Vent Stop (psi)_{side}","[반복 사용법 1/3] HPT_{side} <= Pulse Vent Stop(psi) 이면(참) Next Step(8)로 진행 - Puls Vent 정상 종료. 거짓(아직 압력 안 낮음)이면 Alarm Goto(7A)로 이동해 진행횟수를 확인한다(밸브/누적시간 유지, 가벼운 이동)."
+"7A","2-8","2","15","auto","","Pulse Vent 진행 횟수 Check","","진행횟수 >= Puls vent 설정횟수_{side}","[반복 사용법 2/3 - 진행횟수 카운터] Step 7(HPT 조건 거짓)에서만 도달. 이 Step의 ""Alarm Monitoring"" 열 값이 예약어 ""진행횟수""이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다(다른 열은 없음 - Alarm Monitoring=""진행횟수""라고 적는 것 자체가 카운터 동작이다. 다른 시퀀스에서 재사용할 때도 이 열만 ""진행횟수""로 적으면 됨). 그 증가된 값으로 곧바로 비교: 진행횟수>=설정횟수(참, 소진)면 Next Step(7B)에서 정지. 거짓(아직 미만)이면 Alarm Goto(2)로 Step 2부터 다시 반복."
+"7B","2-9","1","16","auto","","Puls Vent 설정횟수 초과","설정횟수를 초과하여 Puls Vent를 정지합니다.","진행횟수 < Puls vent 설정횟수_{side}","[반복 사용법 3/3 - 정지 트리거] Step 7A에서 진행횟수 소진(참)으로만 도달하는 정지 전용 Step. 이 Step도 Alarm Monitoring=""진행횟수""라 평가는 되지만, 같은 반복 안에서 7A가 이미 카운트했으므로 여기서는 중복으로 늘지 않는다(반복당 정확히 1번만 증가). 조건(진행횟수 < 설정횟수)은 도달 시점에 이미 항상 거짓이 되도록 설계됨 - Alarm Goto가 없어 Alarm Seq.(1=초기화/정지)가 실제로 발동한다. 정지 코드/문구를 바꾸려면 alarmSeq/alarmMessage 열만 수정."
+"8","2-10","1","17","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","Pulse Vent 마무리 - 밸브 초기화(전체 Close)","","",""
+"9","2-11","1","18","auto","","Puls Vent Sequence Complet","PT Calibration이 완료되었습니다.","",""
+
+
+--- [ TwoP_v1 : 2P 구간 - 2차 배관청소 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","8-1","1","1","auto","","[ 2차 배관청소 Mode ]","2차 배관청소를 시작합니다.","","OneP4_v1.json(1차측 Purge)과 동일 구조 - 반복 종료 조건 CONFIG만 다름."
+"2","8-2","2","3","auto","PNV:O","","Pump 배관 진공 Check","VPT <= 진공하한치_{side}","Step 17의 반복문 진입점 - 설정 횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","8-3","2","5","auto","HPV_{side}:O","","","NPT_{side} <= 진공하한치_{side}",""
+"4","8-4","2","7","auto","PGI_{side}:O","","","VPT & HPT_{side} & NPT_{side} <= & <= & <= & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}",""
+"5","8-5","2","9","auto","PGII_{side}:O","","","",""
+"6","8-6","2","11","auto","PGII_{side}:C","","","",""
+"7","8-7","2","13","auto","PGI_{side}:C","","","",""
+"8","8-8","2","15","auto","HPV_{side}:C","","","",""
+"9","8-9","2","17","auto","PNV:C","","","",""
+"10","8-10","2","19","auto","PNBV:O","","Purge N2 공급 Check","",""
+"11","8-11","2","21","auto","PIV:O","","","",""
+"12","8-12","2","23","auto","PGII_{side}:O","","","",""
+"13","8-13","2","25","auto","PGI_{side}:O","","","",""
+"14","8-14","2","27","auto","PGI_{side}:C","","","",""
+"15","8-15","2","29","auto","PIV:C PGII_{side}:C","","","",""
+"16","8-16","2","31","auto","PNBV:C","","","",""
+"17","8-17","2","33","auto","","","","진행횟수 >= 교환전 2차 퍼지진행 횟수_{side}","[반복 사용법] 이 Step의 'Alarm Monitoring' 열 값이 예약어 '진행횟수'이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다. 진행횟수>=교환전 2차 퍼지진행 횟수(CONFIG 탭) 이면 참 -> Next Step(20)으로 진행(반복 종료, 완료 화면). 거짓(아직 반복 중)이면 Alarm Goto(2)로 되돌아감 - 밸브 상태/누적시간/진행 횟수는 그대로 유지된 채 가볍게 이동만 함(Alarm Seq. 코드 1/2/3의 초기화/CLOSE 동작 없음). 반복 횟수는 CONFIG 탭의 '교환전 2차 퍼지진행 횟수' 행에서 바꾼다. OneP4_v1.json Step 17과 동일 패턴, CONFIG 이름만 다름."
+"20","8-18","1","34","auto","","[ 2차 배관청소 Sequence Complet ]","2차 배관청소가 완료되었습니다.","",""
+
+
+--- [ VtTest_v1 : 교환전-VT VT 감압시험 v1 ] ---
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","9-1","1","1","auto","","[ VT 감압시험 Mode ]","VT 감압시험을 시작합니다.","","뼈대 Step - 실제 밸브/조건은 첨부 플로우차트(VT SubSequence_VT.xlsx) 기준으로 채움. 1단계(VT Process Pumping)~3단계(VT 점검/누출시험) 전체 구조는 Remarks 참고."
+"2","9-2","4","5","auto","PNV:O","","","",""
+"3","9-3","2","7","auto","LPV_{side}:O","","","",""
+"4","9-4","6","13","auto","HPV_{side}:O","","VT PUMPING TIME...","",""
+"5","9-5","60","73","auto","","","","진행횟수 >= VT Process Pumping 시간_{side}","[1단계 - VT Process Pumping] 예약어 ""진행횟수""로 60초=1분마다 자기 자신(Step 5)에 Alarm Goto 하며 진행시간을 센다. 진행시간>=VT Process Pumping 시간_{side}(CONFIG) 이면 Next Step(6)으로 - 이 단계는 별도 진공 판정 없이 시간만 채우면 통과한다(원본 플로우차트에도 이 단계엔 알람 분기가 없음)."
+"6","9-6","2","75","auto","HPV_{side}:C","","","",""
+"7","9-7","4","79","auto","LPV_{side}:C","","","",""
+"8","9-8","2","81","auto","PNV:C","","1단계(VT Process Pumping)를 완료하고 2단계(VT 1/2차측 Pumping)를 시작합니다.","",""
+"9","9-9","4","85","auto","VN2:O","","","",""
+"10","9-10","2","87","auto","VN1:O","","","",""
+"11","9-11","2","89","auto","LPV_{side}:O","","","",""
+"12","9-12","4","93","auto","HPV_{side}:O","","VT PUMPING TIME...","",""
+"13","9-13","60","153","auto","","","","진행횟수 >= VT 1/2차측 Pumping 시간_{side}","[2단계 - VT 1/2차측 Pumping] Step 5와 동일한 예약어 ""진행횟수"" 반복(자기 자신에 Alarm Goto) - 진행시간>=VT 1/2차측 Pumping 시간_{side}(CONFIG)이면 Next Step(14)로 진행해 진공 판정(Step 15)으로 넘어간다."
+"14","9-14","1","154","auto","VN2:C","","","",""
+"15","9-15","4","158","auto","","","","VT_{side} < VT 진공 상한 설정_{side}","[2단계 진공 판정] VTV를 닫아 시험 대상 배관을 격리한 뒤 VT_{side}(현재값) < VT 진공 상한 설정_{side}(CONFIG)인지 즉시 판정한다. 참(정상)이면 Next Step(16)으로 밸브 Close 후 3단계로 진행. 거짓(비정상 - 진공이 상한을 넘음)이면 Alarm Goto가 비어 있으므로 실제 Alarm Seq. 1이 발생해 시퀀스가 멈춘다(원본 플로우차트의 ""All Valve Close→VT Vacuum Error→Restart"" 그대로 - 운영자가 RESET/실행/P·W 재입력으로 수동 재시작해야 한다)."
+"16","9-16","2","160","auto","HPV_{side}:C","","","",""
+"17","9-17","4","164","auto","LPV_{side}:C","","","",""
+"18","9-18","1","165","auto","","","2단계(VT 1/2차측 Pumping)를 완료하고 3단계(VT 점검 - 누출시험)를 시작합니다.","",""
+"19","9-19","2","167","auto","LPV_{side}:O","","","",""
+"20","9-20","2","169","auto","HPV_{side}:O","","","",""
+"21","9-21","2","171","auto","","","VT 점검(누출시험) 중","","[3단계 - VT 점검(누출시험)] Cycle 열 ""CAPTURE:VT_{side}""로 이 Step에 최초 도달한 순간의 VT_{side} 값을 ""초기값""(화면 표시)으로 한 번만 저장한다(gms-sub-sequence-runner.js subSeqApplyCapture) - 원본 플로우차트의 ""d = VT(현재값) + c""에서 이 시점의 VT 값이 곧 d 계산의 기준값이다."
+"22","9-22","60","231","auto","","","","진행횟수 >= VT 점검 시간_{side}","[3단계 시간 카운트] Step 5/13과 동일한 예약어 ""진행횟수"" 반복 - 진행시간>=VT 점검 시간_{side}(CONFIG)이면 Next Step(23)에서 누출 판정을 한다."
+"23","9-23","2","233","auto","","","","VT_{side}:CAPOFFSET < VT 누출 압력 변동 기준_{side}","[3단계 누출 판정 - 신규 예약 문법 "":CAPOFFSET""] ""VT_{side}:CAPOFFSET""은 Step 21에서 캡처해 둔 초기값에 비교대상 CONFIG(VT 누출 압력 변동 기준_{side})를 더한 값을 목표(d = 초기값 + c)로 삼아 지금의 VT_{side} 실시간 값과 비교한다(원본 플로우차트 ""VT < d"" 그대로). 참(정상 - 누출 없음)이면 Next Step(24)로 밸브 Close 후 완료. 거짓(비정상 - 압력이 허용 변동폭 이상 상승 = 누출 의심)이면 Alarm Goto가 비어 있어 실제 Alarm Seq. 1이 발생해 시퀀스가 멈춘다(수동 재시작 필요, Step 15와 동일 정책). 이 "":CAPOFFSET"" 문법은 "":OFFSET""(압력조정 캘리브레이션표 기반)의 자매 문법으로, ""이번 실행에서 캡처한 값"" 기준이라는 점만 다르다."
+"24","9-24","2","235","auto","HPV_{side}:C","","","",""
+"25","9-25","2","237","auto","LPV_{side}:C","","","",""
+"26","9-26","2","239","auto","VN1:C","","","",""
+"27","9-27","1","240","auto","","[ VT 감압시험 Sequence Complet ]","VT 감압시험이 완료되었습니다.","",""

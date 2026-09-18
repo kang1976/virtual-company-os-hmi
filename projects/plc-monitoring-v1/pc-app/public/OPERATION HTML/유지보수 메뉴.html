@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>유지보수 메뉴 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 유지보수 메뉴" 화면 분리 파일. 스타일은 ../gms.css를 그대로
+     참조(복사 아님). gms.js가 fetch해서 id="progressMaintenanceMenuBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- PASSWORD 통과 후 나타나는 유지보수 메뉴 - 메뉴얼("Main_Menu(유지보수)" 시트)의
+       [유지보수 메뉴] 하위 항목 중 우선 3개(수동밸브조작/바코드 체크/Maintenance
+       Purge)만 먼저 만든다. 실제 동작은 아직 없음(뼈대) - 화면 전환(취소)만 동작. -->
+  <div class="progress-menu-body" id="progressMaintenanceMenuBody">
+    <div class="progress-menu-desc">유지보수 항목을 선택하십시오.</div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn" id="maintenanceMenuManualValveBtn" data-action="수동밸브 조작">수동밸브 조작</button>
+      <button type="button" class="progress-btn" id="maintenanceMenuBarcodeBtn" data-action="바코드 체크">바코드 체크</button>
+      <button type="button" class="progress-btn" id="maintenanceMenuPurgeBtn" data-action="Maintenance Purge">Maintenance Purge</button>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button type="button" class="progress-aux-btn" id="maintenanceMenuCancelBtn" style="flex:1;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

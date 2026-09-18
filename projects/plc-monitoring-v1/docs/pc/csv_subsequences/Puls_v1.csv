@@ -1,0 +1,13 @@
+﻿# Puls 구간(잔류가스 Check ~ Pulse Vent) v1 (Main: Puls)
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","2-1","1","1","ack","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","배관내 잔류 CHECK를 시작 합니다. - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","2-2","2","3","auto","PNV:O","[ Puls Vent 진행 ]","Puls Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 7의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","2-3","2","5","auto","PNV:C","","Pump 배관 진공 Check","",""
+"4","2-4","2","7","auto","LPV_{side}:O","","","",""
+"5","2-5","2","9","auto","LPV_{side}:C","","","",""
+"6","2-6","2","11","auto","HPI_{side}:O","","","",""
+"7","2-7","2","13","auto","HPI_{side}:C","배관내 잔류 가스 Check","","HPT_{side} <= Pulse Vent Stop (psi)_{side}","[반복 사용법 1/3] HPT_{side} <= Pulse Vent Stop(psi) 이면(참) Next Step(8)로 진행 - Puls Vent 정상 종료. 거짓(아직 압력 안 낮음)이면 Alarm Goto(7A)로 이동해 진행횟수를 확인한다(밸브/누적시간 유지, 가벼운 이동)."
+"7A","2-8","2","15","auto","","Pulse Vent 진행 횟수 Check","","진행횟수 >= Puls vent 설정횟수_{side}","[반복 사용법 2/3 - 진행횟수 카운터] Step 7(HPT 조건 거짓)에서만 도달. 이 Step의 ""Alarm Monitoring"" 열 값이 예약어 ""진행횟수""이므로, 이 Step이 이번 반복에서 처음 평가되는 순간 진행 횟수가 자동으로 +1 된다(다른 열은 없음 - Alarm Monitoring=""진행횟수""라고 적는 것 자체가 카운터 동작이다. 다른 시퀀스에서 재사용할 때도 이 열만 ""진행횟수""로 적으면 됨). 그 증가된 값으로 곧바로 비교: 진행횟수>=설정횟수(참, 소진)면 Next Step(7B)에서 정지. 거짓(아직 미만)이면 Alarm Goto(2)로 Step 2부터 다시 반복."
+"7B","2-9","1","16","auto","","Puls Vent 설정횟수 초과","설정횟수를 초과하여 Puls Vent를 정지합니다.","진행횟수 < Puls vent 설정횟수_{side}","[반복 사용법 3/3 - 정지 트리거] Step 7A에서 진행횟수 소진(참)으로만 도달하는 정지 전용 Step. 이 Step도 Alarm Monitoring=""진행횟수""라 평가는 되지만, 같은 반복 안에서 7A가 이미 카운트했으므로 여기서는 중복으로 늘지 않는다(반복당 정확히 1번만 증가). 조건(진행횟수 < 설정횟수)은 도달 시점에 이미 항상 거짓이 되도록 설계됨 - Alarm Goto가 없어 Alarm Seq.(1=초기화/정지)가 실제로 발동한다. 정지 코드/문구를 바꾸려면 alarmSeq/alarmMessage 열만 수정."
+"8","2-10","1","17","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","Pulse Vent 마무리 - 밸브 초기화(전체 Close)","","",""
+"9","2-11","1","18","auto","","Puls Vent Sequence Complet","PT Calibration이 완료되었습니다.","",""

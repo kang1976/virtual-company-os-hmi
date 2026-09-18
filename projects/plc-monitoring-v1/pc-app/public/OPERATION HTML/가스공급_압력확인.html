@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>공급전 압력및 Weight 확인 - GMS 조작화면</title>
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body gsp-pressure-check-body" id="progressGasSupplyPressureCheckBody">
+    <div class="barcode-check-title" style="margin-bottom:6px;font-size:16px;">[ 공급전 압력및 Weight 확인 ]</div>
+    <div class="progress-menu-desc" style="font-size:13px;line-height:1.5;margin-bottom:14px;color:var(--text);">
+      실린더 잠금 상태를 확인 하세요<br>
+      가스공급 전 1차/2차 배관 라인의 압력및 무게 상태 확인
+    </div>
+
+    <div class="gsp-readout-panel" style="margin-top:auto;margin-bottom:12px;">
+      <div class="gsp-readout-row" id="gspHptRow">
+        <span class="gsp-readout-label" id="gspHptLabel">HPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspHptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspMptRow">
+        <span class="gsp-readout-label" id="gspMptLabel">MPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspMptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspLptRow">
+        <span class="gsp-readout-label" id="gspLptLabel">LPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspLptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspNptRow">
+        <span class="gsp-readout-label" id="gspNptLabel">NPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspNptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspWeightRow">
+        <span class="gsp-readout-label" id="gspWeightLabel">WI_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspWeightVal">0.00</span> ]</span>
+          <span class="gsp-readout-unit">kg</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-btn-group" style="margin-top:0;">
+      <div class="gas-btn-grid">
+        <button type="button" class="progress-btn" id="gasSupplyPressureCheckRunBtn">가스공급</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyPressureCheckAdjustModeBtn">조정모드</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyPressureCheckLineVentBtn">Line Vent</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyPressureCheckCancelBtn">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

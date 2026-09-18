@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>교환후 Puls 2 - GMS 조작화면</title>
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressExchangeAfterPulsBody">
+    <div class="step-badges-lg">
+      <span class="step-badge-lg done">3P</span>
+      <span class="step-badge-lg blinking">+L</span>
+      <span class="step-badge-lg" data-vt-badge>-VT</span>
+      <span class="step-badge-lg">4P</span>
+      <span class="step-badge-lg">PC</span>
+    </div>
+
+    <div id="exchangeAfterPulsIdle">
+      <div class="progress-menu-desc">교환 후 Puls 2 구간을 준비하는 중입니다...</div>
+      <div class="sub-seq-last-alarm" id="exchangeAfterPulsLastAlarm"></div>
+      <div class="purge-count-panel" id="exchangeAfterPulsIdleCycleInfo" style="display:none;">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정 횟수 :</span>
+          <span class="purge-count-box">[ <span id="exchangeAfterPulsIdleCycleTarget" class="purge-count-value">-</span> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행 횟수 :</span>
+          <span class="purge-count-box">[ <span id="exchangeAfterPulsIdleCycleCurrent" class="purge-count-value">-</span> ]</span>
+        </div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="exchangeAfterPulsExecuteBtn" style="margin:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsIdleCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsIdleTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsIdleExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsIdleExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="exchangeAfterPulsIdleExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="exchangeAfterPulsPanel" style="display:none;">
+      <div class="sub-seq-step-label" id="exchangeAfterPulsStepLabel">Main 14 - Sub 1</div>
+      <div class="sub-seq-operation" id="exchangeAfterPulsOperation">-</div>
+      <div class="sub-seq-message" id="exchangeAfterPulsMessage">-</div>
+      <div class="sub-seq-valve-diff" id="exchangeAfterPulsValveDiff"></div>
+      <div class="sub-seq-timer" id="exchangeAfterPulsTimer">-</div>
+      <div class="sub-seq-acc-time" id="exchangeAfterPulsAccTime">누적 경과시간: 0초</div>
+      <div class="sub-seq-alarm-banner" id="exchangeAfterPulsAlarmBanner" style="display:none;">
+        <div class="sub-seq-last-alarm" id="exchangeAfterPulsPanelAlarmMsg"></div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="purge-count-panel" id="exchangeAfterPulsCycleInfo" style="display:none;">
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정 횟수 :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPulsCycleTarget" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행 횟수 :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPulsCycleCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+        </div>
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="exchangeAfterPulsAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsPauseBtn" style="margin:0;">일시정지</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsResetBtn" style="margin:0;">초기화</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPulsExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="exchangeAfterPulsExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+  </div>
+</body>
+</html>

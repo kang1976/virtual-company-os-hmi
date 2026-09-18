@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>유지보수모드 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "유지보수모드" 화면 분리 파일. 보조 메뉴의 "유지보수모드" 버튼으로
+     PASSWORD(게이트 키 'auxMaintenanceMode')를 통과한 뒤 들어온다(Operation.js의
+     window.requestAuxMaintenanceMode/showProgressAuxMaintenanceMode). 기존 조작화면의
+     "유지 보수"(메인 메뉴 → 수동밸브조작/바코드체크/Maintenance Purge)와는 완전히 다른
+     화면이다 - 여기서는 PM Mode/Set-up Mode 두 가지를 적용/미적용으로 켜고 끌 수 있다.
+     PM Mode: shutdown 알람센서 Test 중 실제로 장비가 shutdown 되지 않게 하는 목적.
+     Set-up Mode: GMS 모니터링이 상위로 올리는 통신 프로토콜 중 Alarm 항목을 차단하는 목적.
+     상태는 서버(gmsManager.js gmsState.pmMode/setupMode)가 들고 있고 웹소켓으로 모든
+     클라이언트에 방송되므로, 배관도 램프(.diagram-mode-lamps)와 Cylinder Step Status의
+     etc 행(PM/SETUP 버튼)도 함께 즉시 갱신된다. 스타일은 ../gms.css를 그대로 참조. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressAuxMaintenanceModeBody">
+    <div class="progress-menu-desc">
+      기존 조작화면의 "유지 보수"와는 별개의 화면입니다. PM Mode/Set-up Mode를 켜고 끌 수 있습니다.
+    </div>
+    <div class="aux-maint-mode-row">
+      <div class="aux-maint-mode-label">
+        <div class="aux-maint-mode-title">PM Mode</div>
+        <div class="aux-maint-mode-desc">shutdown 알람센서 Test 중 장비가 실제로 shutdown 되지 않도록 합니다.</div>
+      </div>
+      <button type="button" id="pmModeToggleBtn" class="aux-maint-mode-toggle"></button>
+    </div>
+    <div class="aux-maint-mode-row">
+      <div class="aux-maint-mode-label">
+        <div class="aux-maint-mode-title">Set-up Mode</div>
+        <div class="aux-maint-mode-desc">GMS 모니터링이 상위로 올리는 통신 프로토콜 중 Alarm 항목을 차단합니다.</div>
+      </div>
+      <button type="button" id="setupModeToggleBtn" class="aux-maint-mode-toggle"></button>
+    </div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn" id="auxMaintenanceModeCloseBtn">◀ 이전화면</button>
+    </div>
+  </div>
+</body>
+</html>

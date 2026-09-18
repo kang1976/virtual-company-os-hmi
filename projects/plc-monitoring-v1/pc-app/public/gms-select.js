@@ -1,0 +1,397 @@
+'use strict';
+
+/**
+ * GMS 장비 선택 화면 - data/gmsEquipment.json(간단한 카드 목록)을 보여주고,
+ * 카드를 클릭하면 세부 배관도 화면(gms.html)으로 unit id를 넘겨 이동한다.
+ * PLC 연결/폴링 시작·정지·통신 이력은 (다른 화면들처럼) 이 화면에서 다룬다 - 배관도
+ * 화면(gms.html)은 이미 연결·폴링 중인 값을 보여주고 밸브를 제어하는 화면일 뿐이다.
+ */
+
+function toast(message, kind = '') {
+  const el = document.getElementById('toast');
+  el.textContent = message;
+  el.className = `toast show ${kind}`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    el.className = 'toast';
+  }, 2500);
+}
+
+// ── 테마 ──
+const themeSelect = document.getElementById('themeSelect');
+function applyTheme(t) {
+  document.documentElement.removeAttribute('data-custom-theme');
+  const customEl = document.getElementById('__customTheme');
+  if (customEl) customEl.textContent = '';
+  localStorage.removeItem('plcThemeMode');
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('plcTheme', t);
+  if (themeSelect) themeSelect.value = t;
+}
+if (localStorage.getItem('plcThemeMode') === 'custom') {
+  try {
+    if (themeSelect) themeSelect.value = JSON.parse(localStorage.getItem('plcCustomTheme') || '{}').fallback === 'dark' ? 'dark' : 'light';
+  } catch (e) { if (themeSelect) themeSelect.value = 'light'; }
+} else {
+  const storedTheme = localStorage.getItem('plcTheme');
+  if (storedTheme) applyTheme(storedTheme);
+  else if (themeSelect) themeSelect.value = document.documentElement.dataset.theme || 'light';
+}
+if (themeSelect) {
+  themeSelect.addEventListener('change', () => applyTheme(themeSelect.value));
+}
+
+// ── 연결 UI ──
+const plcSeriesSelect = document.getElementById('plcSeriesSelect');
+const connType = document.getElementById('connType');
+const connHost = document.getElementById('connHost');
+const connPort = document.getElementById('connPort');
+const connectBtn = document.getElementById('connectBtn');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const statusPill = document.getElementById('statusPill');
+const statusText = document.getElementById('statusText');
+const cpuInfo = document.getElementById('cpuInfo');
+const cntSend = document.getElementById('cntSend');
+const cntRecv = document.getElementById('cntRecv');
+const cntErr = document.getElementById('cntErr');
+const cntLatency = document.getElementById('cntLatency');
+const resetCountersBtn = document.getElementById('resetCountersBtn');
+
+function updateConnFieldsVisibility() {
+  const needsHost = connType.value === 'UDP' || connType.value === 'TCP';
+  connHost.disabled = !needsHost || connectBtn.disabled;
+  connPort.disabled = !needsHost || connectBtn.disabled;
+  connHost.placeholder = needsHost ? 'PLC IP (예: 192.168.0.80)' : 'USB는 IP 불필요';
+}
+connType.addEventListener('change', updateConnFieldsVisibility);
+updateConnFieldsVisibility();
+
+const connTypeUsbOption = Array.from(connType.options).find((o) => o.value === 'USB');
+function applySeriesConstraints() {
+  const isNx = plcSeriesSelect.value === 'NX';
+  if (connTypeUsbOption) connTypeUsbOption.hidden = isNx;
+  if (isNx && connType.value === 'USB') connType.value = 'UDP';
+  updateConnFieldsVisibility();
+}
+plcSeriesSelect.addEventListener('change', applySeriesConstraints);
+applySeriesConstraints();
+
+function setConnStatus(status) {
+  if (!status) return;
+  statusPill.classList.remove('connected', 'error');
+  if (status.connected) {
+    statusPill.classList.add('connected');
+    if ((status.connectionType === 'UDP' || status.connectionType === 'TCP') && status.connectionParams) {
+      statusText.textContent = `${status.connectionType} 연결됨 (${status.connectionParams.host}:${status.connectionParams.port})`;
+    } else {
+      statusText.textContent = 'USB 연결됨';
+    }
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    connType.disabled = true;
+  } else if (status.lastError) {
+    statusPill.classList.add('error');
+    statusText.textContent = '오류: ' + status.lastError;
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    connType.disabled = false;
+  } else {
+    statusText.textContent = '연결 안 됨';
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    connType.disabled = false;
+  }
+  updateConnFieldsVisibility();
+  const hasMeaningfulStatus = status.connected || status.connectionParams;
+  if (hasMeaningfulStatus && status.connectionType && document.activeElement !== connType) connType.value = status.connectionType;
+  if (status.connectionParams && document.activeElement !== connHost) connHost.value = status.connectionParams.host || '';
+  if (status.connectionParams && document.activeElement !== connPort) connPort.value = status.connectionParams.port || 9600;
+  if (status.counters) setCounters({ ...status.counters, latencyMs: status.latencyMs });
+
+  if (status.controllerInfo && status.controllerInfo.model) {
+    const v = status.controllerInfo.version ? ` (Ver. ${status.controllerInfo.version})` : '';
+    cpuInfo.textContent = `— ${status.controllerInfo.model}${v}`;
+  } else if (!status.connected) {
+    cpuInfo.textContent = '— 연결 전';
+  } else {
+    cpuInfo.textContent = '— CPU 정보 확인 중...';
+  }
+}
+
+function setCounters(c) {
+  cntSend.textContent = c.send;
+  cntRecv.textContent = c.recvSuccess;
+  cntErr.textContent = c.recvError;
+  cntLatency.textContent = c.latencyMs != null ? c.latencyMs + 'ms' : '—';
+}
+
+async function fetchConnStatus() {
+  try {
+    const res = await fetch('/api/gms/conn-status');
+    const data = await res.json();
+    if (data.ok) setConnStatus(data.status);
+  } catch (e) {
+    statusPill.classList.remove('connected');
+    statusPill.classList.add('error');
+    statusText.textContent = '상태 조회 실패';
+  }
+}
+
+const CONNECT_FETCH_TIMEOUT_MS = 12000;
+async function postJsonWithTimeout(url, body, timeoutMs = CONNECT_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+connectBtn.addEventListener('click', async () => {
+  const type = connType.value;
+  const body = { type, series: plcSeriesSelect.value };
+  if (type === 'UDP' || type === 'TCP') {
+    const host = connHost.value.trim();
+    if (!host) {
+      alert(`${type} 연결에는 PLC IP 주소를 입력해야 합니다.`);
+      return;
+    }
+    body.host = host;
+    body.port = connPort.value ? Number(connPort.value) : 9600;
+  }
+  connectBtn.disabled = true;
+  try {
+    const data = await postJsonWithTimeout('/api/gms/connect', body);
+    if (!data.ok) alert('연결 실패: ' + data.error);
+  } catch (e) {
+    alert('연결 요청이 응답하지 않습니다(타임아웃). 네트워크 상태를 확인하고 다시 시도하세요.');
+  } finally {
+    await fetchConnStatus();
+  }
+});
+
+disconnectBtn.addEventListener('click', async () => {
+  await fetch('/api/gms/disconnect', { method: 'POST' });
+});
+
+resetCountersBtn.addEventListener('click', async () => {
+  await fetch('/api/gms/counters/reset', { method: 'POST' });
+});
+
+// ── 폴링 시작/일시정지/정지 (활성 장비 기준 - 카드를 눌러 배관도 화면에 한 번이라도
+// 들어갔던 장비가 서버에 활성 장비로 기억되어 있어야 시작할 수 있다) ──
+const gmsIntervalInput = document.getElementById('gmsIntervalInput');
+const gmsStartBtn = document.getElementById('gmsStartBtn');
+const gmsPauseBtn = document.getElementById('gmsPauseBtn');
+const gmsStopBtn = document.getElementById('gmsStopBtn');
+
+function setGmsPollStatusUI(status) {
+  gmsStartBtn.disabled = status === 'running';
+  gmsPauseBtn.disabled = status !== 'running';
+  gmsStopBtn.disabled = status === 'stopped';
+  gmsPauseBtn.classList.toggle('paused', status === 'paused');
+}
+setGmsPollStatusUI('stopped');
+
+gmsStartBtn.addEventListener('click', async () => {
+  const ms = Number(gmsIntervalInput.value) || 1000;
+  try {
+    const data = await fetch('/api/gms/start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ intervalMs: ms }),
+    }).then((r) => r.json());
+    if (!data.ok) toast('시작 실패: ' + data.error, 'err');
+  } catch (e) {
+    toast('시작 실패: ' + e.message, 'err');
+  }
+});
+gmsPauseBtn.addEventListener('click', async () => { await fetch('/api/gms/pause', { method: 'POST' }); });
+gmsStopBtn.addEventListener('click', async () => { await fetch('/api/gms/stop', { method: 'POST' }); });
+
+// ── 통신 이력 패널 ──
+const logList = document.getElementById('logList');
+const clearLogBtn = document.getElementById('clearLogBtn');
+const filterErrorBtn = document.getElementById('filterErrorBtn');
+let allLogs = [];
+let errorOnlyFilter = false;
+
+function renderLogEntry(entry) {
+  const div = document.createElement('div');
+  div.className = `log-entry ${entry.direction}`;
+  const time = new Date(entry.time).toLocaleTimeString('ko-KR');
+  div.innerHTML = `<span class="time">[${time}]</span> <span class="tag">${entry.direction}</span>${entry.message}` +
+    (entry.hex ? `<span class="hex">${entry.hex}</span>` : '');
+  logList.appendChild(div);
+}
+function renderAllLogs() {
+  logList.innerHTML = '';
+  const toShow = errorOnlyFilter ? allLogs.filter((e) => e.direction === 'ERROR') : allLogs;
+  toShow.slice(-300).forEach(renderLogEntry);
+  logList.scrollTop = logList.scrollHeight;
+}
+function appendLog(entry) {
+  allLogs.push(entry);
+  if (allLogs.length > 1000) allLogs.shift();
+  if (!errorOnlyFilter || entry.direction === 'ERROR') {
+    renderLogEntry(entry);
+    logList.scrollTop = logList.scrollHeight;
+    while (logList.children.length > 300) logList.removeChild(logList.firstChild);
+  }
+}
+filterErrorBtn.addEventListener('click', () => {
+  errorOnlyFilter = !errorOnlyFilter;
+  filterErrorBtn.classList.toggle('active', errorOnlyFilter);
+  filterErrorBtn.textContent = errorOnlyFilter ? '🔴 전체 보기' : '🔴 에러만 보기';
+  renderAllLogs();
+});
+clearLogBtn.addEventListener('click', async () => {
+  allLogs = [];
+  logList.innerHTML = '';
+  await fetch('/api/gms/logs/clear', { method: 'POST' });
+});
+
+// ── WebSocket ──
+let ws;
+function connectWs() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}`);
+  ws.onmessage = (evt) => {
+    let msg;
+    try { msg = JSON.parse(evt.data); } catch (e) { return; }
+    if (msg.type === 'gmsConnStatus') setConnStatus(msg.payload);
+    else if (msg.type === 'gmsConnCounters') setCounters(msg.payload);
+    else if (msg.type === 'gmsConnLog') appendLog(msg.payload);
+    else if (msg.type === 'gmsConnLogHistory') msg.payload.forEach(appendLog);
+    else if (msg.type === 'gmsConnLogsCleared') { allLogs = []; logList.innerHTML = ''; }
+    else if (msg.type === 'gmsStatus') setGmsPollStatusUI(msg.payload.status);
+  };
+  ws.onclose = () => setTimeout(connectWs, 1000);
+}
+connectWs();
+
+// ── 초기 로드 ──
+fetchConnStatus();
+setInterval(fetchConnStatus, 5000);
+fetch('/api/gms/status').then((r) => r.json()).then((d) => {
+  if (d.ok) {
+    if (d.intervalMs) gmsIntervalInput.value = d.intervalMs;
+    if (d.status) setGmsPollStatusUI(d.status);
+  }
+}).catch(() => {});
+
+// ── 장비 세부 화면 진입 모드 선택 팝업 (모니터링/Operation) ──
+// 카드를 클릭하면 바로 gms.html로 이동하지 않고 이 팝업에서 모드를 먼저 고르게 한다.
+const modeSelectModal = document.getElementById('modeSelectModal');
+const modeSelectUnitName = document.getElementById('modeSelectUnitName');
+let pendingUnitId = null;
+
+function openModeSelect(unitId, unitName) {
+  pendingUnitId = unitId;
+  modeSelectUnitName.textContent = unitName;
+  modeSelectModal.hidden = false;
+}
+function closeModeSelect() {
+  modeSelectModal.hidden = true;
+  pendingUnitId = null;
+}
+function enterUnit(mode) {
+  if (!pendingUnitId) return;
+  const unitId = pendingUnitId;
+  // 이 장비를 활성 장비로 표시(폴링/쓰기가 이 장비 밸브 목록을 기준으로 동작)한 뒤 배관도
+  // 화면으로 이동. fetch는 완료를 기다리지 않는다(이동이 더 빨라도 gms.html이 도착 즉시
+  // 같은 요청을 다시 보내 활성 장비를 확정하므로 안전하다).
+  fetch(`/api/gms/valves?unit=${encodeURIComponent(unitId)}`).catch(() => {});
+  window.location.href = `/gms.html?unit=${encodeURIComponent(unitId)}&mode=${mode}`;
+}
+document.getElementById('modeMonitorBtn').addEventListener('click', () => enterUnit('monitor'));
+document.getElementById('modeOperationBtn').addEventListener('click', () => enterUnit('operation'));
+document.getElementById('modeSelectCancelBtn').addEventListener('click', closeModeSelect);
+modeSelectModal.addEventListener('click', (e) => { if (e.target === modeSelectModal) closeModeSelect(); });
+
+// ── 장비 카드 목록 ──
+const equipGrid = document.getElementById('equipGrid');
+
+function cabinetIconSvg() {
+  return `
+    <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="6" width="44" height="52" rx="3" fill="var(--input-bg)" stroke="var(--muted)" stroke-width="2" />
+      <rect x="16" y="12" width="14" height="10" rx="1.5" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+      <circle cx="23" cy="17" r="3" fill="none" stroke="var(--accent)" stroke-width="1.5" />
+      <rect x="34" y="12" width="14" height="10" rx="1.5" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+      <circle cx="41" cy="17" r="3" fill="none" stroke="var(--accent)" stroke-width="1.5" />
+      <rect x="10" y="27" width="44" height="4" fill="var(--error)" opacity="0.75" />
+      <rect x="16" y="36" width="12" height="16" rx="1.5" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+      <rect x="36" y="36" width="12" height="16" rx="1.5" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+    </svg>
+  `;
+}
+
+function renderEquipment(list) {
+  equipGrid.innerHTML = '';
+  if (!list.length) {
+    equipGrid.innerHTML = '<p class="empty-note">등록된 장비가 없습니다. data/gmsEquipment.json에 장비를 추가해주세요.</p>';
+    return;
+  }
+  list.forEach((eq) => {
+    const card = document.createElement('div');
+    card.className = 'equip-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `${eq.name || eq.id} 장비 선택`);
+
+    const values = document.createElement('div');
+    values.className = 'equip-values';
+    [eq.label1, eq.label2].forEach((v) => {
+      if (v === undefined || v === null || v === '') return;
+      const span = document.createElement('span');
+      span.textContent = v;
+      values.appendChild(span);
+    });
+    card.appendChild(values);
+
+    const name = document.createElement('div');
+    name.className = 'equip-name';
+    name.textContent = eq.name || eq.id;
+    card.appendChild(name);
+
+    const icon = document.createElement('div');
+    icon.className = 'equip-icon';
+    icon.innerHTML = cabinetIconSvg();
+    card.appendChild(icon);
+
+    const status = document.createElement('div');
+    status.className = 'equip-status';
+    status.innerHTML = '<span class="dot"></span><span>상태 미확인</span>';
+    card.appendChild(status);
+
+    // 카드 클릭 = 배관도 화면으로 바로 가지 않고 모드 선택 팝업을 먼저 띄운다.
+    const go = () => openModeSelect(eq.id, eq.name || eq.id);
+    card.addEventListener('click', go);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        go();
+      }
+    });
+
+    equipGrid.appendChild(card);
+  });
+}
+
+async function loadEquipment() {
+  try {
+    const res = await fetch('/api/gms/equipment');
+    const data = await res.json();
+    renderEquipment(Array.isArray(data.equipment) ? data.equipment : []);
+  } catch (e) {
+    equipGrid.innerHTML = '<p class="empty-note">장비 목록을 불러오지 못했습니다: ' + e.message + '</p>';
+  }
+}
+
+loadEquipment();

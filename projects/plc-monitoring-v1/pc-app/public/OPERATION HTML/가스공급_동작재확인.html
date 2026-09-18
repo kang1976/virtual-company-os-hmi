@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>가스공급 동작 재확인 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 가스공급 중(Service) 화면의
+     "일시정지"/"공급중지"/"강제 교체" 버튼 → PASSWORD 통과 후 공통으로 들어오는 재확인
+     화면(세 버튼이 이 화면 하나를 공유하고, 안내 문구만 Operation.js가 동적으로 바꾼다 -
+     gasSupplyPendingAction/showGasSupplyConfirmAction 참고). "실행"을 눌러야 실제로
+     동작하고("일시정지"는 PC/가스공급 화면으로, "공급중지"는 IDLE+메인 메뉴로, "강제
+     교체"는 이 측을 IDLE+메인 메뉴로 보낸 뒤 반대 측 가스공급 화면으로 전환), "취소"는
+     가스공급 중 화면으로 그냥 되돌아간다. 스타일은 ../gms.css를 그대로 참조(복사 아님).
+     gms.js가 fetch해서 id="progressGasSupplyConfirmActionBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressGasSupplyConfirmActionBody">
+    <div class="progress-menu-desc" id="gasSupplyConfirmActionDesc">일시정지를 진행하시겠습니까?</div>
+    <div class="progress-btn-group">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="gasSupplyConfirmActionRunBtn" style="flex:1;margin-bottom:0;">실행</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyConfirmActionCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

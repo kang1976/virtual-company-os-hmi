@@ -1,0 +1,11 @@
+/* 세로 높이는 부모 .config-mode-body(gms.css)에서 align-self:stretch로 받는다 - 여기서
+   높이를 다시 지정하면(예: flex-basis로 세로를 노리는 실수) row 방향 flex의 주축은
+   가로라서 의도와 다르게 동작한다(실제 겪은 버그). 이 규칙은 가로(너비) 성장/축소와
+   외형만 담당한다. */
+#gmsConfigModeGridContainer {
+  flex: 1 1 auto;
+  width: auto;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}

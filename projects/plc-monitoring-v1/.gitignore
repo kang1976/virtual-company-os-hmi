@@ -1,0 +1,7 @@
+node_modules/
+grid-app/node_modules/
+logs/
+dist-installer/
+*.log
+.DS_Store
+.claude/

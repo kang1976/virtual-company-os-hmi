@@ -1,0 +1,18 @@
+﻿# HP&LP Pump v1 (Main: HpLpPump)
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","15-1","1","1","auto","","[ HP&LP Pump Mode ]","Pump 작동을 시작합니다.","",""
+"2","15-2","2","3","auto","PNV:O","","PNV Valve OPEN","",""
+"3","15-3","2","5","auto","LPV_{side}:O","","LPV Valve OPEN","",""
+"4","15-4","2","7","auto","HPI_{side}:O","","HPI Valve OPEN","",""
+"5","15-5","2","9","auto","HPV_{side}:O","","HPV Valve OPEN","",""
+"6","15-6","2","11","auto","PGI_{side}:O","","PGI Valve OPEN","",""
+"7","15-7","60","71","auto","PGII_{side}:O","","Pump 작동중입니다.","HPT_{side} <= 진공하한치_{side}","[HP&LP Pump 분 단위 대기 및 실시간 안전 감시]"
+"7A","15-8","1","72","auto","","","","진행횟수 >= PUMPING 시간[분]_{side}","[HP&LP Pump 분 단위 시간 판정 - 완료 시 Step 7B로 이동]"
+"7B","15-9","2","74","auto","","전체 PT 센서 진공도 Check","전체 PT 센서 진공도 확인 중...","VPT & LPT_{side} & HPT_{side} & NPT_{side} <= & <= & <= & <= 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side} & 진공하한치_{side}","[진행시간 완료 후 VPT, LPT, HPT, NPT 전체 센서 진공하한치 이하 도달 여부 최종 확인]"
+"8","15-10","1","75","auto","PGII_{side}:C","","","",""
+"9","15-11","2","77","auto","PGI_{side}:C","","","",""
+"10","15-12","2","79","auto","HPV_{side}:C","","","",""
+"11","15-13","2","81","auto","HPI_{side}:C","","","",""
+"12","15-14","2","83","auto","LPV_{side}:C","","","",""
+"13","15-15","2","85","auto","PNV:C","","","",""
+"14","15-16","1","86","auto","","[ HP&LP Pump Sequence Complet ]","HP&LP Pumping이 완료되었습니다.","",""

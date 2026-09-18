@@ -1,0 +1,8 @@
+﻿# 용기교체(CC) 진입화면 Step 데이터 v1 (Main: CylReplace)
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","10-1","1","1","ack","HPIV:C","[ 실린더 확인 ]","실린더의 충진 일자를 확인해 주시기 바랍니다.","","화면: 용기교체CC_실린더 확인.html(cylReplaceCheck) - 밸브 변화 없음, 충진일자 육안 확인용."
+"2","10-2","1","2","ack","PIV:O PGI_{side}:O+4 PGII_{side}:O+2 HPIV:C","","실린더 교체용 Valve가 순차적으로 Open 됩니다(PIV -> PGII -> PGI, 2초 간격). HPIV는 Close 유지.","","화면: 용기교체CC_Valve Open 확인.html(cylReplaceValveOpen) - PIV(즉시)/PGII_{side}(+2초)/PGI_{side}(+4초) 순차 Open, HPIV는 즉시 Close 유지. SVG 배관도 밸브 아이콘에 실시간 반영(applyCcStepValves)."
+"3","10-3","1","3","ack","AG_{side}:O","","실린더 교체전 Auto Guard가 Open 되었는지 확인해 주시기 바랍니다.","","화면: 용기교체CC_Auto Guard Open 확인.html(cylReplaceAutoGuardOpen)."
+"4","10-4","1","4","ack","","","이전 실린더를 분리하고, 새로운 실린더를 장착하십시오.","","화면: 용기교체CC_실린더 분리 및 교체.html(cylReplaceSwap) - 밸브 변화 없음(물리적 교체 작업)."
+"5","10-5","1","5","ack","","","바코드 스캐너를 이용하여 실린더 바코드를 읽어 주시기 바랍니다.","","화면: 용기교체CC_Gas name 확인.html(cylReplaceGasName) - 밸브 변화 없음(바코드 확인용)."
+"6","10-6","1","6","ack","PIV:C PGI_{side}:C+4 PGII_{side}:C+2 AG_{side}:C","[ 용기교체 Sequence Complet ]","실린더 교체를 위한 Auto Guard가 Close 되며, PIV/PGII/PGI도 순차적으로 Close 됩니다(2초 간격).","","화면: 용기교체CC_Auto Guard Close 확인.html(cylReplaceAutoGuardClose) - AG_{side}/PIV는 즉시 Close, PGII_{side}(+2초)/PGI_{side}(+4초) 순차 Close. 확인 시 용기교체 완료. SVG 배관도 밸브 아이콘에 실시간 반영(applyCcStepValves)."

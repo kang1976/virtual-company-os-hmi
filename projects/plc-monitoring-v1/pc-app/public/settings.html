@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Setting</title>
+<script>
+  // 저장된 테마를 먼저 적용(FOUC 방지). 사용자 지정 테마도 복원.
+  (function () {
+    try {
+      if (localStorage.getItem('plcThemeMode') === 'custom') {
+        var c = JSON.parse(localStorage.getItem('plcCustomTheme') || '{}');
+        document.documentElement.dataset.theme = c.fallback === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-custom-theme', '1');
+        var vars = c.vars || {};
+        var css = ':root[data-custom-theme]{' + Object.keys(vars).map(function (k) { return '--' + k + ':' + vars[k]; }).join(';') + '}';
+        var el = document.createElement('style'); el.id = '__customTheme'; el.textContent = css;
+        document.documentElement.appendChild(el);
+      } else {
+        document.documentElement.dataset.theme = localStorage.getItem('plcTheme') || 'light';
+      }
+    } catch (e) { document.documentElement.dataset.theme = 'light'; }
+  })();
+</script>
+<script>
+  // 화면 전체 확대/축소 (Ctrl+휠) - 다른 페이지와 동일. __setUiZoom도 여기서 제공한다.
+  (function () {
+    var KEY = 'plcUiZoom';
+    var MIN = 0.4, MAX = 2.0, STEP = 1.1;
+    var PRESETS = [40, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200];
+    function clamp(z) { return Math.min(MAX, Math.max(MIN, z)); }
+    function current() { return clamp(parseFloat(localStorage.getItem(KEY)) || 1); }
+    function syncControl(z) {
+      var select = document.getElementById('uiZoomSelect');
+      if (!select) return;
+      var pct = Math.round(z * 100);
+      var opt = select.querySelector('option[value="' + pct + '"]');
+      if (!opt) {
+        opt = document.createElement('option');
+        opt.value = String(pct);
+        opt.textContent = pct + '%';
+        var inserted = false;
+        Array.prototype.forEach.call(select.options, function (o) {
+          if (!inserted && Number(o.value) > pct) { select.insertBefore(opt, o); inserted = true; }
+        });
+        if (!inserted) select.appendChild(opt);
+      }
+      select.value = String(pct);
+    }
+    function apply(z) {
+      if (!document.body) return;
+      if (Math.abs(z - 1) < 0.001) { document.body.style.zoom = ''; document.body.style.height = ''; }
+      else { document.body.style.zoom = String(z); document.body.style.height = (100 / z) + 'vh'; }
+      syncControl(z);
+    }
+    window.__setUiZoom = function (z) { z = clamp(z); localStorage.setItem(KEY, String(z)); apply(z); return z; };
+    window.__getUiZoom = current;
+    window.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault(); e.stopPropagation();
+      window.__setUiZoom(clamp(e.deltaY < 0 ? current() * STEP : current() / STEP));
+    }, { passive: false, capture: true });
+    window.addEventListener('keydown', function (e) {
+      if (e.ctrlKey && (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0')) { e.preventDefault(); window.__setUiZoom(1); }
+    });
+    function wireControls() {
+      var outBtn = document.getElementById('uiZoomOut');
+      var inBtn = document.getElementById('uiZoomIn');
+      var select = document.getElementById('uiZoomSelect');
+      if (outBtn) outBtn.addEventListener('click', function () {
+        var pct = Math.round(current() * 100);
+        var lower = PRESETS.filter(function (p) { return p < pct; }).pop();
+        window.__setUiZoom((lower !== undefined ? lower : Math.max(40, pct - 10)) / 100);
+      });
+      if (inBtn) inBtn.addEventListener('click', function () {
+        var pct = Math.round(current() * 100);
+        var higher = PRESETS.filter(function (p) { return p > pct; })[0];
+        window.__setUiZoom((higher !== undefined ? higher : Math.min(200, pct + 10)) / 100);
+      });
+      if (select) select.addEventListener('change', function (e) { window.__setUiZoom(Number(e.target.value) / 100); });
+      apply(current());
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireControls);
+    else wireControls();
+  })();
+</script>
+<style>
+  :root {
+    --bg: #f5f7fa; --panel: #ffffff; --panel-border: #d8dee5; --text: #1c232b; --muted: #5b6672;
+    --accent: #1a9b5c; --accent-dim: #cdebd9; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+    --error: #c23c3c; --input-bg: #eef1f5; --bg-alt: #eef1f5; --flash-bg: #e3f7ec; --danger-bg: #fbe4e4;
+    --primary-text: #0d3d26; --danger-text: #6b1f1f;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  :root[data-theme='dark'] {
+    --bg: #0b0e11; --panel: #171d24; --panel-border: #3d4a59; --text: #e7ecf1; --muted: #9aa7b8;
+    --accent: #3ddc84; --accent-dim: #1f6f45; --warn: #e6b450; --warn-bg: #3a2e12; --warn-text: #ffe9b3;
+    --error: #e65a5a; --input-bg: #232b35; --bg-alt: #0e1216; --flash-bg: #0f1c15; --danger-bg: #4a2323;
+    --primary-text: #eafff2; --danger-text: #ffdede;
+  }
+  :root[data-theme='orange'] {
+    --bg: #fdf6f0; --panel: #ffffff; --panel-border: #f0d4b4; --text: #2b1d10; --muted: #8a6a4a;
+    --accent: #ff8a00; --accent-dim: #ffe3bf; --warn: #b45f00; --warn-bg: #fff1dc; --warn-text: #7a3e00;
+    --error: #c23c3c; --input-bg: #fff3e6; --bg-alt: #fff3e6; --flash-bg: #ffedd6; --danger-bg: #fbe4e4;
+    --primary-text: #7a3d00; --danger-text: #6b1f1f;
+  }
+  :root[data-theme='blue'] {
+    --bg: #eef4fc; --panel: #ffffff; --panel-border: #c7dbf2; --text: #16233a; --muted: #5c7699;
+    --accent: #2f6fed; --accent-dim: #d7e6ff; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+    --error: #c23c3c; --input-bg: #e7f0fb; --bg-alt: #e7f0fb; --flash-bg: #dbe9fc; --danger-bg: #fbe4e4;
+    --primary-text: #0b3a8a; --danger-text: #6b1f1f;
+  }
+  :root[data-theme='green'] {
+    --bg: #eefaf3; --panel: #ffffff; --panel-border: #bfe6d0; --text: #123324; --muted: #4f8067;
+    --accent: #16a34a; --accent-dim: #d3f3df; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+    --error: #c23c3c; --input-bg: #e6f7ec; --bg-alt: #e6f7ec; --flash-bg: #d7f4e2; --danger-bg: #fbe4e4;
+    --primary-text: #0b5c30; --danger-text: #6b1f1f;
+  }
+  :root[data-theme='gray'] {
+    --bg: #f2f3f5; --panel: #ffffff; --panel-border: #d6d9de; --text: #202329; --muted: #63676f;
+    --accent: #4b5563; --accent-dim: #e2e4e8; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+    --error: #c23c3c; --input-bg: #eceef1; --bg-alt: #eceef1; --flash-bg: #e4e6ea; --danger-bg: #fbe4e4;
+    --primary-text: #1f2937; --danger-text: #6b1f1f;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px;
+  }
+  header {
+    flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    padding: 12px 20px; border-bottom: 1px solid var(--panel-border); background: var(--panel);
+  }
+  header h1 { font-size: 16px; font-weight: 600; margin: 0; color: var(--text); white-space: nowrap; }
+  header h1 span { color: var(--muted); font-weight: 400; }
+  .page-tabs { display: flex; align-items: flex-end; gap: 2px; }
+  .page-tabs .page-tab {
+    padding: 6px 14px; font-size: 13px; text-decoration: none; color: var(--muted);
+    background: var(--bg-alt); border: 1px solid var(--panel-border); border-bottom: none;
+    border-radius: 8px 8px 0 0; position: relative; top: 3px;
+  }
+  .page-tabs .page-tab:hover { color: var(--text); }
+  .page-tabs .page-tab.active { background: var(--accent-dim); color: var(--primary-text); font-weight: 700; border-color: var(--accent); top: 0; z-index: 1; }
+  select, button, input { background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text); padding: 6px 10px; border-radius: 4px; font-size: 14px; }
+  button { cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled, input:disabled, select:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 600; }
+
+  /* ── 화면 배율 컨트롤(−/%/+) - 모든 페이지 공통 ── */
+  .ui-zoom { display: inline-flex; align-items: stretch; border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; height: 30px; }
+  .ui-zoom button { border: none; background: var(--input-bg); padding: 0 10px; font-size: 15px; font-weight: 700; line-height: 1; cursor: pointer; color: var(--text); border-radius: 0; }
+  .ui-zoom button:hover { background: var(--bg-alt); color: var(--accent); }
+  .ui-zoom select { border: none; border-left: 1px solid var(--panel-border); border-right: 1px solid var(--panel-border); background: var(--input-bg); font-size: 13px; font-family: var(--mono); color: var(--text); padding: 0 4px; cursor: pointer; border-radius: 0; text-align: center; }
+
+  .settings-scroll { flex: 1 1 auto; overflow-y: auto; padding: 18px 26px 40px; }
+  .settings-wrap { max-width: 1000px; margin: 0 auto; }
+
+  fieldset { border: 1px solid var(--panel-border); border-radius: 8px; margin: 0 0 20px; padding: 8px 20px 18px; }
+  legend { color: var(--accent); font-weight: 700; font-size: 14px; padding: 0 8px; }
+  .row { display: flex; align-items: center; gap: 12px; margin: 12px 0; flex-wrap: wrap; }
+  .row > label.key { flex: 0 0 150px; color: var(--muted); font-size: 14px; text-align: left; }
+  .row .grow { flex: 1 1 260px; min-width: 200px; }
+  .row input[type=text], .row input[type=number] { font-family: var(--mono); }
+  .hint { color: var(--muted); font-size: 12px; margin-left: 6px; }
+  .arrow-preview { color: var(--muted); font-size: 13px; }
+  .arrow-preview b { color: var(--text); font-family: var(--mono); }
+  .radio-inline { display: inline-flex; align-items: center; gap: 6px; }
+  .seg { display: inline-flex; align-items: center; gap: 4px; }
+  .icon-btn { padding: 6px 10px; }
+
+  /* 테마 스와치 - Windows 테마 설정처럼 색상 원을 클릭해서 바로 선택 */
+  .theme-swatches { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .theme-swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; border-radius: 10px; border: none; background: none; cursor: pointer; width: 72px; }
+  .theme-swatch:hover { background: var(--input-bg); }
+  .sw-circle {
+    width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--panel-border);
+    background: var(--sw-color, var(--accent)); transition: box-shadow 0.12s;
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;
+  }
+  .theme-swatch[data-theme="light"] .sw-circle { --sw-color: #1a9b5c; }
+  .theme-swatch[data-theme="dark"] .sw-circle { --sw-color: #3ddc84; }
+  .theme-swatch[data-theme="orange"] .sw-circle { --sw-color: #ff8a00; }
+  .theme-swatch[data-theme="blue"] .sw-circle { --sw-color: #2f6fed; }
+  .theme-swatch[data-theme="green"] .sw-circle { --sw-color: #16a34a; }
+  .theme-swatch[data-theme="gray"] .sw-circle { --sw-color: #4b5563; }
+  .theme-swatch.active .sw-circle { box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--sw-color, var(--accent)); }
+  .sw-label { font-size: 12px; color: var(--text); }
+
+  .logo-preview { max-height: 46px; max-width: 200px; border: 1px solid var(--panel-border); border-radius: 4px; background: var(--panel); padding: 3px; }
+  .check-result { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .check-item .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .check-item.ok .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .check-item.bad .dot { background: var(--error); box-shadow: 0 0 6px var(--error); }
+  .check-item .nm { min-width: 170px; color: var(--muted); }
+
+  .action-bar { position: sticky; bottom: 0; display: flex; gap: 10px; align-items: center; padding: 12px 26px; border-top: 1px solid var(--panel-border); background: var(--panel); }
+  .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); background: var(--accent); color: var(--panel); padding: 10px 22px; border-radius: 6px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 6000; }
+  .toast.show { opacity: 1; }
+  .toast.err { background: var(--error); color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Setting</h1>
+  <div style="display:flex;align-items:center;gap:14px;margin-left:auto;">
+    <div class="ui-zoom" title="화면 배율 조절 (Ctrl+휠, Ctrl+0: 100%로 초기화)">
+      <button type="button" id="uiZoomOut" aria-label="축소">−</button>
+      <select id="uiZoomSelect" aria-label="배율 선택">
+        <option value="40">40%</option>
+        <option value="50">50%</option>
+        <option value="67">67%</option>
+        <option value="75">75%</option>
+        <option value="80">80%</option>
+        <option value="90">90%</option>
+        <option value="100" selected>100%</option>
+        <option value="110">110%</option>
+        <option value="125">125%</option>
+        <option value="150">150%</option>
+        <option value="175">175%</option>
+        <option value="200">200%</option>
+      </select>
+      <button type="button" id="uiZoomIn" aria-label="확대">+</button>
+    </div>
+    <div class="page-tabs">
+      <a class="page-tab" href="/index.html">PLC 모니터링</a>
+      <a class="page-tab" href="/grid/">📊 Recipes &amp; Snapshots</a>
+      <a class="page-tab" href="/monitoring.html">🕒 트렌드 모니터링</a>
+      <a class="page-tab" href="/gms-select.html">⛽ GMS</a>
+      <a class="page-tab active" href="/settings.html">⚙ 설정</a>
+    </div>
+  </div>
+</header>
+
+<div class="settings-scroll">
+<div class="settings-wrap">
+
+  <fieldset>
+    <legend>일반</legend>
+    <div class="row">
+      <label class="key">변수 목록 폴더</label>
+      <input type="text" id="variablesDir" class="grow" placeholder="예: C:\\PLC\\변수목록  (서버 PC 기준 폴더 경로)" />
+    </div>
+    <div class="row">
+      <label class="key">스냅샷 저장 폴더</label>
+      <input type="text" id="snapshotDir" class="grow" placeholder="비우면 앱 기본 logs 폴더에 저장" />
+    </div>
+    <div class="row">
+      <label class="key">파일명 접두사</label>
+      <input type="text" id="filePrefix" style="width:200px;" placeholder="SNAP" />
+      <span class="arrow-preview">→ <b id="filePrefixPreview">SNAP</b>_{타임스탬프}.xlsx / .csv</span>
+    </div>
+    <div class="row"><span class="hint">폴더 경로는 이 앱 서버가 실행되는 PC 기준입니다. 브라우저에서 임의 폴더 탐색창은 열 수 없어 경로를 직접 입력합니다.</span></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>연결</legend>
+    <div class="row">
+      <label class="key">기본 PLC 종류</label>
+      <select id="defaultSeries"><option value="CJ">CJ</option><option value="NX">NX</option></select>
+      <label class="key" style="flex-basis:auto;">FINS 프로토콜</label>
+      <select id="finsProtocol"><option value="USB">USB</option><option value="UDP">UDP</option><option value="TCP">TCP</option></select>
+      <label class="key" style="flex-basis:auto;">FINS 노드</label>
+      <input type="text" id="finsNode" style="width:90px;" placeholder="자동" />
+    </div>
+    <div class="row">
+      <label class="key">기본 IP</label>
+      <input type="text" id="defaultIp" style="width:200px;" placeholder="192.168.1.10" />
+    </div>
+    <div class="row">
+      <label class="key">기본 포트 (CJ)</label>
+      <span class="radio-inline"><input type="radio" name="cjPortMode" id="cjPortDefault" value="default" /> <label for="cjPortDefault">기본 (9600)</label></span>
+      <span class="radio-inline"><input type="radio" name="cjPortMode" id="cjPortCustom" value="custom" /> <label for="cjPortCustom">지정</label></span>
+      <input type="number" id="cjPort" style="width:100px;" min="1" max="65535" value="9600" />
+    </div>
+    <div class="row">
+      <label class="key">기본 포트 (NX)</label>
+      <span class="radio-inline"><input type="radio" name="njPortMode" id="njPortDefault" value="default" /> <label for="njPortDefault">기본 (44818)</label></span>
+      <span class="radio-inline"><input type="radio" name="njPortMode" id="njPortCustom" value="custom" /> <label for="njPortCustom">지정</label></span>
+      <input type="number" id="njPort" style="width:100px;" min="1" max="65535" value="44818" />
+    </div>
+    <div class="row">
+      <label class="key">자동 재연결 간격</label>
+      <input type="number" id="reconnectIntervalSec" style="width:90px;" min="0" max="600" value="5" /> <span class="hint">초</span>
+      <label class="key" style="flex-basis:auto;">최대 시도</label>
+      <input type="number" id="maxRetries" style="width:90px;" min="0" max="1000" value="10" /> <span class="hint">회 (0 = 무제한)</span>
+    </div>
+    <div class="row"><span class="hint">여기 값은 각 화면의 연결 툴바 기본값으로 채워지고, 자동 재연결 동작(폴링 중 통신이 끊겼을 때)에 반영됩니다.</span></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>리포트</legend>
+    <div class="row">
+      <label class="key">회사 로고</label>
+      <button id="logoBrowseBtn" class="icon-btn">찾아보기</button>
+      <input type="file" id="logoFile" accept="image/*" style="display:none;" />
+      <img id="logoPreview" class="logo-preview" style="display:none;" alt="로고 미리보기" />
+      <button id="logoClearBtn" class="icon-btn" style="display:none;">✕ 제거</button>
+      <span class="hint" id="logoHint">PDF 리포트 우측 상단에 들어갑니다 (PNG/JPG).</span>
+    </div>
+    <div class="row">
+      <label class="key">PDF 제목 접두사</label>
+      <input type="text" id="pdfTitlePrefix" style="width:240px;" placeholder="OPVScope_" />
+      <span class="arrow-preview">→ <b id="pdfTitlePreview">OPVScope_</b>변수 목록</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>표시</legend>
+    <div class="row">
+      <label class="key">테이블 폰트 크기</label>
+      <input type="number" id="tableFontSize" style="width:90px;" min="8" max="40" value="13" /> <span class="hint">px (값 그리드/변수표/통신이력에 적용)</span>
+    </div>
+    <div class="row">
+      <label class="key">화면 기본 배율</label>
+      <input type="number" id="zoomPct" style="width:90px;" min="40" max="200" step="5" value="100" /> <span class="hint">% (Ctrl+휠로도 조절 가능)</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>테마 / 색상</legend>
+    <div class="row"><span class="hint">원하는 색상을 클릭하면 바로 적용됩니다 (Windows 테마 설정처럼 클릭 한 번으로 선택).</span></div>
+    <div class="theme-swatches" id="themeSwatches">
+      <button type="button" class="theme-swatch" data-theme="light" data-color="#1a9b5c"><span class="sw-circle"></span><span class="sw-label">라이트</span></button>
+      <button type="button" class="theme-swatch" data-theme="dark" data-color="#3ddc84"><span class="sw-circle"></span><span class="sw-label">다크</span></button>
+      <button type="button" class="theme-swatch" data-theme="orange" data-color="#ff8a00"><span class="sw-circle"></span><span class="sw-label">오렌지</span></button>
+      <button type="button" class="theme-swatch" data-theme="blue" data-color="#2f6fed"><span class="sw-circle"></span><span class="sw-label">블루</span></button>
+      <button type="button" class="theme-swatch" data-theme="green" data-color="#16a34a"><span class="sw-circle"></span><span class="sw-label">그린</span></button>
+      <button type="button" class="theme-swatch" data-theme="gray" data-color="#4b5563"><span class="sw-circle"></span><span class="sw-label">그레이</span></button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>PC 상태 확인</legend>
+    <div class="row">
+      <button id="checkBtn">검사</button>
+      <span class="hint">이 앱은 CX-Server 없이 자체 FINS 스택으로 통신합니다. 서버 실행 상태와 USB 드라이버를 점검합니다.</span>
+    </div>
+    <div class="check-result" id="checkResult"></div>
+  </fieldset>
+
+</div>
+</div>
+
+<div class="action-bar">
+  <button id="saveBtn" class="primary">저장</button>
+  <button id="resetBtn">초기화</button>
+  <span class="hint" id="saveHint"></span>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="appSettings.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

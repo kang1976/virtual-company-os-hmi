@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maintenance Purge - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] Maintenance Purge" 화면 분리 파일 - 유지보수 메뉴의
+     "Maintenance Purge" 버튼으로 들어온다. 스타일은 ../gms.css를 그대로 참조(복사 아님).
+     gms.js가 fetch해서 id="progressMaintenancePurgeBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 배관 청소 / 누출 시험 두 항목 - 실제 시퀀스 로직은 아직 없음(뼈대, "준비 중" 토스트).
+       취소는 유지보수 메뉴로 되돌아간다. -->
+  <div class="progress-menu-body" id="progressMaintenancePurgeBody">
+    <div class="progress-menu-desc">진행할 메뉴를<br>선택 하십시오.</div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn" data-purge-action="배관 청소">배관 청소</button>
+      <button type="button" class="progress-btn" data-purge-action="누출 시험">누출 시험</button>
+      <button type="button" class="progress-aux-btn" id="maintenancePurgeCancelBtn">취소</button>
+    </div>
+  </div>
+</body>
+</html>

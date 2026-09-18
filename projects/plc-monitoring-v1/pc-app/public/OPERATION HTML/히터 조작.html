@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>히터 조작 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 히터 조작" 화면 분리 파일. 스타일은 ../gms.css를 그대로
+     참조(복사 아님). gms.js가 fetch해서 id="progressHeaterBody" 컨테이너에 주입한 뒤,
+     renderHeaterGrid()가 #manualHeaterGrid 안을 실제 히터 버튼으로 채운다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 히터 조작 - 수동밸브 조작 화면의 H/T 버튼으로 들어온다. M/H(매니폴드 히터)・
+       J/H(재킷 히터)・L/H_2nd(2차 배관 히터) 3종을 다루며, 전부 A/B 양쪽 각각 존재한다.
+       밸브와 동일한 방식(점멸+확인+쓰기)으로 동작하고, 격자 크기(3열×5행)도 수동밸브
+       조작 화면과 맞춰뒀다(나머지 칸은 향후 히터 확장 자리로 비워둠). V/V 버튼으로 밸브
+       화면으로 돌아간다(서로 왔다갔다 가능). -->
+  <div class="progress-menu-body" id="progressHeaterBody">
+    <div class="valve-grid-layout">
+      <div class="valve-grid" id="manualHeaterGrid"></div>
+      <div class="valve-grid-side-actions">
+        <button type="button" class="valve-side-btn" id="heaterQcBtn" style="flex:2;">Q<br>/<br>C</button>
+        <button type="button" class="valve-side-btn" id="heaterCancelBtn" style="flex:2;">취소</button>
+        <button type="button" class="valve-side-btn primary" id="heaterConfirmBtn" style="flex:1;">확인</button>
+        <button type="button" class="valve-side-btn" id="heaterToValveBtn" style="flex:1;">V/V</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

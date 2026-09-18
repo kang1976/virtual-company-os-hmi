@@ -1,0 +1,12 @@
+﻿# Puls_Mode_v1 (Main: )
+S/No.,Main-Sub,Time(Sec),Acc.Time(Sec),Advance,Valves,Operation,Message,Alarm Condition,Remarks
+"1","10-1","1","1","ack","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","배관내 잔류 CHECK를 시작 합니다. - 밸브 초기화(전체 Close)","밸브 초기화 중입니다.","","예시값 - 실제 초기화 순서/조건 아님"
+"2","10-2","2","3","auto","PNV:O","Pump 배관 진공 Check","Puls Vent 진행중입니다.","VPT <= 진공하한치_{side}","Step 7의 반복문 진입점 - 설정횟수만큼 반복하는 동안 Alarm Goto로 여기로 되돌아온다."
+"3","10-3","2","5","auto","PNV:C","","","",""
+"4","10-4","2","7","auto","LPV_{side}:O","","","",""
+"5","10-5","2","9","auto","LPV_{side}:C","","","",""
+"6","10-6","2","11","auto","HPI_{side}:O","","","",""
+"7","10-7","2","13","auto","HPI_{side}:C","배관내 잔류 가스 Check","","HPT_{side} <= Pulse Vent Stop (psi)_{side}","[반복 사용법] HPT_{side} <= Pulse Vent Stop(psi) 이면(참) Next Step(8)로 진행 - Puls Vent 정상 종료. 거짓(아직 압력이 안 낮음)이면 Alarm Goto(7A)로 이동해 진행횟수를 확인한다(밸브/누적시간 유지, 가벼운 이동)."
+"7A","10-7","2","15","auto","","Pulse Vent 진행 횟수 Check","","진행횟수 >= Puls vent 설정횟수_{side}","[반복 사용법] Step 7(HPT 조건 거짓)에서만 도달. 진행횟수 >= 설정횟수(참, 소진됨)이면 Next Step 없음 - 바로 다음 행인 Step 8로 진행(더 반복하지 않고 종료). 거짓(아직 설정횟수 미만)이면 Alarm Goto(2)로 Step 2부터 다시 반복(이때 진행횟수가 1 늘어난다)."
+"8","10-8","1","16","auto","VN1:C VN2:C V/S_{side}:C AG_{side}:C PNV:C GNV:C HPIV:C PNBV:C PIV:C FPV_{side}:C LPI_{side}:C HPV_{side}:C HPI_{side}:C LPV_{side}:C PGII_{side}:C PGI_{side}:C","Pulse Vent 마무리 - 밸브 초기화(전체 Close)","","",""
+"9","10-9","1","17","ack","","Puls Vent Sequence Complet","PT Calibration이 완료되었습니다.","",""

@@ -1,0 +1,21 @@
+{
+  "name": "plc-mobile-control",
+  "version": "0.1.0",
+  "description": "핸드폰/태블릿 PLC 원격 제어 (PWA) - Omron CJ2H, 독립 프로젝트",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "ws": "^8.18.0"
+  },
+  "allowScripts": {
+    "bcrypt@5.1.1": true
+  }
+}

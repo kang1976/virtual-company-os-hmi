@@ -1,0 +1,11 @@
+{
+  "name": "PLC 원격 제어",
+  "short_name": "PLC 제어",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

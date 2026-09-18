@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>레시피 배포및 비교</title>
+<script>
+  // main.js가 로드되기 전에 먼저 테마를 적용해서(FOUC 방지) 깜빡임 없이 저장된 테마로 시작한다.
+  // 모니터링 화면(public/index.html)과 같은 origin이라 localStorage의 테마 선택을 공유한다.
+  // 사용자 지정 테마(plcThemeMode='custom')면 바탕 테마 위에 저장해둔 색 변수들을 덮어쓴다.
+  (function () {
+    try {
+      if (localStorage.getItem('plcThemeMode') === 'custom') {
+        var c = JSON.parse(localStorage.getItem('plcCustomTheme') || '{}');
+        document.documentElement.dataset.theme = c.fallback === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-custom-theme', '1');
+        var vars = c.vars || {};
+        var css = ':root[data-custom-theme]{' + Object.keys(vars).map(function (k) { return '--' + k + ':' + vars[k]; }).join(';') + '}';
+        var el = document.createElement('style'); el.id = '__customTheme'; el.textContent = css;
+        document.documentElement.appendChild(el);
+      } else {
+        document.documentElement.dataset.theme = localStorage.getItem('plcTheme') || 'light';
+      }
+    } catch (e) {
+      document.documentElement.dataset.theme = 'light';
+    }
+  })();
+</script>
+<script>
+  // 공용 스크립트(appSettings.js, plcInfo.js)를 런타임에 동적 로드한다.
+  // (Vite 빌드가 절대경로 클래식 스크립트를 해석하려다 실패하지 않도록 인라인에서 삽입)
+  // 그리드 화면의 PLC 세부 정보 팝업은 그리드 세션 기준이므로 API prefix를 /api/grid로 둔다.
+  window.__plcApiPrefix = '/api/grid';
+  (function () {
+    ['/appSettings.js', '/plcInfo.js'].forEach(function (src) {
+      var s = document.createElement('script'); s.src = src; document.head.appendChild(s);
+    });
+  })();
+</script>
+<script>
+  // ── 화면 전체 확대/축소 (Ctrl+휠 또는 Ctrl+Alt+휠) ───────────────────────────
+  // 이 앱은 body가 height:100vh + overflow:hidden 레이아웃이라 브라우저 기본 Ctrl+휠
+  // 확대를 쓰면 내용이 잘리거나(확대) 아래에 빈 공간이 생겨서(축소) 잘 맞지 않는다.
+  // 그래서 body에 CSS zoom을 직접 적용하되, 높이를 (100/배율)vh로 보정해 항상 화면에
+  // 꼭 맞게 만든다. 배율은 localStorage(plcUiZoom)에 저장해 새로고침/페이지 이동 후에도 유지.
+  // 세 화면(모니터링/그리드/트렌드)이 같은 origin이라 배율 설정도 공유된다.
+  (function () {
+    var KEY = 'plcUiZoom';
+    var MIN = 0.4, MAX = 2.0, STEP = 1.1;
+    function clamp(z) { return Math.min(MAX, Math.max(MIN, z)); }
+    function current() { return clamp(parseFloat(localStorage.getItem(KEY)) || 1); }
+    function apply(z) {
+      if (!document.body) return;
+      if (Math.abs(z - 1) < 0.001) {
+        document.body.style.zoom = '';
+        document.body.style.height = '';   // CSS 기본값(100vh)으로 복귀
+      } else {
+        document.body.style.zoom = String(z);
+        document.body.style.height = (100 / z) + 'vh';
+      }
+    }
+    window.__setUiZoom = function (z) { z = clamp(z); localStorage.setItem(KEY, String(z)); apply(z); return z; };
+    window.__getUiZoom = current;
+
+    window.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var z = clamp(e.deltaY < 0 ? current() * STEP : current() / STEP);
+      window.__setUiZoom(z);
+    }, { passive: false, capture: true });
+
+    window.addEventListener('keydown', function (e) {
+      if (e.ctrlKey && (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0')) {
+        e.preventDefault();
+        window.__setUiZoom(1);
+      }
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { apply(current()); });
+    } else {
+      apply(current());
+    }
+  })();
+</script>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --panel: #ffffff;
+    --panel-border: #d8dee5;
+    --panel-border-strong: #c3ccd6;
+    --border-subtle: #e3e8ed;
+    --text: #1c232b;
+    --muted: #5b6672;
+    --accent: #1a9b5c;
+    --accent-dim: #cdebd9;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #eef1f5;
+    --bg-alt: #eef1f5;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #7a8794;
+    --primary-text: #0d3d26;
+    --danger-text: #6b1f1f;
+  }
+  :root[data-theme='dark'] {
+    --bg: #0b0e11;
+    --panel: #171d24;
+    --panel-border: #3a4553;
+    --panel-border-strong: #55647a;
+    --border-subtle: #1f2731;
+    --text: #e7ecf1;
+    --muted: #9aa7b8;
+    --accent: #3ddc84;
+    --accent-dim: #1f6f45;
+    --warn: #e6b450;
+    --warn-bg: #3a2e12;
+    --warn-text: #ffe9b3;
+    --error: #e65a5a;
+    --input-bg: #232b35;
+    --bg-alt: #0e1216;
+    --danger-bg: #4a2323;
+    --send-tag: #6fa8ff;
+    --hex-text: #7c8998;
+    --primary-text: #eafff2;
+    --danger-text: #ffdede;
+  }
+  /* 밝은 배경 + 주황색 강조색 테마 */
+  :root[data-theme='orange'] {
+    --bg: #fdf6f0;
+    --panel: #ffffff;
+    --panel-border: #f0d4b4;
+    --panel-border-strong: #dba86a;
+    --border-subtle: #f7e6d2;
+    --text: #2b1d10;
+    --muted: #8a6a4a;
+    --accent: #ff8a00;
+    --accent-dim: #ffe3bf;
+    --warn: #b45f00;
+    --warn-bg: #fff1dc;
+    --warn-text: #7a3e00;
+    --error: #c23c3c;
+    --input-bg: #fff3e6;
+    --bg-alt: #fff3e6;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #a3805e;
+    --primary-text: #7a3d00;
+    --danger-text: #6b1f1f;
+  }
+  /* 밝은 배경 + 파란색 강조색 테마 */
+  :root[data-theme='blue'] {
+    --bg: #eef4fc;
+    --panel: #ffffff;
+    --panel-border: #c7dbf2;
+    --panel-border-strong: #a9c7ea;
+    --border-subtle: #ddebfa;
+    --text: #16233a;
+    --muted: #5c7699;
+    --accent: #2f6fed;
+    --accent-dim: #d7e6ff;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #e7f0fb;
+    --bg-alt: #e7f0fb;
+    --danger-bg: #fbe4e4;
+    --send-tag: #7c4dff;
+    --hex-text: #7a92b8;
+    --primary-text: #0b3a8a;
+    --danger-text: #6b1f1f;
+  }
+  /* 밝은 배경 + 초록색 강조색 테마 */
+  :root[data-theme='green'] {
+    --bg: #eefaf3;
+    --panel: #ffffff;
+    --panel-border: #bfe6d0;
+    --panel-border-strong: #96d1b1;
+    --border-subtle: #d7f0e1;
+    --text: #123324;
+    --muted: #4f8067;
+    --accent: #16a34a;
+    --accent-dim: #d3f3df;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #e6f7ec;
+    --bg-alt: #e6f7ec;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #6ea183;
+    --primary-text: #0b5c30;
+    --danger-text: #6b1f1f;
+  }
+  /* 밝은 배경 + 회색 강조색 테마 */
+  :root[data-theme='gray'] {
+    --bg: #f2f3f5;
+    --panel: #ffffff;
+    --panel-border: #d6d9de;
+    --panel-border-strong: #b8bcc4;
+    --border-subtle: #e6e8eb;
+    --text: #202329;
+    --muted: #63676f;
+    --accent: #4b5563;
+    --accent-dim: #e2e4e8;
+    --warn: #9a6a00;
+    --warn-bg: #fdf1d9;
+    --warn-text: #6b4a00;
+    --error: #c23c3c;
+    --input-bg: #eceef1;
+    --bg-alt: #eceef1;
+    --danger-bg: #fbe4e4;
+    --send-tag: #2563c9;
+    --hex-text: #8a8f99;
+    --primary-text: #1f2937;
+    --danger-text: #6b1f1f;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 2px solid var(--panel-border-strong);
+    background: var(--panel);
+  }
+  header h1 { font-size: 16px; font-weight: 600; margin: 0; white-space: nowrap; }
+  header h1 span { color: var(--muted); font-weight: 400; }
+  /* 실제 7세그먼트 글꼴 파일은 오프라인 환경이라 번들링하지 못해, 등폭 글꼴+굵게+발광 효과로
+     디지털 시계 느낌을 최대한 비슷하게 낸다(제목과 같은 굵기/크기). */
+  .clock-display {
+    margin-left: 16px; white-space: nowrap;
+    font-family: 'Consolas', 'SFMono-Regular', monospace;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.06em;
+    background: linear-gradient(90deg, #d2691e, #ffb400);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 8px rgba(255, 150, 0, 0.5);
+  }
+
+  /* 화면 전환 탭 - 책갈피 모양, 현재 화면 탭이 강조되고 위로 올라와 보이도록 */
+  .page-tabs { display: flex; align-items: flex-end; gap: 2px; }
+  .page-tabs .page-tab {
+    padding: 6px 14px; font-size: 13px; text-decoration: none; color: var(--muted);
+    background: var(--bg-alt); border: 1px solid var(--panel-border-strong); border-bottom: none;
+    border-radius: 8px 8px 0 0; position: relative; top: 3px;
+  }
+  .page-tabs .page-tab:hover { color: var(--text); }
+  .page-tabs .page-tab.active {
+    background: var(--accent-dim); color: var(--primary-text); font-weight: 700;
+    border-color: var(--accent); top: 0; z-index: 1;
+  }
+
+  .conn-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 8px 20px;
+    border-bottom: 2px solid var(--panel-border-strong);
+    background: var(--bg-alt);
+  }
+  .conn-toolbar .counters {
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; color: var(--muted);
+  }
+  .conn-toolbar .counters span { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  /* 자릿수가 바뀔 때(1자리<->4자리 등) 옆 텍스트가 좌우로 밀리지 않도록 숫자 부분에 고정 너비를 준다 */
+  .conn-toolbar .counters b {
+    display: inline-block; min-width: 3.5ch; text-align: right;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .conn-toolbar .counters .ok { color: var(--accent); }
+  .conn-toolbar .counters .err { color: var(--error); }
+  .conn-toolbar .warn-note { font-size: 12px; color: var(--warn); display: flex; align-items: center; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 8px 20px;
+    border-bottom: 2px solid var(--panel-border-strong);
+    background: var(--bg-alt);
+  }
+  .toolbar .sep, .conn-toolbar .sep, .trend-toolbar .sep { width: 2px; align-self: stretch; background: var(--panel-border-strong); margin: 0 6px; }
+  /* 전역 태그 선택자(button,select,input)를 쓰면 #univer-container 안에서
+     Univer가 그리는 자체 툴바 아이콘 버튼까지 이 스타일을 덮어써서 아이콘이
+     안 보이게 되므로, 반드시 우리 자신의 UI 영역(.toolbar, .conn-toolbar, header, .log-panel)
+     안에 있는 요소에만 적용되도록 범위를 좁힌다. */
+  .toolbar button, .toolbar select, .toolbar input,
+  .conn-toolbar button, .conn-toolbar select, .conn-toolbar input,
+  header button, header select, header input,
+  .log-panel button, .log-panel select, .log-panel input,
+  .trend-popup button, .trend-popup select, .trend-popup input {
+    background: var(--input-bg);
+    border: 1px solid var(--panel-border-strong);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .toolbar button:hover, .conn-toolbar button:hover, header button:hover, .log-panel button:hover, .trend-popup button:hover { border-color: var(--accent); }
+  .toolbar button:disabled, .conn-toolbar button:disabled, header button:disabled, .log-panel button:disabled, .trend-popup button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .toolbar button.primary, .conn-toolbar button.primary, header button.primary, .log-panel button.primary, .trend-popup button.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
+  .toolbar button.danger, .conn-toolbar button.danger, header button.danger, .log-panel button.danger, .trend-popup button.danger { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+  /* 일시정지 상태처럼 "지금 활성화된 상태"를 나타내는 버튼 강조 (다른 버튼과 구분되는 색+테두리) */
+  .toolbar button.paused, .conn-toolbar button.paused, header button.paused, .log-panel button.paused, .trend-popup button.paused { background: var(--warn-bg); border-color: var(--warn); color: var(--warn-text); }
+  .log-panel button.active { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+  .toolbar select, .toolbar input[type=text], .toolbar input[type=number],
+  .conn-toolbar select, .conn-toolbar input[type=text], .conn-toolbar input[type=number],
+  .trend-popup select, .trend-popup input[type=text], .trend-popup input[type=number] { cursor: text; }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; font-size: 13px;
+    border: 1px solid var(--panel-border-strong); color: var(--muted);
+  }
+  .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .status-pill.connected { color: var(--accent); border-color: var(--accent-dim); }
+  .status-pill.connected .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .status-pill.error { color: var(--error); border-color: var(--danger-bg); }
+  .status-pill.error .dot { background: var(--error); }
+
+  #main-area {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #univer-container {
+    flex: 1 1 0;      /* 내용 크기 무시하고 flex-grow로만 높이 결정 (Univer 캔버스 크기 안정화용) */
+    min-height: 0;
+    width: 100%;
+    position: relative; /* Univer 내부의 절대배치 요소들이 이 기준으로 잡히도록 */
+    overflow: hidden;
+    background: #fff; /* Univer 자체 스프레드시트 캔버스 - 별도 테마 시스템이라 이번 토글 범위 밖 */
+  }
+
+  .log-panel {
+    flex: 0 0 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    border-top: 2px solid var(--panel-border-strong);
+    background: var(--panel);
+  }
+  /* 통신 이력 패널 높이 조절 핸들 */
+  #logSplitter {
+    flex: 0 0 8px;
+    cursor: row-resize;
+    position: relative;
+  }
+  #logSplitter::after {
+    content: '';
+    position: absolute; left: 0; right: 0; top: 3px; height: 2px;
+    background: var(--panel-border-strong); border-radius: 1px;
+  }
+  #logSplitter:hover::after, #logSplitter.dragging::after { background: var(--accent); }
+  .log-panel .log-title {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 14px; font-size: 13px; color: var(--muted);
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .log-list {
+    flex: 1; overflow-y: auto; padding: 4px 14px;
+    font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px; line-height: 1.6;
+  }
+  .log-entry { padding: 2px 0; border-bottom: 1px solid var(--border-subtle); white-space: pre-wrap; word-break: break-all; }
+  .log-entry .time { color: var(--muted); }
+  .log-entry.SEND .tag { color: var(--send-tag); }
+  .log-entry.RECV .tag { color: var(--accent); }
+  .log-entry.SYSTEM .tag { color: var(--muted); }
+  .log-entry.WARN .tag { color: var(--warn); }
+  .log-entry.ERROR .tag { color: var(--error); }
+  .log-entry .hex { color: var(--hex-text); display: block; margin-top: 2px; }
+  .tag { font-weight: 700; margin-right: 6px; }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--panel); border: 1px solid var(--panel-border-strong);
+    padding: 10px 16px; border-radius: 6px; font-size: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.err { border-color: var(--error); color: var(--danger-text); }
+  .toast.ok { border-color: var(--accent); color: var(--primary-text); }
+
+  #gridCntLatency { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
+
+  .trend-popup {
+    position: fixed; top: 90px; right: 20px; width: 560px;
+    background: var(--panel); border: 1px solid var(--panel-border-strong); border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    z-index: 2000; padding: 10px 12px;
+  }
+  .trend-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px; font-weight: 600; margin-bottom: 8px;
+    cursor: move; user-select: none;
+  }
+  .trend-header button { padding: 2px 8px; font-size: 13px; }
+  .trend-toolbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 13px; color: var(--muted); margin-bottom: 8px;
+  }
+  .trend-toolbar label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .trend-toolbar input[type=number] { width: 60px; padding: 3px 6px; font-size: 13px; }
+  #trendCanvas { width: 100%; height: 220px; display: block; background: var(--bg-alt); border-radius: 4px; }
+
+  /* 사용 방법(Operation Manual) 모달 - 3개 페이지 공통 디자인.
+     좌측 목차 + 우측 본문 2단 구조이며, 본문에는 실제 화면과 동일한 테마 변수로 그린
+     UI 목업 그림(hm-*)이 들어가 테마를 바꾸면 그림 색도 실제 화면과 똑같이 바뀐다. */
+  .help-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; }
+  .help-modal.show { display: flex; }
+  .help-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+  .help-modal-box {
+    position: relative; width: min(1080px, 94vw); height: min(860px, 90vh);
+    background: var(--panel); border: 1px solid var(--panel-border-strong); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .help-modal-header {
+    flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; border-bottom: 1px solid var(--panel-border-strong); font-weight: 700; font-size: 15px;
+    background: var(--panel);
+  }
+  .help-modal-layout { flex: 1 1 auto; display: flex; min-height: 0; }
+  .help-modal-nav {
+    flex: 0 0 200px; overflow-y: auto; padding: 12px 10px;
+    border-right: 1px solid var(--panel-border); background: var(--bg-alt);
+  }
+  .help-modal-nav a {
+    display: block; padding: 7px 10px; margin-bottom: 2px; border-radius: 6px;
+    font-size: 13px; color: var(--muted); text-decoration: none; line-height: 1.4;
+  }
+  .help-modal-nav a:hover { background: var(--accent-dim); color: var(--primary-text); }
+  .help-modal-body {
+    flex: 1 1 auto; overflow-y: auto; scroll-behavior: smooth;
+    padding: 6px 22px 26px; font-size: 14px; line-height: 1.7; color: var(--text);
+  }
+  .help-modal-body section { scroll-margin-top: 8px; }
+  .help-modal-body h3 { margin: 24px 0 6px; font-size: 15px; color: var(--accent); }
+  .help-modal-body section:first-of-type h3 { margin-top: 14px; }
+  .help-modal-body ul { margin: 4px 0 10px 18px; padding: 0; }
+  .help-modal-body li { margin-bottom: 4px; }
+
+  /* ── 설명서용 UI 목업 그림 (hm- = help mockup) ── */
+  .hm-fig { background: var(--bg); border: 1px dashed var(--panel-border); border-radius: 8px; padding: 14px; margin: 10px 0 4px; overflow-x: auto; }
+  .hm-cap { font-size: 12px; color: var(--muted); margin: 4px 2px 10px; }
+  .hm-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 6px; }
+  .hm-bar + .hm-bar { margin-top: 8px; }
+  .hm-btn, .hm-input, .hm-select {
+    display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; font-size: 13px; white-space: nowrap;
+    background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 4px; color: var(--text);
+  }
+  .hm-input { color: var(--muted); font-family: var(--mono); }
+  .hm-btn.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
+  .hm-btn.danger { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+  .hm-btn.paused { background: var(--warn-bg); border-color: var(--warn); color: var(--warn-text); }
+  .hm-label { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .hm-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-family: var(--mono); border: 1px solid var(--panel-border); white-space: nowrap; }
+  .hm-pill .hm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .hm-pill.ok { color: var(--accent); border-color: var(--accent-dim); }
+  .hm-pill.ok .hm-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .hm-anno { position: relative; display: inline-flex; }
+  .hm-num {
+    position: absolute; top: -10px; right: -10px; z-index: 1; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--accent); color: var(--panel); font-size: 11.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--panel);
+  }
+  .hm-steps { list-style: none; margin: 10px 0 6px; padding: 0; counter-reset: hmstep; }
+  .hm-steps li { counter-increment: hmstep; position: relative; padding-left: 30px; margin-bottom: 7px; }
+  .hm-steps li::before {
+    content: counter(hmstep); position: absolute; left: 0; top: 3px; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--accent); color: var(--panel); font-size: 11.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hm-flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 4px 0; margin: 10px 0; }
+  .hm-flow .fstep { display: flex; flex-direction: column; justify-content: center; gap: 2px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 14px; font-size: 13px; text-align: center; }
+  .hm-flow .fstep small { color: var(--muted); font-size: 11.5px; }
+  .hm-flow .farr { align-self: center; color: var(--accent); font-weight: 700; padding: 0 10px; font-size: 18px; }
+  .hm-note { display: flex; gap: 8px; align-items: flex-start; background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 6px; padding: 8px 12px; font-size: 13px; color: var(--warn-text); margin: 10px 0; line-height: 1.6; }
+  .hm-note.tip { background: var(--flash-bg); border-color: var(--accent); color: var(--text); }
+  .hm-table { border-collapse: collapse; font-size: 12px; }
+  .hm-table th, .hm-table td { border: 1px solid var(--panel-border); padding: 4px 9px; white-space: nowrap; }
+  .hm-table th { background: var(--bg-alt); color: var(--muted); font-weight: 600; }
+  .hm-table td.hl { background: var(--flash-bg); border-color: var(--accent); }
+  .hm-table td.wr { background: var(--warn-bg); border-color: var(--warn); }
+  .hm-chip { display: inline-block; padding: 2px 9px; border: 1px solid var(--panel-border); border-radius: 999px; background: var(--input-bg); font-size: 12px; white-space: nowrap; }
+  .hm-log { font-family: var(--mono); font-size: 12px; line-height: 1.9; }
+  .hm-log .tag { display: inline-block; min-width: 46px; text-align: center; border-radius: 3px; padding: 0 5px; font-weight: 700; margin-right: 8px; font-size: 11px; }
+  .hm-log .tag.send { background: var(--send-tag); color: #fff; }
+  .hm-log .tag.recv { background: var(--accent); color: var(--panel); }
+  .hm-log .tag.err { background: var(--error); color: #fff; }
+  .hm-log .hex { color: var(--hex-text); }
+  .hm-zones { display: flex; flex-direction: column; gap: 4px; min-width: 430px; }
+  .hm-zone { border: 1px solid var(--panel-border); border-radius: 6px; padding: 7px 12px; font-size: 12.5px; background: var(--panel); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .hm-zone b { white-space: nowrap; }
+  .hm-zone .zdesc { color: var(--muted); font-size: 12px; }
+
+  /* ── 범용 소형 모달 (스냅샷 선택 / 비교판정 결과) ── */
+  .gm-modal { position: fixed; inset: 0; z-index: 4200; display: none; align-items: center; justify-content: center; }
+  .gm-modal.show { display: flex; }
+  .gm-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+  .gm-modal-box {
+    position: relative; width: min(520px, 92vw); max-height: 85vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .gm-modal-box.wide { width: min(760px, 94vw); }
+  /* 크기 조절 가능한 모달(비교판정 결과) - 브라우저 기본 리사이즈 핸들(우하단 모서리)을 쓴다.
+     드래그로 옮기기 시작하면 JS가 position:fixed로 바꾸므로, 그 전까지는 기존처럼
+     .gm-modal의 flex 중앙 정렬을 그대로 따른다. */
+  .gm-modal-box.resizable { resize: both; overflow: auto; min-width: 420px; min-height: 320px; max-width: 96vw; max-height: 92vh; }
+  .gm-modal-box.resizable.dragging { position: fixed; margin: 0; }
+  #compareResultHeader { cursor: move; user-select: none; }
+  .gm-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; border-bottom: 1px solid var(--panel-border); font-weight: 700; font-size: 15px;
+    position: sticky; top: 0; background: var(--panel);
+  }
+  .gm-modal-header button { background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text); border-radius: 4px; padding: 4px 9px; cursor: pointer; }
+  .gm-modal-body { padding: 14px 18px 18px; font-size: 14px; color: var(--text); }
+  .gm-choice-row { display: flex; gap: 12px; margin-top: 10px; }
+  .gm-choice-btn {
+    flex: 1; padding: 16px 10px; border: 1px solid var(--panel-border); border-radius: 8px;
+    background: var(--input-bg); color: var(--text); cursor: pointer; font-size: 14px; text-align: center;
+  }
+  .gm-choice-btn:hover { border-color: var(--accent); background: var(--accent-dim); color: var(--primary-text); }
+  .gm-choice-btn small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .gm-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 16px; }
+  .gm-summary-item { background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .gm-summary-item .num { font-size: 22px; font-weight: 700; font-family: var(--mono); }
+  .gm-summary-item .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .gm-summary-item.ok .num { color: var(--accent); }
+  .gm-summary-item.ng .num { color: var(--error); }
+  .gm-ng-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  .gm-ng-table th, .gm-ng-table td { border: 1px solid var(--panel-border); padding: 5px 8px; text-align: left; }
+  .gm-ng-table th { background: var(--bg-alt); color: var(--muted); }
+  .gm-ng-table td.ng-val { color: var(--error); font-weight: 700; }
+  .gm-modal-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+</style>
+  <script type="module" crossorigin src="/grid/assets/index-B7rPQVR9.js"></script>
+  <link rel="stylesheet" crossorigin href="/grid/assets/index-DbvMtUcB.css">
+</head>
+<body>
+
+<header>
+  <h1>레시피 배포및 비교 <span id="cpuInfo">— 연결 전</span></h1>
+  <span id="clockDisplay" class="clock-display"></span>
+  <div style="display:flex;align-items:center;gap:14px;margin-left:auto;">
+    <button id="helpBtn" title="사용 방법">❓ 사용법</button>
+    <div class="page-tabs">
+      <a class="page-tab" href="/index.html">PLC 모니터링</a>
+      <a class="page-tab active" href="/grid/">📊 Recipes &amp; Snapshots</a>
+      <a class="page-tab" href="/monitoring.html">🕒 트렌드 모니터링</a>
+      <a class="page-tab" href="/settings.html">⚙ 설정</a>
+    </div>
+  </div>
+</header>
+
+<div id="helpModal" class="help-modal">
+  <div class="help-modal-backdrop"></div>
+  <div class="help-modal-box">
+    <div class="help-modal-header">
+      <span>📖 변수 관리 그리드 - 사용 방법</span>
+      <button id="helpCloseBtn">✕</button>
+    </div>
+    <div class="help-modal-layout">
+      <nav class="help-modal-nav">
+        <a href="#hm-overview">🗺 화면 한눈에 보기</a>
+        <a href="#hm-connect">1. 연결하기</a>
+        <a href="#hm-sheet">2. 변수 목록 만들기</a>
+        <a href="#hm-poll">3. 실시간 값 보기</a>
+        <a href="#hm-write">4. 값 쓰기</a>
+        <a href="#hm-snapshot">5. 스냅샷 · 비교판정</a>
+        <a href="#hm-file">6. 저장 · 변수 불러오기/내보내기</a>
+        <a href="#hm-log">7. 통신 이력</a>
+      </nav>
+      <div class="help-modal-body">
+
+      <section id="hm-overview">
+      <h3>🗺 화면 한눈에 보기</h3>
+      <p>이 화면은 자주 보는 변수들을 <b>엑셀 같은 표(스프레드시트)</b>로 관리하는 화면입니다. 변수 목록을 만들어두면 현재값이 실시간으로 갱신되고, 설정값 열로 PLC에 값을 쓸 수 있습니다.</p>
+      <div class="hm-fig">
+        <div class="hm-zones">
+          <div class="hm-zone"><b>① 연결 툴바</b><span class="zdesc">PLC 연결/해제 · 통신 카운터 · 지연시간</span></div>
+          <div class="hm-zone"><b>② 작업 툴바</b><span class="zdesc">▶ 시작/⏸/⏹ · 변수추가/삭제/전체선택 · 일괄 타입 변경 · 저장 · ✅ 적용(쓰기) · ⚖ 비교판정 · 📸 스냅샷 · 변수 불러오기·내보내기 · 폴링 주기</span></div>
+          <div class="hm-zone"><b>③ 스프레드시트</b><span class="zdesc">변수 목록 + 설명(G열) + 현재값(H열) + 설정값(I열) + 스냅샷/비교판정(J~L열). 엑셀처럼 자유롭게 편집</span></div>
+          <div class="hm-zone"><b>④ 통신 이력</b><span class="zdesc">FINS SEND/RECV 원문 확인 (경계선 드래그로 높이 조절)</span></div>
+        </div>
+      </div>
+      </section>
+
+      <section id="hm-connect">
+      <h3>1. 연결하기</h3>
+      <div class="hm-fig">
+        <div class="hm-bar">
+          <span class="hm-anno"><span class="hm-select">CJ 시리즈 ▾</span><span class="hm-num">1</span></span>
+          <span class="hm-anno"><span class="hm-input">PLC IP (예: 192.168.0.80)</span><span class="hm-num">2</span></span>
+          <span class="hm-input">9600</span>
+          <span class="hm-anno"><span class="hm-select">UDP ▾</span><span class="hm-num">3</span></span>
+          <span class="hm-anno"><span class="hm-btn primary">연결</span><span class="hm-num">4</span></span>
+          <span class="hm-btn danger">연결 해제</span>
+          <span class="hm-pill ok"><span class="hm-dot"></span>연결됨</span>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 번호 순서대로: 시리즈 → IP(UDP/TCP만, USB는 비워둠) → 연결 방식 → [연결].</div>
+      <ul>
+        <li>이 화면의 연결은 다른 화면(PLC 모니터링/트렌드 모니터링)과 <b>완전히 독립</b>이라 화면을 옮겨도 계속 통신합니다.</li>
+      </ul>
+      <div class="hm-note">⚠️ <span><b>USB만은 한 번에 한 화면</b>만 쓸 수 있어서, 다른 화면에서 USB로 연결하면 이 화면의 USB 연결이 자동으로 끊깁니다. UDP/TCP는 세 화면 동시 연결이 가능합니다.</span></div>
+      </section>
+
+      <section id="hm-sheet">
+      <h3>2. 변수 목록 만들기</h3>
+      <div class="hm-fig">
+        <div class="hm-bar" style="margin-bottom:10px;">
+          <span class="hm-anno"><span class="hm-btn">➕ 변수추가</span><span class="hm-num">1</span></span>
+          <span class="hm-btn">🗑 선택삭제</span>
+          <span class="hm-anno"><span class="hm-btn">☑ 전체선택</span><span class="hm-num">2</span></span>
+          <span class="hm-btn">🧹 전체삭제</span>
+          <span class="hm-btn">➕ 열 추가</span>
+          <span class="hm-label">전체 타입 변경</span><span class="hm-select">INT ▾</span><span class="hm-btn">일괄 적용</span>
+        </div>
+        <table class="hm-table">
+          <tr><th></th><th>A 선택</th><th>B 변수명</th><th>C 영역</th><th>D 주소</th><th>E 타입</th><th>F 길이(STRING)</th><th>G 설명(코멘트)</th><th>H 현재값</th><th>I 설정값(쓰기)</th><th>J Snap(Start)</th><th>K Snap(End)</th><th>L 비교판정</th></tr>
+          <tr><th>2</th><td>☑</td><td>모터 속도</td><td>D</td><td>100</td><td>INT</td><td></td><td>속도 지령값</td><td class="hl"><b>1450</b></td><td></td><td>1450</td><td>1450</td><td>OK</td></tr>
+          <tr><th>3</th><td>☐</td><td>운전 램프</td><td>W</td><td>10.5</td><td>BOOL</td><td></td><td>펌프 운전 상태</td><td class="hl"><b>1</b></td><td></td><td></td><td></td><td></td></tr>
+        </table>
+      </div>
+      <div class="hm-cap">▲ 스프레드시트 구성 — B~F열에 변수를 정의하면 H열(현재값)이 실시간으로 갱신됩니다. G열은 자유 설명, J~L열은 스냅샷/비교판정 결과입니다(⑤절 참고).</div>
+      <ol class="hm-steps">
+        <li>[➕ 변수추가]로 빈 행을 만들고, 셀을 클릭해 <b>변수명 / 영역(D,H,W,CIO,E0..) / 주소 / 타입</b>을 입력합니다.</li>
+        <li>비트 하나를 다루려면 타입 BOOL + 주소 <code>100.5</code>(워드.비트) 형식으로 입력합니다. STRING은 F열에 길이(워드 수)를 지정합니다.</li>
+        <li><b>G열(설명·코멘트)</b>에 이 변수가 무엇인지 자유롭게 메모할 수 있습니다.</li>
+        <li>여러 행을 지우려면 <b>A열(선택)의 체크박스</b>를 켠 뒤 [🗑 선택삭제]를 누릅니다. [☑ 전체선택]/[☐ 전체해제]로 모든 행을 한 번에 체크·해제할 수 있습니다.</li>
+        <li>여러 행의 타입을 한 번에 바꾸려면 "전체 타입 변경"에서 타입 선택 후 [일괄 적용].</li>
+        <li>[➕ 열 추가]로 L열 뒤에 "비고" 같은 자유 입력 열을 추가할 수 있습니다.</li>
+      </ol>
+      <div class="hm-note tip">💡 <span>열 너비·행 높이 등 시트 서식을 조정한 뒤 [💾 변수목록저장]을 누르면, 다음에 불러올 때도 조정한 서식 그대로 복원됩니다.</span></div>
+      </section>
+
+      <section id="hm-poll">
+      <h3>3. 실시간 값 보기</h3>
+      <div class="hm-fig">
+        <div class="hm-flow">
+          <div class="fstep"><span class="hm-btn primary">▶ 시작</span><small>폴링 시작</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><b>F열(현재값) 실시간 갱신</b><small>폴링 주기(ms)마다 PLC에서 읽음</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><span class="hm-btn paused">⏸ 일시정지</span> <span class="hm-btn danger">⏹ 정지</span><small>필요할 때 멈춤</small></div>
+        </div>
+      </div>
+      <ul>
+        <li>폴링 주기는 툴바 오른쪽 끝의 <b>폴링 주기</b>(ms) 입력으로 바꿉니다. 예: 1000 = 1초마다 갱신.</li>
+        <li>셀을 편집하는 동안에는 폴링이 그 셀을 덮어쓰지 않으므로 안심하고 입력해도 됩니다.</li>
+      </ul>
+      </section>
+
+      <section id="hm-write">
+      <h3>4. 값 쓰기</h3>
+      <div class="hm-fig">
+        <table class="hm-table" style="margin-bottom:10px;">
+          <tr><th>B 변수명</th><th>D 주소</th><th>H 현재값</th><th>I 설정값(쓰기)</th></tr>
+          <tr><td>모터 속도</td><td>100</td><td>1450</td><td class="wr"><b>1600</b> ← ① 쓸 값 입력</td></tr>
+        </table>
+        <div class="hm-flow">
+          <div class="fstep"><span class="hm-btn primary">✅ 적용(쓰기)</span><small>② 클릭</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><b>PLC에 반영</b><small>③ 다음 폴링부터 현재값도 1600</small></div>
+        </div>
+      </div>
+      <div class="hm-cap">▲ I열(설정값)에 값이 입력된 행만 쓰기가 실행됩니다. 여러 행을 한꺼번에 쓸 수 있습니다.</div>
+      <ul>
+        <li>BOOL 변수는 해당 비트 하나만 바뀌고 같은 워드의 다른 비트는 보존됩니다.</li>
+      </ul>
+      <div class="hm-note">⚠️ <span>실제 설비가 움직이는 PLC에 쓰기 전에, 영향 없는 <b>W 영역</b> 주소로 먼저 테스트하는 것을 권장합니다.</span></div>
+      </section>
+
+      <section id="hm-snapshot">
+      <h3>5. 스냅샷 · 비교판정</h3>
+      <p>지금 값을 "기준(Start)"과 "결과(End)"로 각각 스냅샷 찍어두고, 두 시점의 값이 그대로인지(OK) 달라졌는지(NG)를 한눈에 확인하는 기능입니다. 레시피 적용 전/후 비교, 설비 재기동 전/후 확인 같은 용도에 씁니다.</p>
+      <div class="hm-fig">
+        <div class="hm-flow">
+          <div class="fstep"><span class="hm-btn">📸 스냅샷</span><small>① 클릭 → "Start" 선택</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><b>H(현재값) → J(Snap Start)</b><small>복사 + 파일 저장</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><small>(레시피 적용 등<br/>작업 수행)</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><span class="hm-btn">📸 스냅샷</span><small>② 다시 클릭 → "End" 선택</small></div>
+          <div class="farr">→</div>
+          <div class="fstep"><b>H(현재값) → K(Snap End)</b><small>복사 + 파일 저장</small></div>
+        </div>
+      </div>
+      <div class="hm-cap">▲ 스냅샷은 두 번 찍습니다 — 작업 전(Start)과 작업 후(End). 매번 파일로도 자동 저장됩니다(설정 페이지의 스냅샷 폴더).</div>
+      <ol class="hm-steps">
+        <li><b>[📸 스냅샷]</b>을 누르면 Start(J열)/End(K열) 중 어디로 복사할지 묻는 창이 뜹니다. 선택하면 그 순간의 H열(현재값)이 해당 열에 복사되고, 동시에 xlsx 파일로도 저장됩니다.</li>
+        <li>비교하고 싶은 변수만 <b>A열(선택)</b>에 체크한 뒤 <b>[⚖ 비교판정]</b>을 누릅니다.</li>
+        <li>체크된 행마다 J열과 K열 값을 비교해 <b>완전히 같으면 OK</b>, 다르면 <b style="color:var(--error);">NG(빨간 글씨)</b>를 L열(비교판정)에 표시합니다.</li>
+        <li>결과 팝업에 <b>비교 항목 수 / 일치율(%) / OK 개수 / NG 개수</b>와 NG 항목 목록(설명 포함)이 표시됩니다.</li>
+        <li>팝업의 <b>[📊 리포트 Excel 저장] / [📄 리포트 PDF 저장]</b>으로 비교 결과를 파일로 남길 수 있습니다(저장 위치를 직접 고르는 창이 뜹니다 - Chrome/Edge 기준).</li>
+        <li>결과 창 상단(제목 부분)을 드래그하면 원하는 위치로 옮길 수 있고, 오른쪽 아래 모서리를 드래그하면 크기를 조절할 수 있습니다.</li>
+        <li><b>[🧹 스냅샷 초기화]</b>(📸 스냅샷 버튼 오른쪽)를 누르면 Snapshots(Start)·Snapshots(End)·비교판정(J~L열) 내용을 모두 지우고 새로 시작할 수 있습니다.</li>
+      </ol>
+      <div class="hm-note">⚠️ <span>비교판정은 <b>완전히 일치할 때만 OK</b>입니다. REAL(부동소수점) 타입은 아주 작은 오차만 있어도 NG로 표시될 수 있습니다.</span></div>
+      </section>
+
+      <section id="hm-file">
+      <h3>6. 저장 · 변수 불러오기/내보내기</h3>
+      <div class="hm-fig">
+        <div class="hm-bar">
+          <span class="hm-anno"><span class="hm-btn">💾 변수목록저장</span><span class="hm-num">1</span></span>
+          <span class="hm-anno"><span class="hm-btn">📥 변수 불러오기</span><span class="hm-num">2</span></span>
+          <span class="hm-anno"><span class="hm-btn">📊 변수 내보내기</span><span class="hm-num">3</span></span>
+          <span class="hm-btn">📄 PDF 내보내기</span>
+        </div>
+      </div>
+      <ol class="hm-steps">
+        <li><b>[💾 변수목록저장]</b> — 지금 시트의 변수 목록(+열 너비 등 서식)을 서버에 저장합니다. 다음에 접속하면 자동으로 불러옵니다. <b>편집 후 저장을 잊지 마세요.</b></li>
+        <li><b>[📥 변수 불러오기]</b> — xlsx뿐 아니라 <b>xlsm·xlsb·xls·csv</b> 파일에서도 변수 목록을 통째로 읽어올 수 있습니다. [📊 변수 내보내기]로 만든 파일을 그대로 다시 불러올 수 있습니다.</li>
+        <li><b>[📊 변수 내보내기] / [📄 PDF 내보내기]</b> — 현재 목록 + 현재값(+설명)을 파일로 저장합니다(레시피 기록, 결과 보고용). Chrome/Edge에서는 저장 위치를 직접 고르는 창이 뜨고, 그 외 브라우저는 다운로드 폴더로 저장됩니다. 파일명: <code>접두사_Recipe_타임스탬프.xlsx</code>(접두사는 설정 페이지에서 지정).</li>
+      </ol>
+      </section>
+
+      <section id="hm-log">
+      <h3>7. 통신 이력</h3>
+      <div class="hm-fig">
+        <div class="hm-log">
+          <div><span class="tag send">SEND</span>읽기 요청 (3개 항목, SID=8) <span class="hex">80 00 02 00 50 00 …</span></div>
+          <div><span class="tag recv">RECV</span>응답 수신 (SID=8)</div>
+          <div><span class="tag err">ERROR</span>[그리드] 읽기 실패: UDP 응답 타임아웃</div>
+        </div>
+      </div>
+      <ul>
+        <li>화면 하단 "통신 이력"에서 FINS 프로토콜 SEND/RECV 내용(hex 포함)을 확인할 수 있습니다. [🔴 에러만 보기]로 오류만 필터링하고 [초기화]로 지웁니다.</li>
+      </ul>
+      </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="conn-toolbar">
+  <select id="plcSeriesSelect" title="PLC 시리즈 선택">
+    <option value="CJ" selected>CJ 시리즈</option>
+    <option value="NX">NX 시리즈</option>
+  </select>
+  <input type="text" id="connHost" placeholder="PLC IP (예: 192.168.0.80)" style="width:170px;" />
+  <input type="number" id="connPort" placeholder="Port" min="1" max="65535" value="9600" style="width:80px;" />
+  <select id="connType">
+    <option value="USB" selected>USB</option>
+    <option value="UDP">UDP</option>
+    <option value="TCP">TCP</option>
+  </select>
+  <button id="connectBtn" class="primary">연결</button>
+  <button id="disconnectBtn" class="danger" disabled>연결 해제</button>
+  <span id="connStatusPill" class="status-pill"><span class="dot"></span><span id="connStatusText">연결 안 됨</span></span>
+  <div class="sep"></div>
+  <div class="counters">
+    <span>SEND: <b id="gridCntSend">0</b></span>
+    <span>RECV 성공: <b class="ok" id="gridCntRecv">0</b></span>
+    <span>에러: <b class="err" id="gridCntErr">0</b></span>
+    <span>지연: <b id="gridCntLatency">—</b></span>
+  </div>
+  <button id="resetCountersBtn">카운터 초기화</button>
+  <span class="warn-note">⚠️ USB는 한 번에 한 화면만 연결할 수 있습니다 (UDP/TCP는 동시 연결 가능)</span>
+</div>
+
+<div class="toolbar">
+  <label style="color:var(--muted);font-size:13px;">폴링주기</label>
+  <input type="number" id="intervalInput" min="1" max="3600000" value="1000" style="width:90px;" />
+  <span style="color:var(--muted);font-size:13px;">ms</span>
+  <div class="sep"></div>
+  <button id="startBtn" class="primary">▶ 시작</button>
+  <button id="pauseBtn">⏸ 일시정지</button>
+  <button id="stopBtn" class="danger">⏹ 정지</button>
+  <div class="sep"></div>
+  <button id="addRowBtn">➕ 변수추가</button>
+  <button id="deleteSelectedBtn">🗑 선택삭제</button>
+  <button id="selectAllBtn" title="A열(선택) 체크박스를 전부 켭니다">☑ 전체선택</button>
+  <button id="deselectAllBtn" title="A열(선택) 체크박스를 전부 끕니다">☐ 전체해제</button>
+  <button id="clearAllBtn">🧹 전체삭제</button>
+  <button id="addColBtn" title="L열(비교판정) 뒤에 자유 입력 열 추가 (예: 비고)">➕ 열 추가</button>
+  <div class="sep"></div>
+  <label style="color:var(--muted);font-size:13px;">전체 타입 변경</label>
+  <select id="bulkTypeSelect"></select>
+  <button id="bulkTypeApplyBtn" title="현재 입력된 모든 행의 타입(D열)을 한번에 선택한 타입으로 바꿉니다">일괄 적용</button>
+  <div class="sep"></div>
+  <button id="saveBtn">💾 변수목록저장</button>
+  <button id="applyBtn" class="primary">✅ 적용(쓰기)</button>
+  <button id="compareJudgeBtn" title="A열에 체크된 행의 Snapshots(Start)·Snapshots(End)를 비교해 비교판정(L열)에 OK/NG를 채웁니다">⚖ 비교판정</button>
+  <button id="snapshotBtn" title="현재값을 Snapshots(Start) 또는 Snapshots(End) 열로 복사하고 파일로 저장합니다">📸 스냅샷</button>
+  <button id="clearSnapshotBtn" title="Snapshots(Start)·Snapshots(End)·비교판정(J~L열) 내용을 모두 지웁니다">🧹 스냅샷 초기화</button>
+  <div class="sep"></div>
+  <button id="importExcelBtn">📥 변수 불러오기</button>
+  <input type="file" id="importExcelFile" accept=".xlsx,.xlsm,.xlsb,.xls,.csv" style="display:none;" />
+  <button id="exportExcelBtn">📊 변수 내보내기</button>
+  <button id="exportPdfBtn">📄 PDF 내보내기</button>
+</div>
+
+<div id="main-area">
+  <div id="univer-container"></div>
+  <div id="logSplitter" title="드래그해서 통신 이력 높이 조절"></div>
+  <div class="log-panel">
+    <div class="log-title">
+      <span>통신 이력 (이 화면의 연결)</span>
+      <div style="display:flex;gap:6px;">
+        <button id="filterErrorBtn" style="font-size:12px;padding:3px 8px;">🔴 에러만 보기</button>
+        <button id="clearLogBtn" style="font-size:12px;padding:3px 8px;">초기화</button>
+      </div>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+</div>
+
+<div id="trendPopup" class="trend-popup" style="display:none;">
+  <div class="trend-header">
+    <span>📈 지연시간 트렌드</span>
+    <button id="trendCloseBtn" title="닫기">✕</button>
+  </div>
+  <div class="trend-toolbar">
+    <button id="trendStartBtn" class="primary">▶ 시작</button>
+    <button id="trendPauseBtn">⏸ 일시정지</button>
+    <button id="trendStopBtn" class="danger">⏹ 정지</button>
+    <div class="sep"></div>
+    <label><input type="checkbox" id="trendYAutoChk" checked /> Y축 자동</label>
+    <label>Y min <input type="number" id="trendYMinInput" value="0" disabled /></label>
+    <label>Y max <input type="number" id="trendYMaxInput" value="100" disabled /></label>
+    <label>구간(초) <input type="number" id="trendWindowInput" value="60" min="5" max="600" /></label>
+  </div>
+  <canvas id="trendCanvas" width="536" height="220"></canvas>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- 스냅샷 저장 대상(Start/End) 선택 -->
+<div id="snapshotModal" class="gm-modal">
+  <div class="gm-modal-backdrop"></div>
+  <div class="gm-modal-box">
+    <div class="gm-modal-header"><span>📸 스냅샷 저장</span><button id="snapshotModalClose">✕</button></div>
+    <div class="gm-modal-body">
+      <p style="color:var(--muted);margin:0 0 6px;">현재값(H열)을 어느 스냅샷 열로 복사할까요? 파일로도 함께 저장됩니다.</p>
+      <div class="gm-choice-row">
+        <button class="gm-choice-btn" id="snapshotPickStart">Snapshots(Start)<small>J열 — 기준값</small></button>
+        <button class="gm-choice-btn" id="snapshotPickEnd">Snapshots(End)<small>K열 — 비교 대상값</small></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 비교판정 결과 요약 (크기 조절/이동 가능) -->
+<div id="compareResultModal" class="gm-modal">
+  <div class="gm-modal-backdrop"></div>
+  <div class="gm-modal-box wide resizable" id="compareResultBox">
+    <div class="gm-modal-header" id="compareResultHeader" title="드래그해서 창을 옮길 수 있습니다"><span>⚖ 비교판정 결과</span><button id="compareResultClose">✕</button></div>
+    <div class="gm-modal-body">
+      <div class="gm-summary" id="compareSummary"></div>
+      <div id="compareNgWrap"></div>
+      <div class="gm-modal-actions">
+        <button id="compareExportXlsxBtn">📊 리포트 Excel 저장</button>
+        <button id="compareExportPdfBtn">📄 리포트 PDF 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

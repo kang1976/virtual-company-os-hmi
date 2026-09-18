@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>실린더 잠금 check - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 실린더 잠금 check" 화면 분리 파일 - 메인 메뉴의
+     "실린더 교환" → PASSWORD 확인 후 들어온다. 이 화면이 "Puls" 구간(실린더교환.xlsx
+     "3차 수정본" 시트 4~10번, 실린더 확인 → DATA 확인 → VALVE SHUTTER 확인 → 실린더
+     VALVE 확인 → 스티커 제거 → PUMP 확인 → 확인, 7단계)의 진입점이다 - 서브시퀀스 엑셀
+     엔진(gms-sub-sequence-runner.js, ns='puls')으로 실행되며, 실제 7단계 내용은
+     data/gmsSubSequences/Puls_v1.json. 이 7단계가 진행되는 동안은 아직 1P가 아니라서
+     .step-badges-lg 중 어느 것도 점멸하지 않는다(전부 1P 이전 단계) - 7단계를 모두
+     마쳐야("확인") 비로소 Status가 1P로 넘어가며 1P 배지가 점멸을 시작한다
+     (Operation.js의 cylinderLockReturnBtn 핸들러, onFinish 콜백 참고).
+
+     idle(#cylinderLockIdle) 상태에서 "실행"을 누르면 Puls 서브시퀀스가 시작되고
+     #cylinderLockPanel로 전환된다(런너가 직접 토글, 압력 조정 모드.html와 동일 패턴).
+     서브시퀀스 엑셀 내보내기/불러오기 버튼도 idle 상태에 배치한다(조정모드와 동일 위치
+     관례). 스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressCylinderLockCheckBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylinderLockCheckBody">
+    <div class="step-badges-lg">
+      <span class="step-badge-lg">1P</span>
+      <span class="step-badge-lg">-L</span>
+      <span class="step-badge-lg" data-vt-badge>-VT</span>
+      <span class="step-badge-lg">2P</span>
+    </div>
+
+    <div id="cylinderLockIdle">
+      <div class="progress-menu-desc pt-test-warn">실린더를 잠근 후<br>실행하십시오!</div>
+      <div class="progress-btn-group">
+        <div class="purge-count-panel">
+          <div class="purge-count-label" style="text-align:center;margin-bottom:8px;">[ Pumping ]</div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정 :</span>
+            <span class="purge-count-box">[ <input type="number" id="cylinderLockPumpingSet" class="purge-count-input" min="0" max="100" step="1" value="0" /> ]분</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행 :</span>
+            <span class="purge-count-box">[ <span id="cylinderLockPumpingProgress" class="purge-count-value">100</span> ]분</span>
+          </div>
+        </div>
+        <div class="purge-count-panel value-panel">
+          <div class="purge-count-label" style="text-align:center;margin-bottom:8px;">[ 퍼지 횟수 ]</div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정 :</span>
+            <span class="purge-count-box">[ <input type="number" id="cylinderLockPurgeSet" class="purge-count-input" min="0" step="1" value="0" /> ]회</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행 :</span>
+            <span class="purge-count-box">[ <span id="cylinderLockPurgeProgress" class="purge-count-value">0</span> ]회</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button type="button" class="progress-aux-btn" id="cylinderLockReturnBtn" style="flex:1;margin-top:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="cylinderLockCancelBtn" style="flex:1;margin-top:0;">취소</button>
+          <button type="button" class="progress-btn" id="cylinderLockTrendBtn" style="flex:1;margin-bottom:0;">TREND</button>
+        </div>
+        <!-- 이 구간(Puls)에 연결된 서브시퀀스(Puls_v1)를 엑셀로 내보내서 편집하고, 편집한
+             파일을 다시 불러와 그대로 반영한다(gms-sub-sequence-runner.js). -->
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="pulsExcelExportBtn" style="flex:1;margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="pulsExcelImportBtn" style="flex:1;margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="pulsExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="cylinderLockPanel" style="display:none;">
+      <div class="sub-seq-step-label" id="pulsStepLabel">Main 1 - Sub 1</div>
+      <div class="sub-seq-operation" id="pulsOperation">-</div>
+      <div class="sub-seq-message" id="pulsMessage">-</div>
+      <div class="sub-seq-valve-diff" id="pulsValveDiff"></div>
+      <div class="sub-seq-timer" id="pulsTimer">-</div>
+      <div class="sub-seq-acc-time" id="pulsAccTime">누적 경과시간: 0초</div>
+      <div class="sub-seq-cycle-info" id="pulsCycleInfo" style="display:none;">설정 횟수: <span id="pulsCycleTarget">-</span>회 / 진행 횟수: <span id="pulsCycleCurrent">-</span>회</div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="pulsAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="pulsCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="pulsTrendBtn" style="margin:0;">TREND</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PMV Open 확인 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 가스공급 자동 진행 여섯 번째
+     화면(Regulator 조정 다음, PMV=AV14). 참고 사진 기준 세 분면이 열림(초록), 한 분면(우하)만
+     닫힘(검정) - .valve-turn-icon(../gms.css) 참고, 거의 다 열렸다는 뜻. "확인"을 누르면
+     실제로 가스가 공급된다는 안내 문구가 있다 - 실제 로직은 아직 없음(뼈대) - "확인"은
+     다음 화면(가스공급준비 완료)으로, "취소"는 가스공급 진입 지점(PC/가스공급 화면)으로
+     되돌아간다. 스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressGasSupplyPmvOpenBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressGasSupplyPmvOpenBody">
+    <div class="valve-turn-icon">
+      <div class="valve-turn-blade tl open"></div>
+      <div class="valve-turn-blade tr open"></div>
+      <div class="valve-turn-blade bl open"></div>
+      <div class="valve-turn-blade br"></div>
+      <div class="valve-turn-label">확 인</div>
+    </div>
+    <div class="progress-menu-desc">'PMV'을 열어주십시오!<br>확인을 Touch하면<br>가스가 공급됩니다.</div>
+    <div class="progress-btn-group">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="gasSupplyPmvOpenConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyPmvOpenCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

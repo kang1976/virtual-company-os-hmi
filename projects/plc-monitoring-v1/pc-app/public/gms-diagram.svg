@@ -1,0 +1,197 @@
+<svg id="gmsSvg" viewBox="36.2188 22 914.7813 817.2626" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <style>
+        .pipe { stroke: var(--text, #1a1a1a); stroke-width: 4.5; fill: none; stroke-linecap: round; stroke-linejoin: miter; }
+        .pipe-thin { stroke: var(--text, #1a1a1a); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: miter; }
+        .text-label { font-size: 13px; font-family: Arial, sans-serif; font-weight: bold; fill: var(--text, #000000); text-anchor: middle; }
+        .text-left-side { text-anchor: end; }
+        .text-right-side { text-anchor: start; }
+        .filter { fill: var(--input-bg, #ffffff); stroke: var(--text, #1a1a1a); stroke-width: 2.5; }
+        .regulator { fill: var(--input-bg, #e9ecef); stroke: var(--text, #1a1a1a); stroke-width: 2.5; }
+    </style>
+    <bx:export>
+      <bx:file format="svg" path="제목 없음.svg"></bx:file>
+    </bx:export>
+  </defs>
+
+  <!-- 1. 기본 검정색 배관선 레이어 -->
+  <g id="pipesBaseLayer">
+    <path d="M 150 203.425 L 150 134.769" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 221.226 135.681 L 221.226 562.431" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 366.999 144 L 367 693.565" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 700.295 173 L 700.295 693.901" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 551.537 205.518 L 551.537 564.068" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 509.828 144 L 699.411 144" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 1, 0, 0.000049)"></path>
+    <path d="M 276.123 365 L 308.501 365" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1.000001, 0, 0, 1, -0.000144, 0)"></path>
+    <path d="M 221.34 365 L 257.842 365" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 1.000001, 0, 0)"></path>
+    <path d="M 340.953 365.001 L 366.758 365.001" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 0.999999, 0, 0.000541)"></path>
+    <path d="M 836 136.308 L 836 293.352" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 916 239.385 L 915.999 622" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 940 95 L 975 95 L 975 155 L 940 155" class="pipe-thin" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 2.5px; transform: matrix(1, 0, 0, 1, -24.000002, -6);"></path>
+    <path d="M 74 64.002 L 80 54.002 L 86 64.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 144 64.002 L 150 54.002 L 156 64.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 485 64.002 L 491 54.002 L 497 64.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 368.312 173 L 700.12 173" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 699.999 143.231 L 700 58.232" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 693.514 63.002 L 699.514 53.002 L 705.514 63.002" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 80.308 83.747 L 80.308 57.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 80.308 204.014 L 80.308 180.681" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 149.846 101.616 L 149.846 57.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 829.746 53.002 L 835.746 63.002 L 841.746 53.002" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 835.746 102.918 L 835.746 58.302" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 368.99 143.966 L 481.753 143.966" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-origin: 425.371px 143.966px;"></path>
+    <path d="M 910 53.002 L 916 63.002 L 922 53.002" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 915.998 102.764 L 915.999 58.152" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 916.002 239.033 L 916 198.689" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 916px 218.861px;"></path>
+    <path d="M 915.998 179.701 L 915.999 135.085" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 276.124 564.699 L 308.502 564.699" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 221.34 564.7 L 257.842 564.7" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 341.543 564.7 L 366.759 564.7" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 606.516 364.867 L 638.894 364.867" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0.999999, 0, 0, 1.000001, 0.000575, 0)"></path>
+    <path d="M 551.729 364.868 L 591.383 364.868" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1.000001, 0, 0, 1, -0.00047, 0)"></path>
+    <path d="M 671.346 364.867 L 697.151 364.867" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1.000001, 0, 0, 1.000004, -0.000722, -0.001624)"></path>
+    <path d="M 606.507 564.549 L 638.884 564.548" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 622.695px 564.548px;"></path>
+    <path d="M 551.731 564.585 L 593.658 564.585" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 575.283px 564.574px;"></path>
+    <path d="M 671.346 564.561 L 697.15 564.562" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 684.248px 564.561px;" transform="matrix(1, 0.000001, -0.000001, 1, 0, 0)"></path>
+    <path d="M 377.309 204.988 L 551.261 204.988" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 80.964 204.988 L 355.601 204.988" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 221.754 87.761 L 489.942 87.761" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 1, 0, 0.000017)"></path>
+    <path d="M 221.226 102.205 L 221.226 87.632" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 491.024 86.889 L 491.024 59.942" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 775.695 295.117 L 914.875 295.116" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-box: fill-box; transform-origin: 50% 50%;"></path>
+    <path d="M 775.522 294.142 L 775.522 280.27" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <rect x="769.397" y="273.742" width="11.782" height="5.302" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 1;"></rect>
+    <path d="M 836 136.308 L 836 293.352" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 276.124 564.699 L 308.502 564.699" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 427.396 639.097 L 427.396 625.572" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 427.355px 632.344px;"></path>
+    <path d="M 427.118 623.76 L 690.413 623.752" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 558.765px 623.76px;"></path>
+    <path d="M 427.355 623.76 L 427.355 636.441" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 709.635 623.76 L 916.763 623.752" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 812.674px 623.76px;"></path>
+    <path d="M 427.354 747.233 L 427.361 670.677" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 126.193px 414.092px;"></path>
+    <path d="M 367.733 749.003 L 427.396 749.001" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 397.565px 749.003px;"></path>
+    <path d="M 760.438 637.353 L 760.437 624.417" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 545.159px 558.13px;"></path>
+    <path d="M 760.573 747.321 L 760.58 670.765" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 459.412px 414.18px;"></path>
+    <path d="M 700.466 749.003 L 760.44 749.001" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 730.454px 749.003px;"></path>
+    <path d="M 255.699 646.073 L 366.964 646.069" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 311.332px 646.073px;"></path>
+    <path d="M 254.907 656.389 L 254.908 647.057" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 218.198px 615.781px;"></path>
+    <path d="M 587.258 646.073 L 698.001 646.069" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 642.631px 646.073px;"></path>
+    <path d="M 586.466 656.389 L 586.467 647.057" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 549.757px 615.781px;"></path>
+    <path d="M 366.366 748.72 L 366.368 726.116" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 277.447px 650.358px;"></path>
+    <path d="M 17950.3 550.22 L 17950.5 573.031" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 9325.33px 649.486px;" transform="matrix(-1, 0, 0, -1, -0.001073, -0.000019)"></path>
+    <path d="M 690.27 623.173 C 691.846 634.552 709.98 633.676 709.98 623.172" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 702.489px 623.173px;"></path>
+    <path d="M 356.508 205.115 C 358.084 216.494 376.218 215.618 376.218 205.114" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 368.727px 205.115px;"></path>
+    <path d="M 80.42 146.641 L 80.42 116.726" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+  </g>
+
+  <!-- 2. 추가 가스 흐름 배관 오버레이 레이어 (적색 라인) - 검정 배관선 위에 선명하게 렌더링됨 -->
+  <g id="gasFlowLayer"></g>
+
+  <!-- 3. 정적 부품 및 기호 레이어 (레귤레이터, 필터, 체크밸브, 실린더, 라벨) - 적색선 위에 얹어져서 적색선이 부품 밑으로 자연스럽게 통과함 -->
+  <g id="staticPartsLayer">
+    <!-- 체크밸브 CV3A -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="241.576 188.738 256.576 178.738 256.576 198.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 241.576 181.738 L 241.576 195.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="267.15" y="214.738" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 70.6406px 99.25px; text-anchor: end;">CV3A</text>
+    </g>
+    <!-- 체크밸브 CV2A -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="241.576 388.738 256.576 378.738 256.576 398.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 241.576 381.738 L 241.576 395.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="265.15" y="414.438" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 70.6406px 149.172px; text-anchor: end;">CV2A</text>
+    </g>
+    <!-- 체크밸브 CV3B -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="591.576 178.738 576.576 188.738 591.576 198.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 575.576 181.738 L 575.576 195.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="599.541" y="214.605" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 153.234px 99.2109px; text-anchor: end;">CV3B</text>
+    </g>
+    <!-- 체크밸브 CV2B -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="591.576 378.738 576.576 388.738 591.576 398.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 576.576 381.739 L 576.576 395.739" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="599.541" y="414.305" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 153.234px 149.141px; text-anchor: end;">CV2B</text>
+    </g>
+    <!-- 체크밸브 CV1 -->
+    <g transform="matrix(1, 0, 0, 1, -24.000002, -6)">
+      <polygon points="930 188 950 188 940 203" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8"></polygon>
+      <path d="M 933 206 L 947 206" stroke="#1a1a1a" stroke-width="2"></path>
+      <text x="927.227" y="222" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 231.805px 55.5px; text-anchor: end;">CV1</text>
+    </g>
+
+    <!-- 필터 LF2 -->
+    <g>
+      <text x="498.178" y="128.124" class="text-label" style="font-size: 11px; white-space: pre; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 127.242px 32.0234px; text-anchor: middle;">LF2</text>
+      <g>
+        <rect x="485" y="134" width="26" height="20" class="filter" style="fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26); stroke-width: 2.5px;"></rect>
+        <polygon points="489 136 489 153 509 144" fill="#d8d8d8" stroke="#1a1a1a" stroke-width="1"></polygon>
+      </g>
+    </g>
+
+    <!-- 필터 LF1A -->
+    <g>
+      <g transform="matrix(1, 0, 0, 1, 0, -28)">
+        <rect x="209.272" y="610.23" width="26.149" height="20" class="filter" style="stroke-width: 1.976; fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26);" transform="matrix(0, -1, 1, 0, -252.009918, 849.00177)"></rect>
+        <path d="M 368.434 615.389 L 376.975 637.639 L 359.892 637.639 L 368.434 615.389 Z" bx:shape="triangle 359.892 615.389 17.083 22.25 0.5 0 1@31273ec8" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 0.791; transform-origin: 368.434px 626.514px;"></path>
+      </g>
+      <text x="398.838" y="601.361" class="text-label" style="font-size: 11px; white-space: pre; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 103.305px 150.336px; text-anchor: middle;">LF1A</text>
+    </g>
+
+    <!-- 필터 LF1B -->
+    <g transform="matrix(1, 0, 0, 1, 1, 0)">
+      <g transform="matrix(1, 0, 0, 1, 330.157318, -28)">
+        <rect x="209.272" y="610.23" width="26.149" height="20" class="filter" style="stroke-width: 1.976; fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26);" transform="matrix(0, -1, 1, 0, -252.009918, 849.00177)"></rect>
+        <path d="M 368.434 615.389 L 376.975 637.639 L 359.892 637.639 L 368.434 615.389 Z" bx:shape="triangle 359.892 615.389 17.083 22.25 0.5 0 1@31273ec8" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 0.791; transform-origin: 368.434px 626.514px;"></path>
+      </g>
+      <text x="729.025" y="601.361" class="text-label" style="font-size: 11px; white-space: pre; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 185.852px 150.336px; text-anchor: middle;">LF1B</text>
+    </g>
+
+    <!-- 레귤레이터 REG2A, REG1A -->
+    <g transform="matrix(1, 0, 0, 1, 67, 27)">
+      <circle cx="300" cy="370" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="300" cy="370" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="314.693" y="392" class="text-label text-right-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 87.6719px 98px;">REG2A</text>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 67, 27)">
+      <circle cx="300" cy="430" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="300" cy="430" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="314.693" y="456" class="text-label text-right-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 87.6719px 114px;">REG1A</text>
+    </g>
+
+    <!-- 레귤레이터 REG2B, REG1B -->
+    <g transform="matrix(1, 0, 0, 1, 0, -6)">
+      <circle cx="700" cy="403" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="700" cy="403" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="758.002" y="425" class="text-label text-left-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 189.5px 106.25px; text-anchor: end;">REG2B</text>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 0, -6)">
+      <circle cx="700" cy="463" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="700" cy="463" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="758.002" y="489" class="text-label text-left-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 189.5px 122.25px; text-anchor: end;">REG1B</text>
+    </g>
+
+    <!-- 실린더 AG_A, AG_B 외형 -->
+    <g transform="matrix(1, 0, 0, 1, 1, 30.790619)">
+      <rect x="219.895" y="636.569" width="68" height="171.903" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" rx="34" ry="34"></rect>
+      <rect x="246.557" y="626.585" width="14.705" height="10.504" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"></rect>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 332.558685, 30.790619)">
+      <rect x="219.895" y="636.569" width="68" height="171.903" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" rx="34" ry="34"></rect>
+      <rect x="246.557" y="626.585" width="14.705" height="10.504" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"></rect>
+    </g>
+
+    <!-- 상단 텍스트 라벨 -->
+    <text x="80" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">PUMP</text>
+    <text x="150" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">VENT</text>
+    <text x="490.386" y="34.182" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">CAL VENT</text>
+    <text x="699.565" y="34.182" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">PROCESS</text>
+    <text x="836" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">L/C He</text>
+    <text x="916" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">SN2</text>
+  </g>
+
+  <!-- 4. 동적 밸브 심볼 레이어 (valveLayer) -->
+  <g id="valveLayer"></g>
+
+  <!-- 5. 센서 박스 레이어 (ptLayer) -->
+  <g id="ptLayer"></g>
+</svg>

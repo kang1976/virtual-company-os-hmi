@@ -1,0 +1,857 @@
+:root {
+  --bg: #f5f7fa; --panel: #ffffff; --panel-border: #d8dee5; --text: #1c232b; --muted: #5b6672;
+  --accent: #1a9b5c; --accent-dim: #cdebd9; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+  --error: #c23c3c; --input-bg: #eef1f5; --bg-alt: #eef1f5; --flash-bg: #e3f7ec; --danger-bg: #fbe4e4;
+  --primary-text: #0d3d26; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #7a8794;
+  --valve-open: #c23c3c;
+  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+:root[data-theme='dark'] {
+  --bg: #0b0e11; --panel: #171d24; --panel-border: #3d4a59; --text: #e7ecf1; --muted: #9aa7b8;
+  --accent: #3ddc84; --accent-dim: #1f6f45; --warn: #e6b450; --warn-bg: #3a2e12; --warn-text: #ffe9b3;
+  --error: #e65a5a; --input-bg: #232b35; --bg-alt: #0e1216; --flash-bg: #0f1c15; --danger-bg: #4a2323;
+  --primary-text: #eafff2; --danger-text: #ffdede; --send-tag: #6fa8ff; --hex-text: #7c8998;
+  --valve-open: #e65a5a;
+}
+:root[data-theme='orange'] {
+  --bg: #fdf6f0; --panel: #ffffff; --panel-border: #f0d4b4; --text: #2b1d10; --muted: #8a6a4a;
+  --accent: #ff8a00; --accent-dim: #ffe3bf; --warn: #b45f00; --warn-bg: #fff1dc; --warn-text: #7a3e00;
+  --error: #c23c3c; --input-bg: #fff3e6; --bg-alt: #fff3e6; --flash-bg: #ffedd6; --danger-bg: #fbe4e4;
+  --primary-text: #7a3d00; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #a3805e;
+  --valve-open: #c23c3c;
+}
+:root[data-theme='blue'] {
+  --bg: #eef4fc; --panel: #ffffff; --panel-border: #c7dbf2; --text: #16233a; --muted: #5c7699;
+  --accent: #2f6fed; --accent-dim: #d7e6ff; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+  --error: #c23c3c; --input-bg: #e7f0fb; --bg-alt: #e7f0fb; --flash-bg: #dbe9fc; --danger-bg: #fbe4e4;
+  --primary-text: #0b3a8a; --danger-text: #6b1f1f; --send-tag: #7c4dff; --hex-text: #7a92b8;
+  --valve-open: #c23c3c;
+}
+:root[data-theme='green'] {
+  --bg: #eefaf3; --panel: #ffffff; --panel-border: #bfe6d0; --text: #123324; --muted: #4f8067;
+  --accent: #16a34a; --accent-dim: #d3f3df; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+  --error: #c23c3c; --input-bg: #e6f7ec; --bg-alt: #e6f7ec; --flash-bg: #d7f4e2; --danger-bg: #fbe4e4;
+  --primary-text: #0b5c30; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #6ea183;
+  --valve-open: #c23c3c;
+}
+:root[data-theme='gray'] {
+  --bg: #f2f3f5; --panel: #ffffff; --panel-border: #d6d9de; --text: #202329; --muted: #63676f;
+  --accent: #4b5563; --accent-dim: #e2e4e8; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
+  --error: #c23c3c; --input-bg: #eceef1; --bg-alt: #eceef1; --flash-bg: #e4e6ea; --danger-bg: #fbe4e4;
+  --primary-text: #1f2937; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #8a8f99;
+  --valve-open: #c23c3c;
+}
+
+/* ── 배관도(#gmsSvg, SK_M15_GC_PID.svg에서 가져온 원본) 다크 테마 보정 ──
+   원본 편집기가 내보낸 SVG라 대부분의 배관선/기호가 검정(#1a1a1a, rgb(26,26,26), #000000)과
+   흰색/연회색(#ffffff, #e0e0e0, #e9ecef, #d8d8d8)을 요소마다 style="..." 인라인 또는
+   fill=/stroke= 속성으로 직접 갖고 있어(공용 클래스가 아님) 다크 테마의 검은 배경 위에서
+   보이지 않는다. 인라인 스타일은 클래스 규칙보다 우선하므로 !important로 강제 재정의한다 -
+   같은 방식으로 CV3A/CV3B 라벨의 주황색(rgb(178,89,0)) 등 의도된 강조색은 매칭 대상이 아니라
+   그대로 유지된다. */
+:root[data-theme='dark'] #gmsSvg [style*="stroke: rgb(26, 26, 26)"],
+:root[data-theme='dark'] #gmsSvg [style*="stroke: rgb(0, 0, 0)"],
+:root[data-theme='dark'] #gmsSvg [style*="stroke: #1a1a1a"],
+:root[data-theme='dark'] #gmsSvg [stroke="#1a1a1a"] {
+  stroke: var(--text) !important;
+}
+:root[data-theme='dark'] #gmsSvg [style*="fill: rgb(216, 216, 216)"],
+:root[data-theme='dark'] #gmsSvg [style*="fill: rgb(255, 255, 255)"],
+:root[data-theme='dark'] #gmsSvg [style*="fill: #ffffff"],
+:root[data-theme='dark'] #gmsSvg [style*="fill: #e9ecef"],
+:root[data-theme='dark'] #gmsSvg [fill="#e0e0e0"],
+:root[data-theme='dark'] #gmsSvg [fill="#ffffff"],
+:root[data-theme='dark'] #gmsSvg [fill="#e9ecef"],
+:root[data-theme='dark'] #gmsSvg [fill="#d8d8d8"] {
+  fill: var(--input-bg) !important;
+}
+:root[data-theme='dark'] #gmsSvg [style*="fill: #000000"] {
+  fill: var(--text) !important;
+}
+
+* { box-sizing: border-box; }
+/* hidden 속성으로 display:none 처리되는 요소들 중 일부(.editor-modal, .map-editor-bar 등)는
+   display:flex를 자체 규칙으로 갖고 있어 동일 명시도([hidden] vs .class)에서 나중에 선언된
+   쪽이 이겨 hidden이 무시되는 문제가 있었다(속성 편집 팝업이 안 닫히는 버그의 원인).
+   !important로 hidden이 항상 이기게 한다. */
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px;
+}
+header {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  padding: 10px 20px; border-bottom: 1px solid var(--panel-border); background: var(--panel);
+}
+header h1 { font-size: 16px; font-weight: 600; margin: 0; color: var(--text); white-space: nowrap; }
+header h1 span { color: var(--muted); font-weight: 400; cursor: pointer; }
+/* ── 현재 진입 모드 표시 (장비 선택 팝업에서 고른 모니터링/Operation) ── */
+.mode-pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-left: 6px; vertical-align: middle; font-family: var(--mono); cursor: default; }
+.mode-pill.monitor { background: var(--input-bg); color: var(--muted); border: 1px solid var(--panel-border); }
+.mode-pill.operation { background: var(--accent-dim); color: var(--primary-text); border: 1px solid var(--accent); }
+/* ── 서버(Node) 연결 상태 램프 - 브라우저의 WebSocket이 서버와 붙어 있는지를 보여준다
+   (PLC/컨트롤러 연결 상태를 보여주는 #cpuInfo와는 별개 - 이건 "서버 자체가 켜져 있는지"만
+   본다). connectWs()의 onopen/onclose가 .connected 클래스를 토글한다. ── */
+.server-conn-wrap { display: inline-flex; align-items: center; gap: 6px; margin-left: 10px; vertical-align: middle; }
+.server-conn-lamp {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--error); box-shadow: 0 0 5px var(--error); flex: 0 0 auto;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.server-conn-lamp.connected { background: #1fae5c; box-shadow: 0 0 5px #1fae5c; }
+.server-conn-lamp.connected.blink { animation: none; } /* 연결 유지 중엔 점멸하지 않는다 */
+.server-conn-lamp:not(.connected) { animation: server-conn-lamp-blink 1s ease-in-out infinite; }
+@keyframes server-conn-lamp-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.server-conn-label { font-size: 12px; font-weight: 600; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+.server-conn-lamp.connected + .server-conn-label { color: #1fae5c; }
+.page-tabs { display: flex; align-items: flex-end; gap: 2px; }
+.page-tabs .page-tab {
+  padding: 6px 14px; font-size: 13px; text-decoration: none; color: var(--muted);
+  background: var(--bg-alt); border: 1px solid var(--panel-border); border-bottom: none;
+  border-radius: 8px 8px 0 0; position: relative; top: 3px;
+}
+.page-tabs .page-tab:hover { color: var(--text); }
+.page-tabs .page-tab.active { background: var(--accent-dim); color: var(--primary-text); font-weight: 700; border-color: var(--accent); top: 0; z-index: 1; }
+
+select, button, input { background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text); padding: 6px 10px; border-radius: 4px; font-size: 14px; }
+button { cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled, input:disabled, select:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
+button.danger { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
+button.paused { background: var(--warn-bg); border-color: var(--warn); color: var(--warn-text); }
+input[type=number] { width: 90px; font-family: var(--mono); }
+
+/* ── 화면 배율 컨트롤(−/%/+) - 모든 페이지 공통 ── */
+.ui-zoom { display: inline-flex; align-items: stretch; border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; height: 30px; }
+.ui-zoom button { border: none; background: var(--input-bg); padding: 0 10px; font-size: 15px; font-weight: 700; line-height: 1; cursor: pointer; color: var(--text); border-radius: 0; }
+.ui-zoom button:hover { background: var(--bg-alt); color: var(--accent); }
+.ui-zoom select { border: none; border-left: 1px solid var(--panel-border); border-right: 1px solid var(--panel-border); background: var(--input-bg); font-size: 13px; font-family: var(--mono); color: var(--text); padding: 0 4px; cursor: pointer; border-radius: 0; text-align: center; }
+
+main { flex: 1 1 auto; display: flex; min-height: 0; }
+
+.diagram-panel { flex: 1 1 auto; min-width: 0; overflow: auto; background: var(--bg-alt); position: relative; }
+
+/* ── 맵 에디터 (편집 모드) ── */
+.map-edit-toggle { position: absolute; top: 8px; right: 8px; z-index: 20; font-size: 12px; padding: 4px 10px; opacity: 0.85; }
+/* PM Mode/Set-up Mode 활성화 램프 - 배관도 좌측 상단(맵 편집 버튼과 반대쪽 모서리).
+   미적용이면 숨겨져 있다가(display:none) 적용되면 깜빡이며 나타난다. */
+.diagram-mode-lamps { position: absolute; top: 8px; left: 8px; z-index: 20; display: flex; flex-direction: column; gap: 4px; }
+.mode-lamp {
+  display: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700;
+  background: #c23c3c; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.25); animation: mode-lamp-blink 1.4s infinite;
+}
+.mode-lamp.active { display: inline-block; }
+@keyframes mode-lamp-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+/* Cylinder Step Status의 etc 행 PM/SETUP 버튼 - 위 램프와 같은 상태를 반영한다(작은 점등 표시). */
+.etc-btn.lamp-on { background: #c23c3c; color: #fff; border-color: #c23c3c; font-weight: 700; }
+.map-edit-toggle.active { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 700; opacity: 1; }
+.map-editor-bar {
+  position: absolute; top: 8px; left: 8px; right: 90px; z-index: 20; display: flex; align-items: center; gap: 6px;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; flex-wrap: wrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+}
+/* 드래그해서 옮길 때는 폭이 배관도 우측 끝까지 늘어나 있으면 안 되므로 right 제약을 풀고
+   드래그 시작 시점의 실제 폭을 고정폭으로 바꿔서 자유롭게 옮긴다(속성 팝업과 동일 패턴). */
+.map-editor-bar.free-position { right: auto; flex-wrap: nowrap; }
+.map-editor-drag-handle { cursor: move; color: var(--muted); opacity: 0.6; padding: 0 4px; user-select: none; flex: 0 0 auto; }
+.map-editor-drag-handle:hover { opacity: 1; color: var(--accent); }
+.map-editor-bar button { font-size: 12px; padding: 4px 10px; }
+.map-editor-bar .tool-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 700; }
+.map-editor-bar .editor-hint { font-size: 11px; color: var(--muted); margin-left: 4px; flex: 1 1 auto; }
+.diagram-panel.editing #gmsSvg { cursor: default; }
+.diagram-panel.editing.tool-add #gmsSvg { cursor: crosshair; }
+g.editor-selected .body, g.editor-selected .gms-pt-box, g.editor-selected .heater-block-border { stroke: var(--send-tag) !important; stroke-width: 3 !important; }
+.diagram-panel.editing .gms-valve, .diagram-panel.editing .gms-heater, .diagram-panel.editing .gms-pt { cursor: move; }
+
+.editor-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 7000; display: flex; align-items: center; justify-content: center; }
+.editor-modal-box { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 18px 20px; min-width: 380px; max-width: 92vw; max-height: 88vh; overflow-y: auto; }
+/* 팝업이 배관도를 가려도 제목줄을 드래그해서 옆으로 옮길 수 있게 한다(에디터 편의). */
+.editor-modal-box h3 { margin: 0 0 12px; font-size: 15px; color: var(--accent); cursor: move; user-select: none; padding: 4px 6px 4px 0; }
+.editor-modal-box h3::before { content: '⠿ '; opacity: 0.5; }
+.editor-modal-box.dragging { transition: none; }
+.prop-grid { display: grid; grid-template-columns: 110px 1fr; gap: 8px 10px; align-items: center; margin-bottom: 8px; }
+.prop-grid label { font-size: 12px; color: var(--muted); text-align: right; }
+.prop-grid input, .prop-grid select { width: 100%; font-size: 13px; padding: 5px 8px; }
+.prop-grid .addr-row { display: flex; gap: 6px; }
+.prop-grid .addr-row input, .prop-grid .addr-row select { flex: 1 1 0; min-width: 0; }
+.prop-sec { grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--panel-border); padding-bottom: 3px; margin-top: 6px; }
+/* 명칭(라벨) 위치 빠른 선택 - 좌/우/상/하 버튼을 십자 모양으로 배치, 눌러도 dx/dy/정렬은
+   그대로 편집 가능한 입력칸에 채워질 뿐이라 이후 미세조정도 자유롭다. */
+.pos-preset-row { display: grid; grid-template-columns: repeat(3, 26px); grid-template-rows: repeat(2, 26px); gap: 2px; justify-content: start; }
+.pos-preset-btn { padding: 0; font-size: 12px; line-height: 1; }
+.pos-preset-btn[data-side="left"] { grid-column: 1; grid-row: 1 / 3; }
+.pos-preset-btn[data-side="top"] { grid-column: 2; grid-row: 1; }
+.pos-preset-btn[data-side="bottom"] { grid-column: 2; grid-row: 2; }
+.pos-preset-btn[data-side="right"] { grid-column: 3; grid-row: 1 / 3; }
+.editor-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+/* ── 보조 메뉴 팝업 - 실제 장비 HMI 화면 레이아웃(참고 이미지)을 재현: 강조 제목줄 + 2열
+   버튼 격자 + 유지보수모드(전체폭)/취소(전체폭, 위험색). 색상은 전부 테마 변수로 지정해서
+   6개 테마(기본/dark/orange/blue/green/gray) 전환 시 다른 모달/버튼과 똑같이 함께 바뀐다 -
+   하드코딩된 hex를 쓰면 테마를 바꿔도 이 팝업만 고정된 색으로 남는다. ── */
+.aux-menu-box {
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px;
+  min-width: 340px; max-width: 92vw; box-shadow: 0 10px 40px rgba(0,0,0,0.35); overflow: hidden;
+}
+.aux-menu-title {
+  background: var(--danger-bg); color: var(--danger-text); border-bottom: 1px solid var(--error);
+  font-weight: 800; font-size: 20px; text-align: center; padding: 14px; letter-spacing: 4px;
+}
+.aux-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px 20px 0; }
+.aux-menu-btn {
+  background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 8px;
+  color: var(--text); font-weight: 700; font-size: 14px;
+  padding: 14px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.aux-menu-btn:hover { background: var(--bg-alt); border-color: var(--accent); }
+.aux-menu-btn.full { grid-column: 1 / -1; }
+.aux-menu-cancel {
+  display: block; width: calc(100% - 40px); margin: 16px 20px 20px;
+  background: var(--danger-bg); border: 1px solid var(--error); border-radius: 8px;
+  color: var(--danger-text); font-weight: 800; font-size: 16px; padding: 12px; cursor: pointer;
+}
+.aux-menu-cancel:hover { filter: brightness(1.08); }
+
+/* 압력 조정 모드 화면(OPERATION HTML/압력 조정 모드.html) 전용 - 확인/취소/압력조정을
+   가로로 나란히 배치한다(.progress-btn-group 기본은 세로 쌓기라 이 화면만 개별 오버라이드). */
+.adjust-mode-actions { display: flex; gap: 10px; margin-top: 14px; }
+.adjust-mode-actions .progress-btn, .adjust-mode-actions .progress-aux-btn { flex: 1 1 0; margin: 0; }
+
+/* #adjustModeSeqIdle/#adjustModeSeqPanel(압력 조정 모드 화면의 대기/진행 상태 토글용 래퍼)이
+   끼어들면서 .progress-menu-body의 flex column이 한 단계 끊겨, 안쪽 .progress-btn-group의
+   margin-top:auto(버튼 묶음을 프레임 맨 아래에 붙이는 규칙)가 더 이상 먹지 않는 버그가 있었다
+   (버튼을 새로 추가할 때마다 전부 위쪽에 쌓이던 원인). 이 래퍼들도 flex column으로 만들어
+   .progress-menu-body의 세로 공간을 그대로 이어받게 한다 - "버튼은 항상 화면 맨 아래부터
+   채워야 한다"는 규칙은 앞으로 만드는 모든 화면에 동일하게 적용한다. */
+#adjustModeSeqIdle, #adjustModeSeqPanel,
+#pulsRunIdle, #pulsRunPanel,
+#onePIdle, #onePPanel,
+#onePPurgeIdle, #onePPurgePanel,
+#onePPumpingIdle, #onePPumpingPanel,
+#onePPrimaryPurgeIdle, #onePPrimaryPurgePanel,
+#exchangePressureTestIdle, #exchangePressureTestPanel,
+#exchangeSecondPurgeIdle, #exchangeSecondPurgePanel,
+#exchangeVtTestIdle, #exchangeVtTestPanel,
+#exchangeAfterVtTestIdle, #exchangeAfterVtTestPanel,
+#exchangeThirdPurgeIdle, #exchangeThirdPurgePanel,
+#exchangeAfterPressureTestIdle, #exchangeAfterPressureTestPanel,
+#exchangeAfterPulsIdle, #exchangeAfterPulsPanel,
+#exchangeFourthPurgeIdle, #exchangeFourthPurgePanel,
+#hpLpPumpIdle, #hpLpPumpPanel,
+#sequenceBypassIdle, #sequenceBypassPanel,
+#cylinderLockIdle, #cylinderLockPanel { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+/* 서브시퀀스 실행 패널(public/gms-sub-sequence-runner.js) - "실행" 버튼을 누르면
+   #adjustModeSeqIdle 대신 이 패널이 보이며, Step이 넘어갈 때마다 텍스트만 갱신한다. */
+.sub-seq-step-label { font-size: 13px; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: 10px; }
+/* idle 화면(예: #pulsRunIdle)에 남기는 "마지막 알람" 문구 - 알람으로 초기화된 뒤에도
+   운영자가 원인을 확인할 수 있게(사용자 지적). 새로 "실행"을 누르면 비워진다(:empty로
+   내용 없을 땐 자리도 차지하지 않는다). */
+.sub-seq-last-alarm { color: var(--error); font-size: 13px; font-weight: 700; text-align: center; margin: 10px 0; line-height: 1.6; }
+.sub-seq-last-alarm:empty { display: none; }
+/* 패널 안(예: #pulsRunPanel)에 뜨는 알람 배너 - 알람이 나도 화면(idle) 전환 없이 지금
+   보던 Step 정보를 그대로 둔 채 이것만 추가로 보인다(사용자 요청 - "화면 변경없이 기존
+   화면에 알람 메세지만 추가로 띄어 주시고, 확인을 누르면 시퀀스 다시 재진행"). */
+.sub-seq-alarm-banner { border: 2px solid var(--error); border-radius: 6px; background: var(--danger-bg); padding: 12px 16px; margin: 10px 0; text-align: center; }
+.sub-seq-alarm-banner .sub-seq-last-alarm { margin: 0 0 10px; }
+.sub-seq-alarm-banner .progress-btn { margin: 0; }
+.sub-seq-operation { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+.sub-seq-message { color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; margin-bottom: 12px; }
+.sub-seq-valve-diff { font-family: var(--mono); font-size: 12px; color: var(--send-tag); text-align: center; margin-bottom: 12px; min-height: 16px; }
+.sub-seq-timer { font-family: var(--mono); font-size: 20px; font-weight: 800; text-align: center; color: var(--primary-text); }
+.sub-seq-acc-time { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px; }
+.sub-seq-cycle-info { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; margin-top: 2px; }
+.sub-seq-cycle-info span { color: var(--primary-text); font-weight: 700; }
+/* 알람 발생(TEST) 컨트롤 - 실제 알람 신호가 붙기 전까지 Alarm Seq. 1/2/3 동작을 가상으로
+   검증하는 용도(subSeqHandleAlarm). select가 버튼과 나란히 오도록 flex 폭을 다르게 준다. */
+.sub-seq-alarm-test select {
+  flex: 1 1 auto; background: var(--bg-alt); border: 1px solid var(--panel-border); color: var(--primary-text);
+  border-radius: 6px; padding: 0 8px; font-size: 12px;
+}
+.sub-seq-alarm-test .progress-aux-btn { flex: 0 0 auto; width: auto; padding: 10px 14px; }
+
+/* ── 압력조정 화면(OPERATION HTML/압력조정.html, public/gms-pt-calibration.js) - PT/Weight
+   센서 MAX/분해능/ANALOG VALUE/OFFSET 편집 표 + 숫자 키패드. 전부 테마 변수 사용. ── */
+.pt-calib-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.pt-calib-tab {
+  flex: 1 1 0; padding: 8px 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+  background: var(--bg-alt); border: 1px solid var(--panel-border); color: var(--muted);
+}
+.pt-calib-tab.active { background: var(--accent-dim); color: var(--primary-text); border-color: var(--accent); }
+/* .progress-menu-body의 직계 자식이므로 flex-grow로 남는 세로 공간을 그대로 채운다(고정
+   max-height였을 때 아래 여백이 남는데도 내부 스크롤이 생기던 문제 수정) - min-height는
+   화면이 작아졌을 때의 최소 보장값. */
+.pt-calib-table-wrap { flex: 1 1 260px; min-height: 260px; overflow-y: auto; margin-bottom: 10px; overflow-x: auto; }
+.pt-calib-table { table-layout: fixed; min-width: 640px; }
+.pt-calib-table th:nth-child(1) { width: 11%; }
+.pt-calib-table th:nth-child(2) { width: 15%; }
+.pt-calib-table th:nth-child(3) { width: 17%; }
+.pt-calib-table th:nth-child(4) { width: 13%; }
+.pt-calib-table th:nth-child(5) { width: 17%; }
+.pt-calib-table th:nth-child(6) { width: 14%; }
+.pt-calib-table th:nth-child(7) { width: 13%; }
+.pt-calib-table th, .pt-calib-table td { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-calib-table th:first-child, .pt-calib-table td:first-child { text-align: left; font-weight: 700; }
+.pt-calib-table td.pt-calib-editable { cursor: pointer; font-family: var(--mono); }
+.pt-calib-table td.pt-calib-editable:hover { background: var(--bg-alt); }
+.pt-calib-table td.pt-calib-editable.selected { background: var(--accent-dim); color: var(--primary-text); font-weight: 700; }
+.pt-calib-table td.pt-calib-computed { font-family: var(--mono); color: var(--send-tag); font-weight: 700; }
+.pt-calib-table select.pt-calib-resolution { font-size: 12px; padding: 3px 4px; width: 100%; }
+/* 마우스로 열 너비 조절 - th 오른쪽 끝의 얇은 핸들을 드래그(gms.js의 공용 함수
+   window.initColumnResize - gms-pt-calibration.js/gms-config-tab.js/OPTION 표가 함께 쓴다). */
+.pt-calib-table th, #gmsConfigTable th, #gmsOptionTable th { position: relative; }
+.col-resize-handle {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; user-select: none;
+}
+.col-resize-handle:hover, .col-resize-handle.resizing {
+  background: var(--accent); opacity: 0.6;
+}
+.pt-calib-empty { padding: 16px; text-align: center; color: var(--muted); font-size: 13px; }
+.pt-calib-keypad-wrap {
+  border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px; margin-bottom: 10px;
+  background: var(--bg-alt);
+}
+.pt-calib-keypad-title { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 700; }
+.pt-calib-keypad { grid-template-columns: repeat(4, 1fr) !important; }
+
+/* ── 설정모드 A/B(gms-configmode-widget.js + gms-configmode-tab.js) - 요청사항: "키패드가
+   항상 우측에 떠있도록". 그리드(왼쪽, 늘어남)와 키패드(오른쪽, 고정폭)를 가로로 배치하고,
+   키패드는 sticky로 세로 스크롤이 있어도 화면에 계속 보이게 한다. ── */
+.config-mode-toolbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.config-mode-cols-group { display: flex; align-items: center; gap: 4px; margin-right: 8px; }
+.config-mode-cols-group span { font-size: 12px; color: var(--muted); margin-right: 2px; }
+/* min-height:0인 채로 두면 .config-mode-body 자신이 조상 체인에서 정해진 높이를 못 받아
+   0으로 무너지고, 그 안의 그리드 컨테이너도 같이 무너져 Univer 캔버스가 아예 렌더링되지
+   않는 버그가 있었다(실사용 중 "아무것도 안 보임" 보고로 발견) - flex-basis/min-height를
+   #gmsWorkLogGridContainer(작업이력, .progress-menu-body의 직계 자식이라 정상 동작)와
+   똑같이 이 레벨에 직접 줘서 고친다. */
+.config-mode-body { display: flex; gap: 10px; align-items: flex-start; flex: 1 1 400px; min-height: 400px; }
+#gmsConfigModeGridContainer { align-self: stretch; }
+.config-mode-keypad-wrap {
+  flex: 0 0 240px; width: 240px; position: sticky; top: 0;
+  border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px;
+  background: var(--bg-alt);
+}
+.config-mode-keypad-range { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.config-mode-nav-pad {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;
+}
+.config-mode-nav-pad .keypad-btn { padding: 10px 0; }
+.config-mode-keypad { grid-template-columns: repeat(4, 1fr) !important; }
+
+/* ── Main 시퀀스 순서 편집 팝업(#mainSequenceEditorModal) - 칩 목록을 네이티브 HTML5
+   drag&drop으로 재정렬한다(gms-sequence-editor.js). 색상은 다른 팝업들과 동일하게 테마
+   변수만 쓴다. ── */
+.seq-chip-list {
+  display: flex; flex-wrap: wrap; gap: 8px; min-height: 46px; padding: 10px;
+  background: var(--bg-alt); border: 1px dashed var(--panel-border); border-radius: 8px;
+}
+.seq-chip {
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 10px;
+  background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 999px;
+  color: var(--primary-text); font-weight: 700; font-size: 13px; font-family: var(--mono);
+  cursor: grab; user-select: none;
+}
+.seq-chip.disabled-type {
+  background: var(--input-bg); border-color: var(--panel-border); color: var(--muted);
+  text-decoration: line-through; opacity: 0.7;
+}
+.seq-chip.dragging { opacity: 0.35; }
+.seq-chip.drag-over { border-color: var(--send-tag); box-shadow: 0 0 0 2px var(--send-tag) inset; }
+.seq-chip .seq-chip-remove {
+  border: none; background: none; color: inherit; font-weight: 800; cursor: pointer;
+  line-height: 1; padding: 0 2px; font-size: 14px;
+}
+.seq-chip .seq-chip-remove:hover { color: var(--error); }
+
+#gmsSvg { display: block; width: 100%; height: 100%; }
+.gms-pipe { fill: none; stroke: var(--muted); stroke-width: 5; stroke-linecap: round; }
+.gms-label { fill: var(--text); font-size: 15px; font-family: -apple-system, sans-serif; }
+.gms-tag { fill: var(--text); font-size: 12px; font-family: var(--mono); font-weight: 700; }
+.gms-static { fill: var(--panel); stroke: var(--muted); stroke-width: 2; }
+.gms-cylinder { fill: var(--input-bg); stroke: var(--muted); stroke-width: 2; }
+
+.gms-valve { cursor: pointer; }
+.gms-valve .body { fill: #ffffff; stroke: var(--text, #1a1a1a); stroke-width: 1.8; opacity: 1; transition: fill 0.15s; }
+.gms-valve.state-open .body { fill: var(--valve-open, #27ae60); stroke: var(--text, #1a1a1a); stroke-width: 1.8; opacity: 1; }
+.gms-valve.state-closed .body { fill: #ffffff; stroke: var(--text, #1a1a1a); stroke-width: 1.8; opacity: 1; }
+.gms-valve.state-fault .body { fill: var(--error, #e74c3c); stroke: var(--text, #1a1a1a); stroke-width: 1.8; opacity: 1; }
+.gms-valve.state-unknown .body { fill: #ffffff; stroke: var(--text, #1a1a1a); stroke-width: 1.8; opacity: 1; }
+.gms-valve:hover .body { stroke: var(--accent, #e67e22); stroke-width: 2.5; }
+.gms-valve .valve-tag, .gms-heater .valve-tag { fill: var(--text, #1a1a1a); font-size: 15px; font-family: var(--mono); font-weight: 700; text-anchor: middle; }
+
+/* ── 히터(M/H·J/H·L/H_2nd) 아이콘 - 수동 On/Off 토글박스 + SSR 출력신호(흰 원) + 코일(장식) +
+   온도 표시(값 박스, .gms-pt-box/.gms-pt-value 재사용). 밸브와 동일한 상태 클래스 체계
+   (state-open=ON/state-closed=OFF)를 그대로 쓴다. ── */
+.gms-heater { cursor: pointer; }
+/* 바깥 테두리 하나로 라벨/토글/SSR/코일/온도표시를 전부 한 블럭으로 묶는다(참고 이미지). */
+.gms-heater .heater-block-border { fill: var(--panel); stroke: #1a1a1a; stroke-width: 1.5; }
+.gms-heater .heater-tag { fill: var(--text); font-size: 11px; font-family: var(--mono); font-weight: 700; text-anchor: start; }
+.gms-heater .heater-toggle-box { fill: var(--panel-border); stroke: var(--text); stroke-width: 1.5; transition: fill 0.15s; }
+.gms-heater.state-open .heater-toggle-box { fill: var(--accent); }
+.gms-heater.state-closed .heater-toggle-box { fill: var(--panel-border); }
+.gms-heater.state-fault .heater-toggle-box { fill: var(--error); }
+.gms-heater.state-unknown .heater-toggle-box { fill: var(--muted); opacity: 0.5; }
+.gms-heater:hover .heater-toggle-box { stroke: var(--accent); stroke-width: 2.5; }
+.gms-heater .heater-toggle-text { fill: var(--text); font-size: 9px; font-family: var(--mono); font-weight: 700; text-anchor: middle; }
+.gms-heater .heater-ssr { fill: #ffffff; stroke: #1a1a1a; stroke-width: 1.5; }
+.gms-heater.state-open .heater-ssr { stroke: var(--accent); stroke-width: 2.5; }
+.gms-heater .heater-coil { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+
+/* ── PT(압력 트랜스미터) 등 아날로그 표시값 - 라벨 + 흰색 값 박스 (참고: 순간정전 매뉴얼 초기 화면) ── */
+.gms-pt-label { fill: #1a1a1a; font-size: 12px; font-family: Arial, sans-serif; font-weight: bold; text-anchor: start; }
+.gms-pt-box { fill: #ffffff; stroke: #1a1a1a; stroke-width: 1.5; }
+.gms-pt-value { fill: #1a1a1a; font-size: 13px; font-family: var(--mono); font-weight: 700; text-anchor: middle; }
+.gms-pt.alert .gms-pt-box { stroke: #c23c3c; stroke-width: 2; }
+.gms-pt.alert .gms-pt-value { fill: #c23c3c; }
+
+.op-panel {
+  flex: 0 0 380px; min-width: 320px; max-width: 46vw;
+  background: var(--panel); display: flex; flex-direction: column; min-height: 0;
+}
+
+/* ── 좌측 "수동 밸브 제어" 패널(임시 배치) + 좌우 폭 조절 스플리터 ── */
+.manual-panel {
+  flex: 0 0 320px; min-width: 260px; max-width: 46vw;
+  background: var(--panel); display: flex; flex-direction: column; min-height: 0;
+}
+.v-splitter { flex: 0 0 10px; margin: 0 2px; cursor: col-resize; position: relative; }
+.v-splitter::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+  background: var(--panel-border); border-radius: 1px;
+}
+.v-splitter:hover::after, .v-splitter.dragging::after { background: var(--accent); }
+
+/* ── 배관도 영역과 하단 알람이력/Live Events 사이 세로 폭(높이) 조절 스플리터 ── */
+.h-splitter { flex: 0 0 8px; cursor: row-resize; position: relative; background: var(--panel); }
+.h-splitter::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 3px; height: 2px;
+  background: var(--panel-border); border-radius: 1px;
+}
+.h-splitter:hover::after, .h-splitter.dragging::after { background: var(--accent); }
+.op-section { border-bottom: 1px solid var(--panel-border); display: flex; flex-direction: column; min-height: 0; }
+.op-section.grow { flex: 1 1 auto; }
+.op-section-title {
+  padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.04em; background: var(--bg-alt);
+  border-bottom: 1px solid var(--panel-border);
+}
+.op-section-body { padding: 10px 14px; overflow-y: auto; }
+
+.valve-row {
+  display: flex; align-items: center; gap: 8px; padding: 6px 0;
+  border-bottom: 1px solid var(--panel-border); font-size: 13px;
+}
+.valve-row:last-child { border-bottom: none; }
+.valve-row .tag { font-family: var(--mono); font-weight: 700; width: 62px; flex: 0 0 auto; }
+.valve-row .label { flex: 1 1 auto; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.valve-row .state-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 999px; font-family: var(--mono);
+  background: var(--input-bg); color: var(--muted); flex: 0 0 auto;
+}
+.valve-row .state-badge.open { background: var(--accent-dim); color: var(--primary-text); }
+.valve-row .state-badge.closed { background: var(--input-bg); color: var(--muted); }
+.valve-row .state-badge.fault { background: var(--danger-bg); color: var(--danger-text); }
+.valve-row .valve-btns { display: flex; gap: 4px; flex: 0 0 auto; }
+.valve-row .valve-btns button { padding: 3px 8px; font-size: 12px; }
+
+.seq-btn { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; }
+.seq-btn small { display: block; color: var(--muted); font-weight: 400; margin-top: 2px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); background: var(--accent);
+  color: var(--panel); padding: 10px 22px; border-radius: 6px; font-size: 14px; opacity: 0;
+  pointer-events: none; transition: opacity 0.25s; z-index: 6000;
+}
+.toast.show { opacity: 1; }
+.toast.err { background: var(--error); color: #fff; }
+
+/* ── 전체 화면 버튼 ── */
+.fullscreen-btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--panel-border);
+  background: var(--input-bg);
+  color: var(--primary-text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.fullscreen-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-alt);
+}
+.fullscreen-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--primary-text);
+}
+
+/* ── 상단 상태 바: Equipment Info + BAR CODE/IP ADDR + Cylinder Step Status ──
+   세로 높이는 equipStatusSplitter로, Equipment Info/BAR CODE 사이 폭은 equipMidSplitter로
+   각각 드래그 조절 가능(다른 스플리터들과 동일 패턴, localStorage에 저장). */
+.equip-status-bar { display: flex; border-bottom: 1px solid var(--panel-border); background: var(--panel); flex: 0 0 auto; min-height: 65px; overflow: hidden; }
+.panel-box { padding: 4px 10px; border-right: 1px solid var(--panel-border); overflow-y: auto; }
+/* 오른쪽에 드래그 스플리터(v-splitter)가 바로 붙어 있어서 스플리터 자체 구분선과
+   겹치지 않도록 panel-box의 기본 border-right를 지운다. */
+.equip-info-box { flex: 0 0 240px; min-width: 180px; border-right: none; }
+.equip-io-box { flex: 0 0 190px; min-width: 140px; border-right: none; }
+.cyl-step-box { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 4px 10px 4px; }
+.cyl-step-status-group { display: flex; flex-direction: column; gap: 2px; }
+.box-title { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.03em; }
+.info-grid { display: flex; flex-direction: column; gap: 2px; }
+.info-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.info-row .k { color: var(--muted); }
+.info-row .v { font-family: var(--mono); font-weight: 700; }
+.step-row { display: flex; align-items: center; gap: 6px; margin-bottom: 0; flex-wrap: nowrap; }
+.step-side { font-size: 11px; font-weight: 700; color: var(--muted); width: 44px; flex: 0 0 44px; }
+.step-badges { display: flex; gap: 3px; flex-wrap: nowrap; }
+.step-badge { font-size: 10px; padding: 2px 5px; border-radius: 3px; background: var(--input-bg); border: 1px solid var(--panel-border); font-family: var(--mono); color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+/* 지나온 스텝은 실제 공정 램프처럼 적색으로 켜진 채 유지된다(현재 스텝만 켜는 게 아니라
+   IDLE부터 현재까지 전부 active) - 아래 .step-badge-lg(큰 사각형)와 같은 색 규칙. */
+.step-badge.active { background: #d32f2f; border-color: #d32f2f; color: #ffffff; font-weight: 700; }
+
+.step-etc-row { margin-top: 1px; }
+.etc-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.etc-btns .etc-btn { font-size: 11px; padding: 2px 8px; }
+
+/* ── 우측 패널 탭 전환(CONFIG/OPTION/ALARM/SHUT-DOWN) + ROOM(장비 선택으로 이동) ──
+   Cylinder Step Status 박스 우측 하단에 1열로 배치한다. 상단 바 높이를 줄일 때도 바닥을 따라다닌다. */
+.tab-switch-bar { display: flex; gap: 2px; flex-wrap: nowrap; align-items: center; align-self: flex-end; margin-top: auto; padding-top: 4px; flex-shrink: 0; }
+.tab-switch-btn { font-size: 11px; padding: 3px 8px; text-decoration: none; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; }
+.tab-switch-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 700; }
+.tab-switch-btn.shutdown-tab { margin-left: 6px; background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); font-weight: 700; }
+.tab-switch-btn.room-link { color: var(--muted); }
+.tab-switch-btn.room-link:hover { color: var(--text); border-color: var(--accent); }
+
+.tab-panel { padding: 10px 14px; overflow-y: auto; height: 100%; }
+.grid-table-title { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.grid-table-note { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 8px; }
+.grid-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.grid-table th, .grid-table td { border: 1px solid var(--panel-border); padding: 4px 8px; text-align: left; }
+.grid-table th { background: var(--bg-alt); color: var(--muted); font-size: 11px; text-transform: uppercase; }
+/* CONFIG 탭(#gmsConfigTable) - 서브시퀀스 조건 판단용 설정값을 직접 입력하는 편집 표.
+   PT 교정 표처럼 Univer를 새로 띄우기엔 항목 수가 적어(수십 개 이내) 가벼운 일반 <input>
+   셀로 처리한다(public/gms-config-tab.js). */
+.grid-table input[type="text"], .grid-table input[type="number"] {
+  width: 100%; box-sizing: border-box; background: var(--bg-alt); border: 1px solid var(--panel-border);
+  color: var(--primary-text); border-radius: 4px; padding: 3px 6px; font-size: 12px; font-family: inherit;
+}
+.grid-table .config-row-delete { color: var(--error); background: none; border: none; cursor: pointer; font-size: 14px; padding: 0 4px; }
+/* CONFIG/OPTION 표 - 마우스로 열 너비를 조절할 수 있게 table-layout:fixed(요청사항). th 너비만
+   바꾸면 그 열의 td들도 함께 따라간다(gms-pt-calibration.js 표와 동일한 원리). */
+#gmsConfigTable, #gmsOptionTable { table-layout: fixed; }
+
+/* ── OPTION DISPLAY 화면(OPERATION HTML/OPTION DISPLAY.html, public/gms-option-display.js) -
+   OPTION 탭 설정값을 읽기 전용으로 두 열(기본 옵션/PASSWORD 게이트)에 나눠 보여준다. ── */
+.option-display-columns { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.option-display-col { flex: 1 1 320px; min-width: 280px; }
+.option-display-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.option-display-chip {
+  padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700;
+  background: var(--accent-dim); color: var(--primary-text); border: 1px solid var(--accent);
+}
+.option-display-chip.disabled {
+  background: var(--bg-alt); color: var(--muted); border-color: var(--panel-border); text-decoration: line-through;
+}
+.option-display-chip .arrow { margin-left: 6px; color: var(--muted); font-weight: 400; }
+
+/* ── 유지보수모드 화면(OPERATION HTML/유지보수모드.html) - PM Mode/Set-up Mode 적용/미적용
+   토글 2행. OPTION 탭의 적용/미적용 토글 버튼과 같은 시각 규칙(적용=primary 강조). ── */
+.aux-maint-mode-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 16px; margin-bottom: 12px; background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 8px;
+}
+.aux-maint-mode-title { font-size: 15px; font-weight: 700; color: var(--primary-text); margin-bottom: 4px; }
+.aux-maint-mode-desc { font-size: 12px; color: var(--muted); }
+.aux-maint-mode-toggle { flex: 0 0 auto; font-size: 13px; font-weight: 700; padding: 8px 18px; }
+
+.shutdown-panel { padding: 20px 14px; text-align: center; }
+.shutdown-panel p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+/* ── 진행 메뉴 (참고: 순간정전 매뉴얼 초기 화면의 우측 패널 디자인) ──
+   실제 자동 시퀀스 로직은 아직 없음 - 버튼은 "준비 중" 토스트만 표시하는 뼈대. */
+.progress-panel { display: flex; flex-direction: column; height: 100%; }
+.progress-menu-header {
+  background: var(--error); color: #fff; font-weight: 700; font-size: 14px;
+  padding: 10px 14px; text-align: center; letter-spacing: 0.03em; flex: 0 0 auto;
+}
+.progress-menu-body { padding: 22px 20px; flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; }
+/* 요청: 버튼 묶음은 프레임 맨 아래에 붙어야 한다 - margin-top:auto가 위쪽 남는 공간을
+   전부 차지해서 버튼 그룹을 바닥으로 밀어낸다(설명 문구 등은 원래 자리인 위쪽에 그대로). */
+.progress-btn-group { margin-top: auto; padding-top: 6px; }
+.progress-menu-desc { color: var(--muted); font-size: 12px; line-height: 1.4; text-align: center; margin-bottom: 8px; }
+.progress-btn {
+  display: block; width: 100%; padding: 8px 6px; margin-bottom: 6px; font-size: 13px; font-weight: 700;
+  background: var(--accent-dim); border: 1px solid var(--accent); color: var(--primary-text); border-radius: 4px;
+}
+.progress-btn:hover { filter: brightness(1.06); border-color: var(--accent); }
+.progress-aux-btn { display: block; width: 100%; padding: 6px 4px; font-size: 12px; margin-top: 0; }
+/* 누출 시험 종류 선택 버튼 - 클릭한 하나만 강조 표시(라디오 버튼처럼 동작). */
+.leak-test-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+.progress-io-grid { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--panel-border); }
+.progress-io-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+.progress-io-row .k { color: var(--muted); }
+.progress-io-row .v { font-family: var(--mono); font-weight: 700; }
+
+/* ── 비밀번호 입력 화면 (유지보수 진입용 숫자 키패드) ── */
+/* letter-spacing + text-align:center는 마지막 글자 뒤 여백까지 폭에 들어가서 중심이
+   왼쪽으로 쏠리는 문제가 있어(브라우저 공통 동작), flex 중앙정렬 + gap으로 대체한다. */
+.password-display {
+  font-family: var(--mono); font-size: 20px; display: flex; align-items: center; justify-content: center;
+  border: 2px solid #1a1a1a; border-radius: 6px; padding: 6px; margin-bottom: 10px;
+  min-height: 18px; background: var(--input-bg); color: var(--text);
+}
+/* PASSWORD 화면 상단 - 지금 어떤 상황에서 비밀번호를 요구하는지("[A] 유지보수",
+   "[A] 수동 밸브 조작 취소" 등) 안내 문구 바로 위에 보여준다. */
+.password-context-label { color: var(--accent); font-weight: 700; margin-bottom: 4px; font-size: 12px; }
+.password-dots { display: flex; gap: 8px; }
+.password-display .placeholder { color: var(--muted); font-size: 12px; font-weight: 700; }
+.password-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.password-keypad .keypad-btn { padding: 10px 0; font-size: 16px; font-weight: 700; }
+.password-keypad .keypad-aux { font-size: 12px; }
+
+/* ── 수동 배관 청소 화면 - 설정 횟수/진행 횟수 표시판(금속 느낌 그라데이션 박스). ── */
+.purge-count-panel { border: 2px solid var(--accent); border-radius: 6px; padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; background: var(--input-bg); margin-bottom: 8px; }
+.purge-count-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.purge-count-label { font-size: 12px; font-weight: 700; color: var(--text); }
+.purge-count-box {
+  display: inline-flex; align-items: center; gap: 2px; min-width: 48px; padding: 2px 6px;
+  border-radius: 4px; font-family: var(--mono); font-weight: 700; font-size: 14px; color: #1a1a1a;
+  background: linear-gradient(180deg, #e4e7eb 0%, #9aa1ab 50%, #e4e7eb 100%); border: 1px solid #4b5563;
+}
+.purge-count-input { width: 30px; text-align: center; background: transparent; border: none; color: inherit; font: inherit; padding: 0; }
+.purge-count-input::-webkit-inner-spin-button, .purge-count-input::-webkit-outer-spin-button { margin-left: 2px; }
+.purge-count-value { min-width: 14px; text-align: center; }
+/* 수동 VT/PT 감압 시험 화면의 압력값 패널 - 시간 패널과 테두리 색을 다르게 구분하고,
+   초기값(주황)/현재값(초록)은 값 박스 글자색으로 구분한다. */
+.purge-count-panel.value-panel { border-color: var(--send-tag); }
+.purge-count-box.initial-value { color: #b45f00; }
+.purge-count-box.current-value { color: #16a34a; }
+
+/* ── 수동 감압 시험 화면 - HPT 4점 초기압력/현재압력 표. ── */
+.pt-test-warn { color: var(--send-tag); }
+.pt-test-running { color: #16a34a; }
+.pt-test-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 2px solid var(--accent); border-radius: 6px; overflow: hidden; }
+.pt-test-table th { background: var(--input-bg); color: var(--muted); font-size: 10.5px; font-weight: 700; padding: 3px 5px; border-bottom: 1px solid var(--panel-border); }
+.pt-test-table td { padding: 3px 5px; font-size: 11px; font-weight: 700; text-align: center; border-top: 1px solid var(--panel-border); }
+.pt-test-table td:first-child { text-align: left; color: var(--text); }
+.purge-count-box.small { min-width: 0; padding: 1px 4px; font-size: 11px; }
+
+/* ── 가스공급 자동 진행 - "공급전 압력및 Weight 확인" 5개 계측값 패널 및 4버튼 격자 ── */
+.gsp-readout-panel {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
+  background: var(--bg-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--panel-border);
+}
+.gsp-readout-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.gsp-readout-label { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); min-width: 70px; }
+.gsp-readout-val-wrap { display: inline-flex; align-items: center; gap: 6px; }
+.purge-count-box.gsp-box { min-width: 80px; padding: 3px 8px; font-size: 14px; text-align: right; justify-content: flex-end; }
+.gsp-readout-unit { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--muted); width: 26px; text-align: left; }
+
+.gas-readout-group { margin-bottom: 6px; }
+.gas-readout-label { font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.gas-readout-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 2px; }
+.gas-readout-row .purge-count-label { min-width: 24px; font-size: 11px; }
+.gas-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.gas-btn-grid .progress-btn, .gas-btn-grid .progress-aux-btn { margin: 0; }
+
+/* ── 가스공급 자동 진행 - Regulator/Cylinder/PMV 등 밸브를 돌리라고 안내하는 4단계
+   공통 아이콘(4분면 삼각 블레이드 팬휠, "확인" 중앙 표기) - 분면별로 open(초록)/
+   closed(검정) 색을 지정해 "얼마나 열렸는지"를 나타낸다(참고 이미지 기준). ── */
+.valve-turn-icon { position: relative; width: 140px; height: 140px; margin: 0 auto 16px; border: 3px solid var(--accent); border-radius: 8px; background: var(--panel-bg); }
+.valve-turn-blade { position: absolute; width: 50%; height: 50%; background: #1a1a1a; }
+.valve-turn-blade.open { background: #16a34a; }
+.valve-turn-blade.tl { top: 0; left: 0; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.valve-turn-blade.tr { top: 0; right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.valve-turn-blade.bl { bottom: 0; left: 0; clip-path: polygon(0 0, 100% 100%, 0 100%); }
+.valve-turn-blade.br { bottom: 0; right: 0; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+.valve-turn-label {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-weight: 800; font-size: 15px; color: #ffffff; z-index: 2;
+}
+
+/* ── 가스공급 진행 중(Status "Service") 화면 - 4색 팬휠 아이콘("가스가 흐르고 있다"는
+   장식용 표시, 참고 이미지의 빨강/노랑/보라/파랑 4분면 회전 무늬)과 "A Cylinder flow!"
+   문구. valve-turn-icon과 같은 clip-path 팬휠 구조를 재사용하되 원형 테두리 + 4색을 쓴다. ── */
+.gas-flow-icon { position: relative; width: 140px; height: 140px; margin: 0 auto 16px; border: 3px solid #ec4899; border-radius: 50%; background: var(--panel-bg); }
+.gas-flow-blade { position: absolute; width: 50%; height: 50%; }
+.gas-flow-blade.tl { top: 0; left: 0; clip-path: polygon(0 0, 100% 0, 0 100%); background: #dc2626; }
+.gas-flow-blade.tr { top: 0; right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%); background: #facc15; }
+.gas-flow-blade.bl { bottom: 0; left: 0; clip-path: polygon(0 0, 100% 100%, 0 100%); background: #7c3aed; }
+.gas-flow-blade.br { bottom: 0; right: 0; clip-path: polygon(100% 0, 100% 100%, 0 100%); background: #2563eb; }
+.gas-flow-desc { color: #dc2626; font-weight: 800; text-align: center; margin-bottom: 18px; }
+.gas-flow-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.gas-flow-btn-grid .progress-btn, .gas-flow-btn-grid .progress-aux-btn { margin: 0; }
+
+/* ── 수동 바코드 체크 화면. ── */
+.barcode-check-title { font-size: 15px; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: 14px; }
+.barcode-check-desc { color: var(--send-tag); font-size: 13px; text-align: center; line-height: 1.6; margin-bottom: 18px; }
+.barcode-check-warn { color: var(--warn); font-size: 12px; text-align: center; line-height: 1.6; margin: 6px 0 16px; }
+.barcode-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.barcode-input {
+  flex: 1 1 auto; padding: 6px 10px; border-radius: 4px; font-family: var(--mono); font-weight: 700; font-size: 14px;
+  color: #1a1a1a; background: linear-gradient(180deg, #e4e7eb 0%, #9aa1ab 50%, #e4e7eb 100%); border: 1px solid #4b5563;
+}
+.barcode-input:focus { outline: 2px solid var(--send-tag); }
+
+/* ── 수동밸브 조작 화면 - 3열 밸브 격자 + 우측 Q/C·취소·확인 세로 버튼열 ──
+   이 화면은 버튼 묶음이 아니라 격자 자체가 프레임 대부분을 채우는 구조라
+   .progress-btn-group(하단 고정) 규칙 대신 flex:1로 프레임을 꽉 채운다. */
+#progressManualValveBody { padding: 14px; }
+.valve-grid-layout { display: flex; gap: 8px; flex: 1 1 auto; min-height: 0; }
+/* grid-template-rows를 고정 5행으로 못박아두면, 항목 수가 3의 배수(3×N)를 벗어날 때
+   마지막 행이 암시적(implicit) 행으로 생성되어 grid-auto-rows 기본값(auto, 내용 크기)을
+   쓰는 바람에 다른 행들(1fr, 균등 분할)과 높이가 달라 보였다 - grid-auto-rows: 1fr로 바꿔
+   행 개수와 무관하게 항상 세로 폭이 균등하게 나오도록 한다(VN2/AG_A·B 등 항목이 늘어도 안전). */
+.valve-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 6px; flex: 1 1 auto; }
+.valve-grid-btn {
+  border: 2px solid #6a3fa0; border-radius: 6px; background: var(--panel);
+  color: #2b3fd6; font-weight: 700; font-size: 13px; display: flex; align-items: center;
+  justify-content: center; padding: 4px; text-align: center; line-height: 1.2;
+}
+.valve-grid-btn:hover { background: var(--bg-alt); border-color: var(--accent); }
+.valve-grid-btn.empty-slot { visibility: hidden; pointer-events: none; }
+.valve-grid-side-actions { display: flex; flex-direction: column; gap: 6px; width: 72px; flex: 0 0 auto; }
+.valve-side-btn {
+  flex: 1 1 0; border: 2px solid #6a3fa0; border-radius: 6px; font-weight: 700; font-size: 13px;
+  background: var(--panel); color: var(--text);
+}
+.valve-side-btn.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
+
+/* ── 밸브 확인창이 떠 있는 동안 배관도화면(SVG)+조작화면(격자 버튼) 양쪽에서 해당 밸브를
+   0.5초 간격으로 점멸. CSS 애니메이션 두 개를 독립적으로 돌리면 시작 시점이 미묘하게
+   어긋나 동시에 안 움직이는 문제가 있어서, JS(setValveBlink)가 하나의 인터벌로 두 요소의
+   .blink-on 클래스를 같은 틱에 동시에 토글하는 방식으로 바꿨다(정적 클래스, 애니메이션 아님). ── */
+.gms-valve.blinking.blink-on .body { opacity: 0.2; }
+/* 조작화면 격자 버튼은 테두리·글씨는 그대로 두고 배경색만 점멸(opacity로 전체를 흐리게
+   하면 테두리/글씨까지 같이 옅어져서 요청사항과 달랐음). */
+.valve-grid-btn.blinking.blink-on { background-color: #ffca28; }
+/* 실제 태그 매칭된(=PLC 값이 오는) 격자 버튼의 현재 개폐 상태 표시 - gms-valve 상태색과 동일 체계 */
+.valve-grid-btn.state-open { background: var(--accent-dim); }
+.valve-grid-btn.state-fault { background: var(--danger-bg); border-color: var(--error); }
+
+/* ── 하단 2분할 패널: 현재 알람 이력(좌) / Live Events(우) ── */
+.bottom-panels { flex: 0 0 150px; height: 150px; display: flex; border-top: 2px solid var(--panel-border); background: var(--panel); }
+.bottom-panel-half { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+.bottom-panel-half + .bottom-panel-half { border-left: 1px solid var(--panel-border); }
+.log-title { display: flex; justify-content: space-between; align-items: center; padding: 6px 14px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--panel-border); }
+.live-events-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.live-events-table th { position: sticky; top: 0; background: var(--bg-alt); padding: 4px 8px; text-align: left; color: var(--muted); font-size: 11px; }
+.live-events-table td { padding: 3px 8px; border-bottom: 1px solid var(--bg-alt); }
+.live-events-table .empty-row td { color: var(--muted); font-style: italic; text-align: center; }
+
+/* ── 하단 이력 패널 필터/내보내기 컨트롤 + 등급 배지 ── */
+.log-title .log-controls { display: flex; align-items: center; gap: 6px; }
+.log-title .log-controls select, .log-title .log-controls input { font-size: 11px; padding: 2px 6px; }
+.log-title .log-controls input[type=text] { width: 110px; }
+.log-title .log-controls button { font-size: 11px; padding: 2px 8px; }
+.grade-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; font-family: var(--mono); font-weight: 700; }
+.grade-badge.g1 { background: var(--danger-bg); color: var(--danger-text); }
+.grade-badge.g2 { background: var(--warn-bg); color: var(--warn-text); }
+.grade-badge.g3, .grade-badge.info { background: var(--input-bg); color: var(--muted); }
+.grade-badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+.grade-badge.error { background: var(--danger-bg); color: var(--danger-text); }
+tr.alarm-cleared td { color: var(--muted); }
+tr.alarm-cleared .grade-badge { opacity: 0.55; }
+
+/* ── TREND 화면 - 배관도화면(캔버스) + 조작화면(태그 체크리스트/범위 설정) ──
+   각 시퀀스 화면의 "TREND" 버튼이 이 화면을 연다. 배관도 SVG와 같은 자리를 캔버스가
+   대신 채운다(showGmsTrend()가 #gmsSvg를 숨기고 #gmsTrendCanvas를 보여줌). */
+#gmsTrendCanvas { position: absolute; inset: 0; width: 100%; height: 100%; background: var(--panel); }
+.trend-range-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+.trend-range-row label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 700; }
+.trend-range-row input { width: 70px; font-family: var(--mono); }
+.trend-range-row input[type=datetime-local] { width: 172px; }
+/* 개별/Total 트렌드 전환, Auto Fit - monitoring.html의 chart-toolbar 버튼과 같은 역할이지만
+   조작화면 폭이 좁아 한 줄씩 쌓는다(button/button.primary 기본 스타일 재사용). */
+.trend-toolbar-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.trend-toolbar-btn { font-size: 13px; padding: 6px 10px; }
+/* 태그 체크리스트는 Univer 그리드(#gmsTrendGridContainer)로 그린다 - 컨테이너 자체 크기 규칙은
+   grid-app/src/gms-trend-widget.css(빌드되어 public/gms-trend-grid/plc-grid-app.css에 포함)에 있다. */
+#gmsTrendGridContainer { margin-bottom: 14px; }
+
+/* 개별 트렌드 모드 - monitoring.html의 #monChartGrid/.mon-mini-card와 동일한 구조/스타일.
+   태그마다 미니 카드+캔버스를 따로 두고, 클릭하면 큰 팝업(.gms-chart-popup)이 뜬다. */
+.gms-trend-mini-grid {
+  position: absolute; inset: 0; width: 100%; height: 100%; box-sizing: border-box;
+  overflow-y: auto; padding: 10px; background: var(--panel);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; align-content: start;
+}
+.gms-trend-mini-card {
+  background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 6px;
+  padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+}
+.gms-trend-mini-title { font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
+.gms-trend-mini-title span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gms-trend-mini-value { font-family: var(--mono); font-size: 17px; font-weight: 700; }
+.gms-trend-mini-card canvas { width: 100%; height: 60px; display: block; cursor: pointer; }
+
+/* 개별 트렌드 미니 차트 클릭 시 뜨는 팝업 - monitoring.html .chart-popup과 동일 구조/조작감.
+   여러 개를 동시에 띄울 수 있고, 팝업마다 시작/일시정지/정지·Auto Fit·Y/X 범위 설정을
+   독립적으로 갖는다(gms.js의 createGmsTrendPopup). */
+.gms-chart-popup {
+  position: fixed; width: min(760px, 92vw); height: min(520px, 80vh);
+  min-width: 380px; min-height: 300px;
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  z-index: 2500; display: flex; flex-direction: column; padding: 10px 12px;
+  resize: both; overflow: hidden;
+}
+.gms-chart-popup-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px; font-weight: 600; margin-bottom: 8px;
+  cursor: move; user-select: none; flex: 0 0 auto;
+}
+.gms-chart-popup-header button { padding: 2px 8px; font-size: 13px; }
+.gms-popup-toolbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 13px; color: var(--muted); flex: 0 0 auto; padding: 6px 0;
+}
+.gms-popup-toolbar label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.gms-popup-toolbar input[type=number] { width: 70px; padding: 3px 6px; font-size: 13px; }
+.gms-popup-toolbar input[type=datetime-local] { width: 172px; padding: 3px 6px; font-size: 13px; }
+.gms-chart-popup-canvas-wrap { flex: 1 1 0; min-height: 0; position: relative; }
+.gms-chart-popup-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+/* 차트 위 드래그 확대(사각형 줌) 시 보여줄 선택 영역 - Total(#gmsZoomRect)과 개별 팝업
+   (.gms-chart-popup-canvas-wrap 안)이 공유한다. monitoring.html의 #monZoomRect/.zoom-rect와 동일. */
+.zoom-rect {
+  position: absolute; border: 1px dashed var(--accent); background: rgba(61,220,132,0.12);
+  display: none; pointer-events: none;
+}
+
+/* 트렌드 차트 우클릭 메뉴 - monitoring.html의 .ctx-menu와 동일한 구조(PyQtGraph 우클릭 메뉴
+   참고: 전체보기/X축/Y축/마우스모드/플롯옵션/내보내기). Total 캔버스와 개별 팝업이 공유한다. */
+.ctx-menu {
+  position: fixed; z-index: 3000; min-width: 190px;
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35); padding: 4px; font-size: 14px;
+  user-select: none;
+}
+.ctx-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 5px; cursor: pointer; color: var(--text); position: relative;
+}
+.ctx-item:hover { background: var(--bg-alt); }
+.ctx-item .arrow { color: var(--muted); font-size: 12px; margin-left: auto; }
+.ctx-item .chk { width: 14px; display: inline-block; color: var(--accent); }
+.ctx-sep { height: 1px; background: var(--panel-border); margin: 4px 2px; }
+.ctx-submenu {
+  display: none;
+  position: absolute; left: 100%; top: -4px;
+  min-width: 190px;
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35); padding: 4px;
+}
+.ctx-item.has-sub:hover > .ctx-submenu { display: block; }

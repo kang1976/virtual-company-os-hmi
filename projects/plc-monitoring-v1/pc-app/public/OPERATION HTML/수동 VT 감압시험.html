@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수동 VT 감압시험 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 수동 VT 감압시험" 화면 분리 파일 - 누출 시험 화면의
+     "VT 감압 시험" 버튼으로 들어온다. 스타일은 ../gms.css를 그대로 참조(복사 아님).
+     gms.js가 fetch해서 id="progressVtTestBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 수동 VT 감압 시험 - 설정시간/진행시간(분)과 설정·초기·현재 압력값(Torr)을 보여준다.
+       실제 시퀀스/측정 로직은 아직 없음(뼈대) - 실행은 "준비 중" 토스트만, 진행시간·
+       초기값·현재값은 0(.000) 고정 표시. 취소는 누출 시험 화면으로 되돌아간다. -->
+  <div class="progress-menu-body" id="progressVtTestBody">
+    <div class="progress-menu-desc">수동 VT 감압 시험<br>모드입니다.</div>
+    <div class="progress-btn-group">
+      <div class="purge-count-panel">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정시간 :</span>
+          <span class="purge-count-box">[ <input type="number" id="vtTestSetMinutes" class="purge-count-input" min="0" step="1" value="0" /> ] 분</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행시간 :</span>
+          <span class="purge-count-box">[ <span id="vtTestProgressMinutes" class="purge-count-value">0</span> ] 분</span>
+        </div>
+      </div>
+      <div class="purge-count-panel value-panel">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정 값 :</span>
+          <span class="purge-count-box">[ <input type="number" id="vtTestSetValue" class="purge-count-input" style="width:64px;" min="0" step="0.001" value="0.000" /> ] Torr</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">초기 값 :</span>
+          <span class="purge-count-box initial-value">[ <span id="vtTestInitialValue" class="purge-count-value" style="min-width:44px;">0.000</span> ] Torr</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">현재 값 :</span>
+          <span class="purge-count-box current-value">[ <span id="vtTestCurrentValue" class="purge-count-value" style="min-width:44px;">0.000</span> ] Torr</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="vtTestRunBtn" style="flex:1;margin-bottom:0;">실행</button>
+        <button type="button" class="progress-aux-btn" id="vtTestCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FPV Open 확인 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 가스공급 진행" 화면 - 가스공급 자동 진행 여섯 번째
+     화면 (Step 6: FPV Open 확인). 공정 메인 공급 밸브(PMV / FPV) 개방 상태 확인.
+     "확인"을 누르면 Step 7 (가스공급 준비 완료) 화면으로 이동하고,
+     "취소"는 퍼지완료 이후 취소 비밀번호 게이트를 거쳐 PC(퍼지완료) 화면으로 복귀한다.
+     id="progressGasSupplyFpvOpenBody" 컨테이너에 주입된다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressGasSupplyFpvOpenBody">
+    <div class="valve-turn-icon">
+      <div class="valve-turn-blade tl open"></div>
+      <div class="valve-turn-blade tr open"></div>
+      <div class="valve-turn-blade bl open"></div>
+      <div class="valve-turn-blade br"></div>
+      <div class="valve-turn-label">확 인</div>
+    </div>
+    <div class="progress-menu-desc">'FPV'을 열어주십시오!<br>확인을 Touch하면<br>공급준비가 완료됩니다.</div>
+    <div class="progress-btn-group">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="gasSupplyFpvOpenConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyFpvOpenCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

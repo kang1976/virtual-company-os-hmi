@@ -1,0 +1,39 @@
+/* 트렌드 페이지에 임베드되는 Univer 변수 목록 그리드 - 그리드 페이지(index.html)의
+   #univer-container / .gm-modal 계열 스타일을 그대로 가져와 이 위젯 전용으로 재사용한다. */
+
+#trendGridContainer {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+
+.gm-modal { position: fixed; inset: 0; z-index: 4200; display: none; align-items: center; justify-content: center; }
+.gm-modal.show { display: flex; }
+.gm-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+.gm-modal-box {
+  position: relative; background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 10px; min-width: 320px; max-width: 94vw; box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+.gm-modal-box.wide { width: min(760px, 94vw); }
+.gm-modal-box.resizable { resize: both; overflow: auto; min-width: 420px; min-height: 320px; max-width: 96vw; max-height: 92vh; }
+.gm-modal-box.resizable.dragging { position: fixed; margin: 0; }
+#trendCompareResultHeader { cursor: move; user-select: none; }
+.gm-modal-header {
+  display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;
+  border-bottom: 1px solid var(--panel-border); font-weight: 700; color: var(--text);
+}
+.gm-modal-header button { background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text); border-radius: 4px; padding: 4px 9px; cursor: pointer; }
+.gm-modal-body { padding: 14px 18px 18px; font-size: 14px; color: var(--text); }
+.gm-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 16px; }
+.gm-summary-item { background: var(--bg-alt); border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 12px; text-align: center; }
+.gm-summary-item .num { font-size: 22px; font-weight: 700; font-family: var(--mono); }
+.gm-summary-item .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.gm-summary-item.ok .num { color: var(--accent); }
+.gm-summary-item.ng .num { color: var(--error); }
+.gm-ng-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+.gm-ng-table th, .gm-ng-table td { border: 1px solid var(--panel-border); padding: 5px 8px; text-align: left; }
+.gm-ng-table th { background: var(--bg-alt); color: var(--muted); }
+.gm-ng-table td.ng-val { color: var(--error); font-weight: 700; }

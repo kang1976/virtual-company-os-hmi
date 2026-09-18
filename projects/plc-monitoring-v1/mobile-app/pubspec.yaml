@@ -1,0 +1,21 @@
+name: omron_fins_app
+description: "Omron CJ2H Direct Mobile Monitor & Trend App"
+publish_to: 'none'
+version: 2.3.4+8
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fl_chart: ^0.70.2
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

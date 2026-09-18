@@ -1,0 +1,54 @@
+flowchart TD
+    Start(["[+L] 교환 후 가압시험 시작"]) --> Step1{"[Step 1] 고압 HE Leak check 옵션 확인"}
+    
+    %% 분기 1: 고압 HE Leak check 라인 On
+    Step1 -->|적용 ON| Step1A["[Step 1A] HPIV Valve Open"]
+    Step1A --> Step3
+    
+    %% 분기 2: 고압 HE Leak check 라인 Off
+    Step1 -->|미적용 OFF| Step1B["[Step 1B] PNBV Valve Open"]
+    Step1B --> Step2["[Step 2] PIV Valve Open"]
+    Step2 --> Step3
+    
+    %% 공통 충전 및 감시
+    Step3["[Step 3] PGII Valve Open"] --> Step4["[Step 4] NPT 압력범위 확인<br/>(가압하한 <= NPT <= 가압상한)"]
+    Step4 --> Step5["[Step 5] PGI Valve Open"]
+    Step5 --> Step6["[Step 6] HPT 압력범위 확인<br/>(가압하한 <= HPT <= 가압상한)"]
+    
+    %% 밸브 역순 Close
+    Step6 --> Step7["[Step 7] PGI Valve Close (역순 1단계)"]
+    Step7 --> Step8["[Step 8] PGII Valve Close (역순 2단계)"]
+    Step8 --> Step9["[Step 9] 공급 밸브 전체 Close<br/>(HPIV / PIV / PNBV Close)"]
+    
+    %% 안정화 시간 루틴
+    Step9 --> Step10["[Step 10] HPT 압력 안정화 시간 확인<br/>(CAPTURE:HPT, HPT >= 가압하한)"]
+    Step10 --> Step10A{"[Step 10A] 안정화 시간(분) 도달?"}
+    Step10A -->|미달 (Alarm Goto)| Step10
+    Step10A -->|도달 (Next Step)| Step11
+    
+    %% 본 가압시험 루틴
+    Step11["[Step 11] 가압시험 진행<br/>(초기값 대비 압력변동기준 이탈 감시)"] --> Step11A{"[Step 11A] 가압시험 시간(분) 도달?"}
+    Step11A -->|미달 (Alarm Goto)| Step11
+    Step11A -->|도달 (Next Step)| Step12
+    
+    %% 가압시험 마무리 및 완료
+    Step12["[Step 12] 가압시험 마무리<br/>(밸브 전체 Close)"] --> Step13["[Step 13] [+L] 가압시험 완료"]
+    
+    %% 다음 Status 전이
+    Step13 --> NextStatus{"다음 Status 분기"}
+    NextStatus -->|가압후PulsVent 적용| Puls2Status(["[Puls 2] 가압 후 Puls Vent 화면으로 자동 진입"])
+    NextStatus -->|가압후PulsVent 미적용| AfterVtStatus(["[-VT] 또는 [4P] 화면으로 자동 진입"])
+    
+    subgraph Puls2_SubSequence ["신규 Status: Puls 2 (가압 후 Pulse Vent)"]
+        Puls2Start(["[Puls 2] 시작"]) --> P2_Step1["[Step 1] PNV Valve Open (VPT 진공확인)"]
+        P2_Step1 --> P2_Step2["[Step 2] PNV Valve Close"]
+        P2_Step2 --> P2_Step3["[Step 3] HPV Valve Open"]
+        P2_Step3 --> P2_Step4["[Step 4] HPV Valve Close"]
+        P2_Step4 --> P2_Step5{"[Step 5] 배관내 잔류 가스 Check<br/>(HPT <= Pulse Vent Stop)"}
+        P2_Step5 -->|참: 압력도달| P2_Step8["[Step 8] 밸브 전체 Close"]
+        P2_Step5 -->|거짓: 압력미달| P2_Step6{"[Step 6] Puls Vent 진행횟수 Check<br/>(진행횟수 >= Puls vent 설정횟수?)"}
+        P2_Step6 -->|미달: 반복| P2_Step1
+        P2_Step6 -->|초과/소진| P2_Step7["[Step 7] 설정횟수 초과 정지 (FAIL)"]
+        P2_Step8 --> P2_Step9["[Step 9] [Puls 2] 완료"]
+        P2_Step9 --> NextStatus2(["다음 Status (-VT 또는 4P)로 자동 진행"])
+    end

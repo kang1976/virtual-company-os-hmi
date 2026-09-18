@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OPTION DISPLAY - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "OPTION DISPLAY" 화면 분리 파일. 보조 메뉴의 "OPTION DISPLAY" 버튼으로
+     들어온다(Operation.js의 auxMenuOptionDisplayBtn/showProgressOptionDisplay). CONFIG↔OPTION
+     탭의 OPTION 탭(gms.js renderOptionTable)에 있는 모든 옵션 값을 읽기 전용으로 한 번에
+     보여준다 - 변경 권한 없음(버튼/입력 없음, 전부 텍스트). 작업이력 화면과 같은 패턴으로
+     이 화면만 배관도를 숨기고 전체 폭을 쓴다(Operation.js의 setWorkLogFullWidth 참고 -
+     'optionDisplay'도 같은 대상에 포함됨). 실제 값 채우기는 public/gms-option-display.js가
+     담당한다(gms.js/Operation.js가 이미 들고 있는 전역 상태(PASSWORD_GATE_DEFS,
+     passwordGateOptions, manualStateHoldOption, vtUseOption, gcTypeOption, mainSequenceOrder,
+     mainSequenceEnabledTypes)를 그대로 읽어서 그린다 - 옵션 값의 출처가 두 군데로 갈라지면
+     안 되므로 별도 데이터를 새로 만들지 않는다). 스타일은 ../gms.css를 그대로 참조. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressOptionDisplayBody">
+    <div class="progress-menu-desc">OPTION 탭에서 설정된 값을 읽기 전용으로 보여줍니다(여기서는 변경할 수 없습니다).</div>
+    <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+      <button type="button" id="optionDisplayRefreshBtn">🔄 새로고침</button>
+      <button type="button" id="optionDisplayCloseBtn" style="margin-left:auto;">✕ 닫기</button>
+    </div>
+    <div class="option-display-columns">
+      <div class="option-display-col">
+        <div class="grid-table-title">기본 옵션</div>
+        <table class="grid-table">
+          <thead><tr><th>Item</th><th>Status</th></tr></thead>
+          <tbody id="optionDisplayBasicBody"></tbody>
+        </table>
+        <div class="grid-table-title" style="margin-top:16px;">Main 시퀀스 순서(CYLINDER STEP STATUS)</div>
+        <div id="optionDisplayMainSequenceChips" class="option-display-chip-row"></div>
+      </div>
+      <div class="option-display-col">
+        <div class="grid-table-title">PASSWORD 게이트별 적용 여부</div>
+        <table class="grid-table">
+          <thead><tr><th>Item</th><th>Status</th></tr></thead>
+          <tbody id="optionDisplayGateBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

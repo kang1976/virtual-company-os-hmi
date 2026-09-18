@@ -1,0 +1,23 @@
+{
+  "name": "plc-monitoring-usb",
+  "version": "0.1.0",
+  "description": "Omron CJ2H-65EIP USB FINS 모니터링 (1단계: USB)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "analyze:deps": "depcruise --config .dependency-cruiser.cjs src",
+    "analyze:mermaid": "depcruise --config .dependency-cruiser.cjs --output-type mermaid src"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "pdfkit": "^0.19.1",
+    "usb": "^2.14.0",
+    "ws": "^8.18.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "^18.2.0"
+  }
+}

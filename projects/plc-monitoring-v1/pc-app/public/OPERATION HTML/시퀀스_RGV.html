@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Real Gas Vent - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - Main Sequence.csv에는 있지만
+     기존 앱엔 화면이 없던 "RGV"(Real Gas Vent) 단계. Main 시퀀스 순서 편집기로 순서에
+     넣고 적용 처리해야만 실제 흐름에 나타난다(advanceToNextEnabledStatus, Operation.js).
+     아직 실기 연동 전이라 안내문+실행/취소/TREND 뼈대만 있다. 스타일은 ../gms.css를 그대로
+     참조. gms.js가 fetch해서 id="progressSequenceRgvBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressSequenceRgvBody">
+    <div class="progress-menu-desc">Real Gas Vent 진행 중</div>
+    <div class="progress-btn-group">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="sequenceRgvRunBtn" style="flex:1;margin-bottom:0;">실행</button>
+        <button type="button" class="progress-aux-btn" id="sequenceRgvCancelBtn" style="flex:1;margin-top:0;">취소</button>
+        <button type="button" class="progress-aux-btn" id="sequenceRgvTrendBtn" style="flex:1;margin-top:0;">TREND</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
