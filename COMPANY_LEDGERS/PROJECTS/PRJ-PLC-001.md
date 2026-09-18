@@ -25,42 +25,44 @@
 
 ---
 
-## 3. 부서별 1단계 전사 수행 과제 (Work Breakdown Structure)
+## 3. 전담 개발팀 조직 구성 및 R&R (전문 에이전트 5인 체계)
+
+본 프로젝트는 고도의 산업제어 안정성이 요구되므로 전문 에이전트 5인 및 총괄 COO로 직무를 재편성하였습니다:
 
 ```mermaid
 flowchart TD
-    CEO["CEO 특별 지시: PRJ-PLC-001 착수"] --> COO["COO 총괄 업무 분해 및 품질 게이트 감독"]
-    COO --> T1["PatentSearchAgent<br/>[T001] Omron FINS 모바일 제어 선행특허 FTO 조사"]
-    COO --> T2["FrontendDevAgent<br/>[T002] 모바일 및 웹 화면 3종 테마(사이버/라이트/OLED) 연동"]
-    COO --> T3["BackendDevAgent<br/>[T003] PWA 브릿지 및 FINS UDP/TCP 통신 엔진 아키텍처 감사"]
-    COO --> T4["SecurityAgent<br/>[T004] OT/ICS 산업 보안 심사 (RBAC 권한 분립 및 취약점)"]
-    COO --> T5["QAAgent<br/>[T005] 3-in-1 시스템 통합 품질 검수 및 Check시트 발행"]
-    T1 --> COO_GATE["COO 최종 경영 감사 및 4대 장부 마감"]
-    T2 --> COO_GATE
-    T3 --> COO_GATE
-    T4 --> COO_GATE
-    T5 --> COO_GATE
+    CEO["CEO 특별 지시: PLC v1 전면 고도화"] --> COO["COOAgent: 총괄 지휘 및 품질/보안 게이트"]
+    COO --> A1["PackagingDevOpsAgent<br/>인스톨러(.exe) 제작 & 타 PC 배포"]
+    COO --> A2["OTSecurityAgent<br/>산업제어망 보안, 인터록, 감사로깅"]
+    COO --> A3["PLCCommsAgent<br/>FINS UDP/TCP 엔진, 메모리 배치 최적화"]
+    COO --> A4["IndustrialUIAgent<br/>PC HMI & PWA 3종 테마 및 모바일 반응형"]
+    COO --> A5["IndustrialQAAgent<br/>FAT/SAT 공장 품질검수 체크시트 발행"]
+    A1 --> COO_GATE["COO 최종 경영 감사 및 4대 장부 마감"]
+    A2 --> COO_GATE
+    A3 --> COO_GATE
+    A4 --> COO_GATE
+    A5 --> COO_GATE
 ```
 
-1. **선행특허팀 (`PatentSearchAgent`)**:
-   - `Omron CJ2H FINS 프로토콜 모바일 P2P 직접 제어` 관련 KR/US/EP 선행특허 전수 조사.
-   - 특허 침해(FTO) 리스크 평가 및 독자 기술 청구항 도출.
-2. **프론트엔드팀 (`FrontendDevAgent`)**:
-   - `pc-app` 및 `pwa-bridge` 화면에 가상회사의 3종 테마(사이버 다크, 모던 라이트, OLED 제트블랙) 스타일링 적용.
-   - 360~430px 및 Z폴드5 폴더블 뷰포트 가독성 최적화.
-3. **백엔드팀 (`BackendDevAgent`)**:
-   - `pwa-bridge/src/plcClient/udpFinsClient.js` 및 `tcpFinsClient.js` 코드 검토.
-   - 비동기 소켓 연결 안정성 및 오류 복구(Failover) 매커니즘 보강.
-4. **보안팀 (`SecurityAgent`)**:
-   - 산업용 제어시스템(OT/ICS) 특화 보안 점검: 허가되지 않은 PLC 메모리 쓰기 방지(Command Guard) 심사.
-   - 3단계 RBAC 권한 검증 및 감사로그 변조 방지 점검.
-5. **품질팀 (`QAAgent`)**:
-   - 3-in-1 시스템 전 공정 품질 감사 체크시트 작성 및 최종 승인 보고서 발간.
+1. **`PackagingDevOpsAgent`**:
+   - `PLC-Monitoring-Setup.exe` (58.8MB) 인스톨러 빌드 완료.
+   - 타 PC 설치 및 운영 매뉴얼(`INSTALLATION_GUIDE.md`) 작성 및 배포 패키징 전담.
+2. **`OTSecurityAgent`**:
+   - `securityGuard.js` 개발 및 `pc-app` 연동 완료 (보안 헤더, 초당 30회 쓰기 Rate Limit, CPU 정지 안전 인터록).
+   - `plc_security_audit_report.md` 발간 및 `logs/security_audit.log` 상시 추적.
+3. **`PLCCommsAgent`**:
+   - Omron FINS 0104 다중 메모리 읽기 청크 최적화 및 FTO 회피 프로토콜 통신 엔진 관리.
+4. **`IndustrialUIAgent`**:
+   - PWA 브릿지 3종 테마(`oled-black`, `cyber-dark`, `pro-light`) 및 HMI SVG 배관도 인터랙션 고도화.
+5. **`IndustrialQAAgent`**:
+   - 3-in-1 시스템 전 공정 산업 품질 체크시트 발행 및 모의 시뮬레이션 검수.
 
 ---
 
-## 4. 형상 관리 및 마일스톤
+## 4. 형상 관리 및 마일스톤 달성 현황
 - **Git 브랜치**: `feature/plc-monitoring-v1`
-- **1차 마일스톤 (M1)**: 소스코드 이관 및 PWA 브릿지 보안 Command Guard 코드 검토 및 하드닝
-- **2차 마일스톤 (M2)**: 웹 관제실 3종 테마 적용 및 모바일 반응형 검증
-- **3차 마일스톤 (M3)**: FINS UDP 통신 실측 시뮬레이션 및 최종 릴리스
+- **마일스톤 달성 현황**:
+  - ✅ **M1: 불필요한 대용량 파일 정리**: 2.988GB $\rightarrow$ 186MB로 93% 이상 대폭 경량화 완료.
+  - ✅ **M2: 타 PC 설치용 인스톨러 제작**: Inno Setup 6 기반 포터블 `PLC-Monitoring-Setup.exe` (58.8MB) 컴파일 완료.
+  - ✅ **M3: 전수 보안 감사 및 방어 조치**: `securityGuard.js` 탑재, 보안 감사 보고서(`SEC-PLC-2026-001`) 발간 완료.
+  - ✅ **M4: 개발팀 전문 에이전트 인원 배정**: 5대 핵심 전문 에이전트 조직 및 R&R 매트릭스 확립 완료.

@@ -72,6 +72,7 @@ const {
   resolveSnapshotDir,
   filePrefix,
 } = require('./settingsManager');
+const { securityHeaders, writeSecurityGuard, writeAuditLog } = require('./securityGuard');
 
 const PORT = process.env.PORT || 3000;
 const MAX_LOG_ENTRIES = 500;
@@ -461,10 +462,27 @@ app.get('/gms.html', (req, res) => {
   }
 });
 
+app.use(securityHeaders);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 // 기본 100kb 제한으로는 base64로 인코딩한 Excel 파일 업로드(/api/*/variables/import)가
 // 잘릴 수 있어서 넉넉히 늘림.
 app.use(express.json({ limit: '10mb' }));
+app.use(writeSecurityGuard());
+
+// 보안 감사 로그 조회 API
+app.get('/api/security/audit', (req, res) => {
+  const auditPath = path.join(__dirname, '..', 'logs', 'security_audit.log');
+  if (!fs.existsSync(auditPath)) {
+    return res.json({ ok: true, logs: [] });
+  }
+  try {
+    const lines = fs.readFileSync(auditPath, 'utf8').trim().split('\n').filter(Boolean);
+    const recent = lines.slice(-200); // 최근 200개 반환
+    res.json({ ok: true, count: recent.length, logs: recent });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 app.post('/api/connect', async (req, res) => {
   try {

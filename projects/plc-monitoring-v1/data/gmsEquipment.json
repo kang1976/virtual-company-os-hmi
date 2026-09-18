@@ -1,9 +1,0 @@
-{
-  "equipment": [
-    { "id": "unit1", "name": "BSGS", "label1": "21", "label2": "22", "plc": { "series": "CJ", "connType": "TCP", "host": "", "port": 9600 } },
-    { "id": "unit2", "name": "BSGS", "label1": "31", "label2": "32", "plc": { "series": "CJ", "connType": "TCP", "host": "", "port": 9600 } },
-    { "id": "unit3", "name": "BSGS", "label1": "41", "label2": "42", "plc": { "series": "CJ", "connType": "TCP", "host": "", "port": 9600 } },
-    { "id": "unit4", "name": "BSGS", "label1": "51", "label2": "52", "plc": { "series": "CJ", "connType": "TCP", "host": "", "port": 9600 } }
-  ],
-  "savedAt": "2026-07-17T00:00:00.000Z"
-}
