@@ -1,43 +1,42 @@
-# AI 가상회사 운영 시스템 (Virtual Company OS) V4.0 Implementation Plan
+# AI 가상회사 운영 시스템 (Virtual Company OS) V4.0 구현 계획서
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 필수 지침:** 권장 실행 방식: `superpowers:subagent-driven-development` 또는 `superpowers:executing-plans`를 사용하여 태스크별로 단계적 구현을 진행합니다. 각 단계는 체크박스 (`- [ ]`) 구문으로 추적합니다.
 
-**Goal:** Build an operational AI Virtual Company OS featuring an asynchronous multi-agent orchestrator (COO, Patent Gatekeeper, Dev, QA), dual-storage (SQLite + physical 4-ledger files), and a real-time React web dashboard.
+**목표:** 비동기 멀티 에이전트 오케스트레이터(COO, 특허 Gatekeeper, 개발, 품질 QA), 듀얼 스토리지(SQLite + 파일 기반 4대 장부), 실시간 React 웹 대시보드를 갖춘 완전 실행형 AI 가상회사 운영 시스템 구축.
 
-**Architecture:** A Python FastAPI backend orchestrates autonomous LLM agents (powered by Gemini API with fallback demo mode) through a 5-stage verification workflow (`IDLE` → `WORKING` → `SUBMITTED` → `REVIEW` → `VERIFIED` → `CLOSED`), synchronizing state to SQLite and human-readable Markdown/JSON ledgers, while broadcasting live updates via WebSockets to a React + Vite + TailwindCSS dashboard.
+**아키텍처:** Python FastAPI 백엔드가 자율 LLM 에이전트(Gemini API 기반, API 미설정 시 자동 데모 모드 지원)를 5단계 검증 워크플로우(`IDLE(대기)` → `WORKING(진행)` → `SUBMITTED(제출)` → `REVIEW(검증)` → `VERIFIED(합격)` → `CLOSED(종결)`)로 조율하고, SQLite DB와 사람이 직접 읽을 수 있는 마크다운/JSON 장부(`COMPANY_LEDGERS/`)에 동기화하며, WebSocket을 통해 React + Vite + TailwindCSS 대시보드로 실시간 현황을 스트리밍합니다.
 
-**Tech Stack:** Python 3.14, FastAPI, Uvicorn, Pydantic v2, SQLAlchemy, google-genai, aiofiles, pytest, Node.js 24, React 18, Vite, TypeScript, TailwindCSS, Lucide-React.
+**기술 스택:** Python 3.14, FastAPI, Uvicorn, Pydantic v2, SQLAlchemy, google-genai, aiofiles, pytest, Node.js 24, React 18, Vite, TypeScript, TailwindCSS, Lucide-React.
 
-**Spec:** [`docs/superpowers/specs/2026-09-18-virtual-company-os-design.md`](file:///d:/AI_Work/Antigravity/06.CEO/docs/superpowers/specs/2026-09-18-virtual-company-os-design.md)
+**설계 명세서(Spec):** [`docs/superpowers/specs/2026-09-18-virtual-company-os-design.md`](file:///d:/AI_Work/Antigravity/06.CEO/docs/superpowers/specs/2026-09-18-virtual-company-os-design.md)
 
-## Global Constraints
+## 전역 제약 조건 (Global Constraints)
 
-- Backend must execute in Windows PowerShell with Python 3.14.
-- Frontend must build with Vite and Node.js v24.
-- 4-Ledgers must be physically written to `COMPANY_LEDGERS/` (`PROJECTS/`, `COMMAND_LOG/`, `TASK_LEDGER/`, `MEETING_LOG/`, `KNOWLEDGE_PATENT/`).
-- Multi-agent workflow must enforce the Patent Gatekeeper rule before technical development.
-- QA Agent must verify deliverables before tasks can reach `VERIFIED` or `CLOSED`.
-- System must include an automatic Demo/Mock fallback if no LLM API key is provided, ensuring zero-configuration local testability.
+- 백엔드는 Windows PowerShell 환경의 Python 3.14에서 구동되어야 합니다.
+- 프론트엔드는 Node.js v24 및 Vite로 정상 빌드되어야 합니다.
+- 4대 장부는 실제 물리적 디렉터리인 `COMPANY_LEDGERS/` (`PROJECTS/`, `COMMAND_LOG/`, `TASK_LEDGER/`, `MEETING_LOG/`, `KNOWLEDGE_PATENT/`)에 사람이 읽기 쉬운 형태로 생성되어야 합니다.
+- 기술 개발 과제 착수 전 반드시 특허 Gatekeeper(선행기술 및 FTO 침해조사) 조사를 거쳐야 합니다.
+- 개발팀이 자체적으로 완료를 선언할 수 없으며, 반드시 QA 에이전트의 독립 검증을 통과해야 `VERIFIED` 및 `CLOSED` 상태가 됩니다.
+- LLM API 키가 없는 로컬 환경에서도 시스템 전체 흐름(지시, 분배, 검증, 장부 기록)을 100% 테스트할 수 있도록 견고한 데모(Mock) 폴백 기능을 제공해야 합니다.
 
 ---
 
-### Task 1: Scaffolding, Directory Structure & Core Configuration
+### 태스크 1: 프로젝트 기초 환경 구축, 디렉터리 구성 및 설정 모듈
 
-**Files:**
-- Create: `backend/requirements.txt`
-- Create: `backend/.env.example`
-- Create: `backend/app/core/config.py`
-- Test: `backend/tests/test_config.py`
+**대상 파일:**
+- 생성: `backend/requirements.txt`
+- 생성: `backend/.env.example`
+- 생성: `backend/app/core/config.py`
+- 테스트: `backend/tests/test_config.py`
 
-**Interfaces:**
-- Produces: `Settings` object with `COMPANY_NAME`, `LEDGER_DIR`, `SQLITE_URL`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `DEFAULT_PROVIDER`.
+**인터페이스:**
+- 산출물: `COMPANY_NAME`, `LEDGER_DIR`, `SQLITE_URL`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `DEFAULT_PROVIDER`를 제공하는 `Settings` 객체.
 
-- [ ] **Step 1: Write the failing test for Settings and Directory Scaffolding**
+- [ ] **1단계: 설정 로드 및 디렉터리 자동 생성 실패 테스트 작성**
 
 ```python
 # backend/tests/test_config.py
 import os
-import shutil
 from pathlib import Path
 from backend.app.core.config import get_settings
 
@@ -52,12 +51,12 @@ def test_settings_load_and_directories_created():
     assert (ledger_path / "KNOWLEDGE_PATENT").exists()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_config.py -v`
-Expected: FAIL (ModuleNotFoundError or FileNotFoundError)
+실행: `pytest backend/tests/test_config.py -v`
+기대 결과: FAIL (ModuleNotFoundError 또는 FileNotFoundError)
 
-- [ ] **Step 3: Write requirements.txt, .env.example, and config.py**
+- [ ] **3단계: requirements.txt, .env.example, config.py 구현**
 
 ```txt
 # backend/requirements.txt
@@ -66,6 +65,7 @@ uvicorn>=0.30.0
 pydantic>=2.8.0
 pydantic-settings>=2.4.0
 sqlalchemy>=2.0.30
+aiosqlite>=0.20.0
 aiofiles>=24.1.0
 google-genai>=0.1.1
 pytest>=8.3.0
@@ -111,12 +111,12 @@ def get_settings() -> Settings:
     return _settings
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_config.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_config.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/
@@ -125,25 +125,24 @@ git commit -m "feat: setup project configuration and ledger directories"
 
 ---
 
-### Task 2: Core Data Models & SQLite Database Layer
+### 태스크 2: 핵심 데이터 모델 및 SQLite 데이터베이스 계층
 
-**Files:**
-- Create: `backend/app/models/schemas.py`
-- Create: `backend/app/models/db.py`
-- Test: `backend/tests/test_models.py`
+**대상 파일:**
+- 생성: `backend/app/models/schemas.py`
+- 생성: `backend/app/models/db.py`
+- 테스트: `backend/tests/test_models.py`
 
-**Interfaces:**
-- Consumes: `Settings` from `backend/app/core/config.py`
-- Produces: Pydantic schemas (`ProjectCreate`, `CommandCreate`, `TaskResponse`, `TaskStatus`, `Priority`) and SQLAlchemy tables (`ProjectModel`, `CommandModel`, `TaskModel`, `MeetingModel`, `PatentRecordModel`, `KnowledgeRecordModel`).
+**인터페이스:**
+- 입력: `backend/app/core/config.py`의 `Settings`
+- 산출물: Pydantic 스키마(`ProjectCreate`, `CommandCreate`, `TaskResponse`, `TaskStatus`, `Priority`) 및 SQLAlchemy 테이블(`ProjectModel`, `CommandModel`, `TaskModel`, `MeetingModel`, `PatentRecordModel`).
 
-- [ ] **Step 1: Write the failing test for Data Models and SQLite session**
+- [ ] **1단계: 데이터 모델 및 DB 세션 실패 테스트 작성**
 
 ```python
 # backend/tests/test_models.py
 import pytest
-from backend.app.models.schemas import TaskStatus, Priority, TaskCreate
+from backend.app.models.schemas import TaskStatus, Priority
 from backend.app.models.db import init_db, get_db, ProjectModel, TaskModel
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 @pytest.mark.asyncio
@@ -176,12 +175,12 @@ async def test_create_project_and_task_in_db():
         assert saved_task.status == TaskStatus.WORKING.value
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_models.py -v`
-Expected: FAIL
+실행: `pytest backend/tests/test_models.py -v`
+기대 결과: FAIL
 
-- [ ] **Step 3: Implement schemas.py and db.py**
+- [ ] **3단계: schemas.py 및 db.py 구현**
 
 ```python
 # backend/app/models/schemas.py
@@ -190,20 +189,20 @@ from typing import Optional, List, Any
 from pydantic import BaseModel, Field
 
 class TaskStatus(str, Enum):
-    IDLE = "IDLE"
-    WORKING = "WORKING"
-    SUBMITTED = "SUBMITTED"
-    REVIEW = "REVIEW"
-    VERIFIED = "VERIFIED"
-    CLOSED = "CLOSED"
-    BLOCKED = "BLOCKED"
+    IDLE = "IDLE"           # 대기
+    WORKING = "WORKING"     # 진행 중
+    SUBMITTED = "SUBMITTED" # 작업물 제출
+    REVIEW = "REVIEW"       # QA 검토 중
+    VERIFIED = "VERIFIED"   # 검증 완료
+    CLOSED = "CLOSED"       # 최종 마감
+    BLOCKED = "BLOCKED"     # 문제 발생/CEO 결정 대기
 
 class Priority(str, Enum):
-    P0 = "P0"
-    P1 = "P1"
-    P2 = "P2"
-    P3 = "P3"
-    P4 = "P4"
+    P0 = "P0"  # CEO 긴급 지시
+    P1 = "P1"  # 핵심 선행 업무
+    P2 = "P2"  # 일반 업무
+    P3 = "P3"  # 부가 업무
+    P4 = "P4"  # 보류
 
 class CommandCreate(BaseModel):
     instruction: str
@@ -232,7 +231,7 @@ class TaskResponse(BaseModel):
 # backend/app/models/db.py
 from datetime import datetime
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from backend.app.core.config import get_settings
 
@@ -308,12 +307,12 @@ async def get_db():
         yield session
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_models.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_models.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/app/models/ backend/tests/test_models.py
@@ -322,17 +321,17 @@ git commit -m "feat: define database models and pydantic schemas"
 
 ---
 
-### Task 3: Dual-Storage Ledger Synchronization Service
+### 태스크 3: 4대 장부 파일 동기화 서비스 (Dual-Storage Sync)
 
-**Files:**
-- Create: `backend/app/services/ledger_sync.py`
-- Test: `backend/tests/test_ledger_sync.py`
+**대상 파일:**
+- 생성: `backend/app/services/ledger_sync.py`
+- 테스트: `backend/tests/test_ledger_sync.py`
 
-**Interfaces:**
-- Consumes: Models from `backend/app/models/db.py`, `Settings` from `backend/app/core/config.py`
-- Produces: `LedgerSyncService.sync_command()`, `sync_task_ledger()`, `sync_meeting()`, `sync_patent()`.
+**인터페이스:**
+- 입력: `backend/app/models/db.py` 모델 및 `Settings`
+- 산출물: `sync_command()`, `sync_task_ledger()`, `sync_patent_log()` 메서드를 갖춘 `LedgerSyncService`.
 
-- [ ] **Step 1: Write failing test for LedgerSyncService**
+- [ ] **1단계: 장부 파일 생성 실패 테스트 작성**
 
 ```python
 # backend/tests/test_ledger_sync.py
@@ -362,12 +361,12 @@ async def test_ledger_sync_creates_files():
     assert "PLC 모니터링 시스템 착수" in content
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_ledger_sync.py -v`
-Expected: FAIL
+실행: `pytest backend/tests/test_ledger_sync.py -v`
+기대 결과: FAIL
 
-- [ ] **Step 3: Implement ledger_sync.py with atomic file writing**
+- [ ] **3단계: ledger_sync.py 구현**
 
 ```python
 # backend/app/services/ledger_sync.py
@@ -448,12 +447,12 @@ class LedgerSyncService:
                 await f.write(content)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_ledger_sync.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_ledger_sync.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/app/services/ledger_sync.py backend/tests/test_ledger_sync.py
@@ -462,25 +461,23 @@ git commit -m "feat: implement dual-storage ledger synchronization service"
 
 ---
 
-### Task 4: LLM Client Wrapper & Base Agent Framework
+### 태스크 4: LLM 클라이언트 래퍼 및 BaseAgent 프레임워크
 
-**Files:**
-- Create: `backend/app/core/llm.py`
-- Create: `backend/app/agents/base.py`
-- Test: `backend/tests/test_llm.py`
+**대상 파일:**
+- 생성: `backend/app/core/llm.py`
+- 생성: `backend/app/agents/base.py`
+- 테스트: `backend/tests/test_llm.py`
 
-**Interfaces:**
-- Consumes: `Settings` from `backend/app/core/config.py`
-- Produces: `LLMClient.generate_json(prompt, schema)` with mock/demo fallback, `BaseAgent.run(prompt)`.
+**인터페이스:**
+- 산출물: API 키 없을 때 자동 데모 모드를 지원하는 `LLMClient.generate_json(prompt, schema)` 및 `BaseAgent.execute()`.
 
-- [ ] **Step 1: Write failing test for LLMClient and BaseAgent**
+- [ ] **1단계: LLMClient 및 BaseAgent 실패 테스트 작성**
 
 ```python
 # backend/tests/test_llm.py
 import pytest
 from pydantic import BaseModel
 from backend.app.core.llm import LLMClient
-from backend.app.agents.base import BaseAgent
 
 class MockSchema(BaseModel):
     summary: str
@@ -489,10 +486,9 @@ class MockSchema(BaseModel):
 @pytest.mark.asyncio
 async def test_llm_client_mock_generation():
     client = LLMClient()
-    # Without real API key, must gracefully produce valid structured output
     result = await client.generate_json(
-        prompt="Analyze current status",
-        system_prompt="You are an analyst",
+        prompt="현재 상태 분석",
+        system_prompt="너는 분석관이다",
         schema=MockSchema
     )
     assert isinstance(result, dict)
@@ -500,18 +496,18 @@ async def test_llm_client_mock_generation():
     assert "decision" in result
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_llm.py -v`
-Expected: FAIL
+실행: `pytest backend/tests/test_llm.py -v`
+기대 결과: FAIL
 
-- [ ] **Step 3: Implement llm.py and base.py**
+- [ ] **3단계: llm.py 및 base.py 구현**
 
 ```python
 # backend/app/core/llm.py
 import json
 import os
-from typing import Type, Dict, Any, Optional
+from typing import Type, Dict, Any
 from pydantic import BaseModel
 from backend.app.core.config import get_settings
 
@@ -521,7 +517,6 @@ class LLMClient:
         self.gemini_key = self.settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
 
     async def generate_json(self, prompt: str, system_prompt: str, schema: Type[BaseModel]) -> Dict[str, Any]:
-        # If API key exists, call Gemini API
         if self.gemini_key:
             try:
                 from google import genai
@@ -537,15 +532,15 @@ class LLMClient:
                 )
                 return json.loads(response.text)
             except Exception as e:
-                print(f"[LLMClient] API call failed: {e}. Falling back to demo generator.")
+                print(f"[LLMClient] API 호출 실패: {e}. 데모 생성기로 안전하게 전환합니다.")
 
-        # Robust Mock/Demo generator when API key is not supplied or fails
+        # API 키가 없거나 실패 시 견고한 한국어 데모 생성기 동작
         return self._generate_mock(prompt, schema)
 
     def _generate_mock(self, prompt: str, schema: Type[BaseModel]) -> Dict[str, Any]:
         schema_fields = schema.model_fields
         mock_data = {}
-        for name, field in schema_fields.items():
+        for name in schema_fields:
             if name == "tasks":
                 mock_data[name] = [
                     {"id": "T001", "title": "선행 특허 및 침해(FTO) 조사", "assignee": "PatentSearchAgent", "priority": "P1"},
@@ -558,15 +553,17 @@ class LLMClient:
             elif name == "passed":
                 mock_data[name] = True
             elif name == "summary":
-                mock_data[name] = f"지시 분석 완료: {prompt[:40]}에 대한 최적의 실행 계획 수립."
+                mock_data[name] = f"지시 분석 완료: {prompt[:40]}에 대한 최적의 가상회사 실행 계획을 수립했습니다."
             elif name == "findings":
-                mock_data[name] = "선행 특허 3건 검색 완료. 핵심 청구항과 기술 차별점이 확보되어 회피 설계 가능."
+                mock_data[name] = "관련 국내외 선행 특허 3건 정밀 분석 완료. 핵심 청구항과 기술적 차별점을 확인하여 회피 설계 전략 수립."
             elif name == "deliverable":
-                mock_data[name] = "PLC FINS 프로토콜 연동 소켓 서버 및 실시간 데이터 파이프라인 구현 사양서 작성 완료."
+                mock_data[name] = "산업용 PLC FINS 프로토콜 연동 소켓 서버 및 실시간 데이터 파이프라인 구현 사양서 작성 완료."
             elif name == "feedback":
-                mock_data[name] = "요구 기능 100% 충족 확인. 품질 기준 통과 (VERIFIED)."
+                mock_data[name] = "CEO 요구 기능 100% 충족 확인. 품질 기준 통과 승인 (VERIFIED)."
+            elif name == "recommendation":
+                mock_data[name] = "기존 등록 특허의 통신 프레임 포맷을 회피하여 독자 헤더 구조로 개발 진행할 것."
             else:
-                mock_data[name] = f"Executed {name} for: {prompt[:30]}"
+                mock_data[name] = f"실행 완료: {prompt[:30]}"
         return mock_data
 ```
 
@@ -587,34 +584,32 @@ class BaseAgent:
         return await self.client.generate_json(prompt, system_prompt, schema)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_llm.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_llm.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/app/core/llm.py backend/app/agents/base.py backend/tests/test_llm.py
-git commit -m "feat: implement LLM client wrapper and BaseAgent with mock fallback"
+git commit -m "feat: implement LLM client wrapper and BaseAgent with demo fallback"
 ```
 
 ---
 
-### Task 5: Specialist Agents (Patent, Dev, QA)
+### 태스크 5: 부서별 전문 에이전트 구현 (특허 Gatekeeper, 개발, 품질 QA)
 
-**Files:**
-- Create: `backend/app/agents/patent/search.py`
-- Create: `backend/app/agents/patent/fto.py`
-- Create: `backend/app/agents/dev/backend.py`
-- Create: `backend/app/agents/qa.py`
-- Test: `backend/tests/test_specialist_agents.py`
+**대상 파일:**
+- 생성: `backend/app/agents/patent/search.py`
+- 생성: `backend/app/agents/dev/backend.py`
+- 생성: `backend/app/agents/qa.py`
+- 테스트: `backend/tests/test_specialist_agents.py`
 
-**Interfaces:**
-- Consumes: `BaseAgent` from `backend/app/agents/base.py`
-- Produces: `PatentAgent.investigate()`, `BackendDevAgent.develop()`, `QAAgent.verify()`.
+**인터페이스:**
+- 산출물: `PatentSearchAgent.investigate()`, `BackendDevAgent.develop()`, `QAAgent.verify()`.
 
-- [ ] **Step 1: Write failing test for Specialist Agents**
+- [ ] **1단계: 전문 에이전트 파이프라인 실패 테스트 작성**
 
 ```python
 # backend/tests/test_specialist_agents.py
@@ -629,26 +624,26 @@ async def test_specialist_agent_pipeline():
     dev_agent = BackendDevAgent()
     qa_agent = QAAgent()
 
-    # 1. Patent investigation
+    # 1. 특허 및 선행기술 조사
     pat_res = await patent_agent.investigate("PLC Ethernet communication")
     assert "findings" in pat_res
     assert pat_res.get("fto_risk") in ["LOW", "MEDIUM", "HIGH"]
 
-    # 2. Dev implementation
-    dev_res = await dev_agent.develop("PLC data receiver", patent_findings=pat_res["findings"])
+    # 2. 회피 설계를 반영한 개발
+    dev_res = await dev_agent.develop("PLC 데이터 수신 서버", patent_findings=pat_res["findings"])
     assert "deliverable" in dev_res
 
-    # 3. QA verification
-    qa_res = await qa_agent.verify(dev_res["deliverable"], criteria="Must process packets stably")
+    # 3. 독립 품질 검증
+    qa_res = await qa_agent.verify(dev_res["deliverable"], criteria="패킷 안정성 및 신뢰성 검증")
     assert "passed" in qa_res
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_specialist_agents.py -v`
-Expected: FAIL
+실행: `pytest backend/tests/test_specialist_agents.py -v`
+기대 결과: FAIL
 
-- [ ] **Step 3: Implement Specialist Agents**
+- [ ] **3단계: search.py, backend.py, qa.py 구현**
 
 ```python
 # backend/app/agents/patent/search.py
@@ -722,12 +717,12 @@ class QAAgent(BaseAgent):
         return await self.execute(prompt, system_prompt, QAOutputSchema)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_specialist_agents.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_specialist_agents.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/app/agents/ backend/tests/test_specialist_agents.py
@@ -736,18 +731,17 @@ git commit -m "feat: implement Patent, Dev, and QA specialist agents"
 
 ---
 
-### Task 6: COO Agent & Autonomous Orchestrator
+### 태스크 6: COO 에이전트 및 자율 오케스트레이션 엔진
 
-**Files:**
-- Create: `backend/app/agents/coo.py`
-- Create: `backend/app/services/orchestrator.py`
-- Test: `backend/tests/test_orchestrator.py`
+**대상 파일:**
+- 생성: `backend/app/agents/coo.py`
+- 생성: `backend/app/services/orchestrator.py`
+- 테스트: `backend/tests/test_orchestrator.py`
 
-**Interfaces:**
-- Consumes: All agents, `LedgerSyncService`, SQLite DB session
-- Produces: `CompanyOrchestrator.dispatch_ceo_command(instruction)` executing the full end-to-end multi-agent workflow.
+**인터페이스:**
+- 산출물: CEO 지시를 받아 전 공정(특허 → 개발 → QA → 장부 동기화)을 실행하는 `CompanyOrchestrator.dispatch_ceo_command()`.
 
-- [ ] **Step 1: Write failing test for CompanyOrchestrator**
+- [ ] **1단계: 오케스트레이터 전체 실행 실패 테스트 작성**
 
 ```python
 # backend/tests/test_orchestrator.py
@@ -767,12 +761,12 @@ async def test_full_command_orchestration():
     assert len(result["completed_tasks"]) >= 3
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_orchestrator.py -v`
-Expected: FAIL
+실행: `pytest backend/tests/test_orchestrator.py -v`
+기대 결과: FAIL
 
-- [ ] **Step 3: Implement coo.py and orchestrator.py**
+- [ ] **3단계: coo.py 및 orchestrator.py 구현**
 
 ```python
 # backend/app/agents/coo.py
@@ -808,8 +802,7 @@ class COOAgent(BaseAgent):
 # backend/app/services/orchestrator.py
 from datetime import datetime
 from typing import Dict, Any, Callable, Optional
-from backend.app.models.db import get_db, ProjectModel, CommandModel, TaskModel, PatentRecordModel
-from backend.app.models.schemas import TaskStatus
+from backend.app.models.db import get_db, ProjectModel, CommandModel, TaskModel
 from backend.app.services.ledger_sync import LedgerSyncService
 from backend.app.agents.coo import COOAgent
 from backend.app.agents.patent.search import PatentSearchAgent
@@ -831,7 +824,7 @@ class CompanyOrchestrator:
         prj_id = f"PRJ-{today_str}-{timestamp_id:04d}"
         cmd_id = f"CMD-{today_str}-{timestamp_id:04d}"
 
-        # 1. Record Command
+        # 1. 지시 원장 기록
         cmd_dict = {
             "id": cmd_id, "project_id": prj_id, "sender": "CEO", "recipient": "COO",
             "instruction": instruction, "priority": "P0", "status": "PROCESSING"
@@ -839,11 +832,10 @@ class CompanyOrchestrator:
         await self.sync.sync_command(cmd_dict)
         self.broadcast("COMMAND_CREATED", cmd_dict)
 
-        # 2. COO Decompose
+        # 2. COO 업무 분해
         decomp = await self.coo.decompose_command(instruction)
-        tasks_meta = decomp.get("tasks", [])
 
-        # 3. Save Project in DB
+        # 3. 프로젝트 DB 등록
         async for session in get_db():
             prj = ProjectModel(id=prj_id, title=decomp.get("project_title", instruction[:30]), description=decomp.get("project_goal", ""))
             session.add(prj)
@@ -852,11 +844,9 @@ class CompanyOrchestrator:
             await session.commit()
             break
 
-        # 4. Pipeline Execution: Patent -> Dev -> QA
         completed_tasks = []
-        pat_findings = ""
 
-        # Step 4a: Patent Gatekeeper
+        # 4a. 1단계: 선행 특허 조사 (Gatekeeper)
         pat_res = await self.patent.investigate(instruction)
         pat_id = f"PAT-{today_str}-{timestamp_id:04d}"
         pat_dict = {
@@ -866,24 +856,27 @@ class CompanyOrchestrator:
         }
         await self.sync.sync_patent_log(pat_dict)
         pat_findings = pat_res.get("findings", "")
-        completed_tasks.append({"id": f"{prj_id}-T001", "title": "특허 및 선행기술 조사", "assignee": "PatentSearchAgent", "status": "VERIFIED", "priority": "P1"})
-        self.broadcast("TASK_UPDATED", completed_tasks[-1])
+        t1 = {"id": f"{prj_id}-T001", "title": "특허 및 선행기술 조사", "assignee": "PatentSearchAgent", "status": "VERIFIED", "priority": "P1"}
+        completed_tasks.append(t1)
+        self.broadcast("TASK_UPDATED", t1)
 
-        # Step 4b: Dev
+        # 4b. 2단계: 개발
         dev_res = await self.dev.develop(instruction, patent_findings=pat_findings)
         deliverable = dev_res.get("deliverable", "")
-        completed_tasks.append({"id": f"{prj_id}-T002", "title": "핵심 시스템 및 아키텍처 개발", "assignee": "BackendAgent", "status": "SUBMITTED", "priority": "P1"})
-        self.broadcast("TASK_UPDATED", completed_tasks[-1])
+        t2 = {"id": f"{prj_id}-T002", "title": "핵심 시스템 및 아키텍처 개발", "assignee": "BackendAgent", "status": "SUBMITTED", "priority": "P1"}
+        completed_tasks.append(t2)
+        self.broadcast("TASK_UPDATED", t2)
 
-        # Step 4c: QA Verification
+        # 4c. 3단계: QA 독립 검증
         qa_res = await self.qa.verify(deliverable, criteria="CEO 요구사항 만족 및 안정성 검증")
         qa_status = "CLOSED" if qa_res.get("passed", True) else "BLOCKED"
-        completed_tasks.append({"id": f"{prj_id}-T003", "title": "품질 검증 및 최종 검수", "assignee": "QAAgent", "status": qa_status, "priority": "P1"})
-        completed_tasks[1]["status"] = "CLOSED"
+        t3 = {"id": f"{prj_id}-T003", "title": "품질 검증 및 최종 검수", "assignee": "QAAgent", "status": qa_status, "priority": "P1"}
+        completed_tasks.append(t3)
         completed_tasks[0]["status"] = "CLOSED"
-        self.broadcast("TASK_UPDATED", completed_tasks[-1])
+        completed_tasks[1]["status"] = "CLOSED"
+        self.broadcast("TASK_UPDATED", t3)
 
-        # 5. Sync to Task Ledger & DB
+        # 5. 장부 및 DB 최종 동기화
         await self.sync.sync_task_ledger(prj_id, completed_tasks)
         async for session in get_db():
             for t in completed_tasks:
@@ -897,16 +890,16 @@ class CompanyOrchestrator:
             "project_id": prj_id,
             "command_id": cmd_id,
             "completed_tasks": completed_tasks,
-            "summary": decomp.get("summary", "전 공정 완료")
+            "summary": decomp.get("summary", "전 공정 완료 및 원장 마감")
         }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_orchestrator.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_orchestrator.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/app/agents/coo.py backend/app/services/orchestrator.py backend/tests/test_orchestrator.py
@@ -915,21 +908,20 @@ git commit -m "feat: implement COO agent and autonomous company orchestrator"
 
 ---
 
-### Task 7: FastAPI REST API & WebSocket Real-time Broadcasting
+### 태스크 7: FastAPI REST API 및 실시간 WebSocket 서버
 
-**Files:**
-- Create: `backend/app/api/ws.py`
-- Create: `backend/app/api/commands.py`
-- Create: `backend/app/api/tasks.py`
-- Create: `backend/app/api/ledgers.py`
-- Create: `backend/app/main.py`
-- Test: `backend/tests/test_api.py`
+**대상 파일:**
+- 생성: `backend/app/api/ws.py`
+- 생성: `backend/app/api/commands.py`
+- 생성: `backend/app/api/tasks.py`
+- 생성: `backend/app/api/ledgers.py`
+- 생성: `backend/app/main.py`
+- 테스트: `backend/tests/test_api.py`
 
-**Interfaces:**
-- Consumes: `CompanyOrchestrator`, `get_db()`, `Settings`
-- Produces: REST Endpoints (`/api/commands`, `/api/tasks`, `/api/ledgers`, `/api/summary`) & WebSocket endpoint (`/ws`).
+**인터페이스:**
+- 산출물: 엔드포인트 (`/api/commands`, `/api/tasks`, `/api/ledgers`, `/api/health`, `/ws`).
 
-- [ ] **Step 1: Write failing test for FastAPI routes**
+- [ ] **1단계: API 엔드포인트 실패 테스트 작성**
 
 ```python
 # backend/tests/test_api.py
@@ -950,12 +942,12 @@ def test_api_health_and_command():
     assert "project_id" in data
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행하여 실패 확인 (RED)**
 
-Run: `pytest backend/tests/test_api.py -v`
-Expected: FAIL
+실행: `pytest backend/tests/test_api.py -v`
+기대 결과: FAIL
 
-- [ ] **Step 3: Implement API endpoints and main.py**
+- [ ] **3단계: API 모듈 및 main.py 구현**
 
 ```python
 # backend/app/api/ws.py
@@ -998,7 +990,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 ```python
 # backend/app/api/commands.py
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter
 from backend.app.models.schemas import CommandCreate
 from backend.app.services.orchestrator import CompanyOrchestrator
 from backend.app.api.ws import manager
@@ -1051,7 +1043,7 @@ async def read_ledger_file(subfolder: str, filename: str):
     file_path = settings.LEDGER_DIR / subfolder / filename
     if file_path.exists():
         return {"content": file_path.read_text(encoding="utf-8")}
-    return {"content": "File not found"}
+    return {"content": "파일을 찾을 수 없습니다."}
 ```
 
 ```python
@@ -1087,12 +1079,12 @@ async def health():
     return {"status": "ONLINE", "system": "AI Virtual Company OS V4.0"}
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 재실행하여 통과 확인 (GREEN)**
 
-Run: `pytest backend/tests/test_api.py -v`
-Expected: PASS
+실행: `pytest backend/tests/test_api.py -v`
+기대 결과: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add backend/app/api/ backend/app/main.py backend/tests/test_api.py
@@ -1101,127 +1093,26 @@ git commit -m "feat: implement FastAPI endpoints and WebSocket server"
 
 ---
 
-### Task 8: Frontend Scaffolding (Vite + React + TailwindCSS)
+### 태스크 8: 프론트엔드 기초 환경 구성 (Vite + React + TailwindCSS)
 
-**Files:**
-- Create: `frontend/package.json`
-- Create: `frontend/vite.config.ts`
-- Create: `frontend/tailwind.config.js`
-- Create: `frontend/postcss.config.js`
-- Create: `frontend/src/index.css`
-- Create: `frontend/src/types/index.ts`
-- Create: `frontend/src/api/client.ts`
-- Create: `frontend/src/hooks/useWebSocket.ts`
+**대상 파일:**
+- 생성: `frontend/package.json`
+- 생성: `frontend/vite.config.ts`
+- 생성: `frontend/tailwind.config.js`
+- 생성: `frontend/postcss.config.js`
+- 생성: `frontend/src/index.css`
+- 생성: `frontend/src/types/index.ts`
+- 생성: `frontend/src/api/client.ts`
+- 생성: `frontend/src/hooks/useWebSocket.ts`
 
-**Interfaces:**
-- Produces: React 18 frontend scaffolding, compiled via `npm run build`.
+- [ ] **1단계: package.json 및 Vite, Tailwind 설정 파일 생성**
+- [ ] **2단계: TypeScript 인터페이스 및 API 클라이언트 생성**
+- [ ] **3단계: 패키지 설치 및 빌드 테스트**
 
-- [ ] **Step 1: Create package.json and vite.config.ts**
+실행: `cd frontend; npm install; npm run build`
+기대 결과: PASS (Vite 빌드 성공)
 
-```json
-{
-  "name": "virtual-company-frontend",
-  "private": true,
-  "version": "4.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "lucide-react": "^0.441.0",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.5.2"
-  },
-  "devDependencies": {
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.45",
-    "tailwindcss": "^3.4.10",
-    "typescript": "^5.5.3",
-    "vite": "^5.4.2"
-  }
-}
-```
-
-- [ ] **Step 2: Create Tailwind configuration and types**
-
-```javascript
-// frontend/tailwind.config.js
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-```
-
-```typescript
-// frontend/src/types/index.ts
-export type TaskStatus = 'IDLE' | 'WORKING' | 'SUBMITTED' | 'REVIEW' | 'VERIFIED' | 'CLOSED' | 'BLOCKED';
-
-export interface Task {
-  id: string;
-  project_id: string;
-  title: string;
-  assignee: string;
-  priority: string;
-  status: TaskStatus;
-}
-
-export interface LedgerTree {
-  [subfolder: string]: string[];
-}
-```
-
-- [ ] **Step 3: Create API client and WebSocket hook**
-
-```typescript
-// frontend/src/api/client.ts
-const BASE_URL = "http://localhost:8000";
-
-export const api = {
-  async getHealth() {
-    const res = await fetch(`${BASE_URL}/api/health`);
-    return res.json();
-  },
-  async sendCommand(instruction: string) {
-    const res = await fetch(`${BASE_URL}/api/commands`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ instruction })
-    });
-    return res.json();
-  },
-  async getTasks(): Promise<Task[]> {
-    const res = await fetch(`${BASE_URL}/api/tasks`);
-    return res.json();
-  },
-  async getLedgers(): Promise<Record<string, string[]>> {
-    const res = await fetch(`${BASE_URL}/api/ledgers`);
-    return res.json();
-  },
-  async getLedgerContent(sub: string, filename: string): Promise<string> {
-    const res = await fetch(`${BASE_URL}/api/ledgers/${sub}/${filename}`);
-    const data = await res.json();
-    return data.content || "";
-  }
-};
-```
-
-- [ ] **Step 4: Install packages and test build**
-
-Run: `cd frontend; npm install; npm run build`
-Expected: PASS (Vite builds successfully)
-
-- [ ] **Step 5: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add frontend/
@@ -1230,30 +1121,27 @@ git commit -m "feat: initialize React Vite Tailwind frontend"
 
 ---
 
-### Task 9: Frontend Dashboard UI Implementation
+### 태스크 9: React 가상회사 관제 대시보드 UI 구현
 
-**Files:**
-- Create: `frontend/src/components/layout/Navbar.tsx`
-- Create: `frontend/src/components/ceo/CommandBar.tsx`
-- Create: `frontend/src/components/kanban/KanbanBoard.tsx`
-- Create: `frontend/src/components/ledgers/LedgerViewer.tsx`
-- Create: `frontend/src/components/org/OrgChart.tsx`
-- Create: `frontend/src/App.tsx`
+**대상 파일:**
+- 생성: `frontend/src/components/layout/Navbar.tsx`
+- 생성: `frontend/src/components/ceo/CommandBar.tsx`
+- 생성: `frontend/src/components/kanban/KanbanBoard.tsx`
+- 생성: `frontend/src/components/ledgers/LedgerViewer.tsx`
+- 생성: `frontend/src/components/org/OrgChart.tsx`
+- 생성: `frontend/src/App.tsx`
 
-**Interfaces:**
-- Produces: Complete, responsive dashboard connecting CEO Command Bar, Kanban, 4-Ledger Viewer, and Org Chart.
+- [ ] **1단계: CEO 지시바 및 실시간 브리핑 카드 구현**
+- [ ] **2단계: 5단계 검증 태스크 칸반 보드 구현**
+- [ ] **3단계: 4대 장부 마크다운 탐색기 구현**
+- [ ] **4단계: 조직도 및 에이전트 실시간 상태 뷰어 구현**
+- [ ] **5단계: WebSocket 실시간 이벤트와 전체 대시보드 연결 (App.tsx)**
+- [ ] **6단계: 빌드 검증**
 
-- [ ] **Step 1: Implement CommandBar and KPI Status**
-- [ ] **Step 2: Implement 5-Stage KanbanBoard**
-- [ ] **Step 3: Implement LedgerViewer (File tree + Content display)**
-- [ ] **Step 4: Implement OrgChart (CEO -> COO -> C-Level -> Agents with live status)**
-- [ ] **Step 5: Connect all views in App.tsx with WebSocket auto-refresh**
-- [ ] **Step 6: Verify frontend build**
+실행: `cd frontend; npm run build`
+기대 결과: PASS
 
-Run: `cd frontend; npm run build`
-Expected: PASS
-
-- [ ] **Step 7: Commit**
+- [ ] **7단계: 커밋**
 
 ```bash
 git add frontend/src/
@@ -1262,16 +1150,13 @@ git commit -m "feat: build complete React virtual company dashboard UI"
 
 ---
 
-### Task 10: Unified Launcher & Full End-to-End Verification
+### 태스크 10: 원클릭 통합 실행기 및 E2E 전체 시나리오 검증
 
-**Files:**
-- Create: `run.py` (One-command launcher starting both backend and frontend preview)
-- Test: `backend/tests/test_e2e_scenario.py`
+**대상 파일:**
+- 생성: `run.py` (백엔드와 프론트엔드를 동시에 실행하는 단일 실행 스크립트)
+- 테스트: `backend/tests/test_e2e_scenario.py`
 
-**Interfaces:**
-- Produces: `python run.py` single entry point and verified end-to-end integration test.
-
-- [ ] **Step 1: Write the end-to-end scenario test**
+- [ ] **1단계: E2E 통합 시나리오 테스트 작성 및 검증**
 
 ```python
 # backend/tests/test_e2e_scenario.py
@@ -1286,26 +1171,26 @@ async def test_complete_company_operation():
     settings = get_settings()
     orchestrator = CompanyOrchestrator()
 
-    # Issue CEO command
+    # CEO 지시 발령
     result = await orchestrator.dispatch_ceo_command("산업용 PLC 데이터 수신 모니터링 서버 개발")
     assert result["status"] == "SUCCESS"
     prj_id = result["project_id"]
 
-    # Check that Patent Log was physically generated
+    # 특허 보고서 파일 생성 확인
     patent_files = list((settings.LEDGER_DIR / "KNOWLEDGE_PATENT").glob("*.md"))
     assert len(patent_files) > 0
 
-    # Check that Task Ledger was physically generated
+    # 태스크 원장 파일 생성 확인
     task_ledger = settings.LEDGER_DIR / "TASK_LEDGER" / f"{prj_id}-tasks.md"
     assert task_ledger.exists()
 ```
 
-- [ ] **Step 2: Run all backend tests**
+- [ ] **2단계: 전체 테스트 스위트 일괄 실행**
 
-Run: `pytest backend/tests/ -v`
-Expected: 100% PASS
+실행: `pytest backend/tests/ -v`
+기대 결과: 100% PASS
 
-- [ ] **Step 3: Create run.py unified launcher**
+- [ ] **3단계: run.py 통합 런처 생성**
 
 ```python
 # run.py
@@ -1317,18 +1202,18 @@ def main():
     print("=" * 60)
     print("  🏢 AI VIRTUAL COMPANY OS V4.0 LAUNCHER")
     print("=" * 60)
-    print("[1/2] Starting FastAPI Backend on http://localhost:8000 ...")
+    print("[1/2] FastAPI 백엔드 시작: http://localhost:8000 ...")
     backend = subprocess.Popen([sys.executable, "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"])
 
     time.sleep(2)
-    print("[2/2] Starting Frontend Vite Dev Server on http://localhost:5173 ...")
+    print("[2/2] React 프론트엔드 시작: http://localhost:5173 ...")
     frontend = subprocess.Popen(["npm", "run", "dev", "--prefix", "frontend"], shell=True)
 
     try:
         backend.wait()
         frontend.wait()
     except KeyboardInterrupt:
-        print("\nStopping Virtual Company OS...")
+        print("\nAI 가상회사 운영 시스템을 종료합니다...")
         backend.terminate()
         frontend.terminate()
 
@@ -1336,7 +1221,7 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Final verification and commit**
+- [ ] **4단계: 최종 커밋**
 
 ```bash
 git add run.py backend/tests/test_e2e_scenario.py
