@@ -231,7 +231,15 @@ function broadcast(obj) {
   if (!wss) return;
   const data = JSON.stringify(obj);
   for (const ws of wss.clients) {
-    if (ws.readyState === 1) ws.send(data);
+    if (ws.readyState === 1) {
+      try {
+        ws.send(data, (err) => {
+          if (err) console.error('WebSocket send error:', err.message);
+        });
+      } catch (err) {
+        console.error('WebSocket send exception:', err.message);
+      }
+    }
   }
 }
 
@@ -2715,26 +2723,43 @@ const server = app.listen(PORT, () => {
 });
 
 wss = new WebSocketServer({ server });
+wss.on('error', (err) => {
+  console.error('[WSS ERROR]', err.message);
+});
 wss.on('connection', (ws) => {
-  ws.send(JSON.stringify({ type: 'status', payload: getStatus() }));
-  ws.send(JSON.stringify({
-    type: 'memoryValues',
-    payload: { area: getActiveView().area, startAddr: getActiveView().startAddr, dataType: getActiveView().dataType, cells: state.cells, lastUpdate: state.lastUpdate },
-  }));
-  ws.send(JSON.stringify({ type: 'logHistory', payload: mainSession.getRecentLogs(100) }));
-  ws.send(JSON.stringify({ type: 'gridStatus', payload: gridManager.getStatus() }));
-  ws.send(JSON.stringify({ type: 'gridConnStatus', payload: gridSession.getStatus() }));
-  ws.send(JSON.stringify({ type: 'gridConnLogHistory', payload: gridSession.getRecentLogs(100) }));
-  ws.send(JSON.stringify({ type: 'trendStatus', payload: trendManager.getStatus() }));
-  ws.send(JSON.stringify({ type: 'trendConnStatus', payload: trendSession.getStatus() }));
-  ws.send(JSON.stringify({ type: 'trendConnLogHistory', payload: trendSession.getRecentLogs(100) }));
-  // 트렌드 화면을 다른 화면으로 옮겼다 돌아와도 그동안 쌓인 그래프가 그대로 보이도록,
-  // 서버가 들고 있던 최근 값 기록을 새로 접속한 클라이언트에게 통째로 넘겨준다.
-  ws.send(JSON.stringify({ type: 'trendValuesHistory', payload: trendManager.getValueHistory() }));
-  ws.send(JSON.stringify({ type: 'gmsStatus', payload: gmsManager.getStatus() }));
-  ws.send(JSON.stringify({ type: 'gmsConnStatus', payload: gmsSession.getStatus() }));
-  ws.send(JSON.stringify({ type: 'gmsConnLogHistory', payload: gmsSession.getRecentLogs(100) }));
-  ws.send(JSON.stringify({ type: 'gmsValues', payload: { values: gmsManager.getValues(), pts: gmsManager.getPtValues(), lastUpdate: null } }));
+  ws.on('error', (err) => {
+    console.error('[WS CLIENT ERROR]', err.message);
+  });
+  try {
+    ws.send(JSON.stringify({ type: 'status', payload: getStatus() }));
+    ws.send(JSON.stringify({
+      type: 'memoryValues',
+      payload: { area: getActiveView().area, startAddr: getActiveView().startAddr, dataType: getActiveView().dataType, cells: state.cells, lastUpdate: state.lastUpdate },
+    }));
+    ws.send(JSON.stringify({ type: 'logHistory', payload: mainSession.getRecentLogs(100) }));
+    ws.send(JSON.stringify({ type: 'gridStatus', payload: gridManager.getStatus() }));
+    ws.send(JSON.stringify({ type: 'gridConnStatus', payload: gridSession.getStatus() }));
+    ws.send(JSON.stringify({ type: 'gridConnLogHistory', payload: gridSession.getRecentLogs(100) }));
+    ws.send(JSON.stringify({ type: 'trendStatus', payload: trendManager.getStatus() }));
+    ws.send(JSON.stringify({ type: 'trendConnStatus', payload: trendSession.getStatus() }));
+    ws.send(JSON.stringify({ type: 'trendConnLogHistory', payload: trendSession.getRecentLogs(100) }));
+    // 트렌드 화면을 다른 화면으로 옮겼다 돌아와도 그동안 쌓인 그래프가 그대로 보이도록,
+    // 서버가 들고 있던 최근 값 기록을 새로 접속한 클라이언트에게 통째로 넘겨준다.
+    ws.send(JSON.stringify({ type: 'trendValuesHistory', payload: trendManager.getValueHistory() }));
+    ws.send(JSON.stringify({ type: 'gmsStatus', payload: gmsManager.getStatus() }));
+    ws.send(JSON.stringify({ type: 'gmsConnStatus', payload: gmsSession.getStatus() }));
+    ws.send(JSON.stringify({ type: 'gmsConnLogHistory', payload: gmsSession.getRecentLogs(100) }));
+    ws.send(JSON.stringify({ type: 'gmsValues', payload: { values: gmsManager.getValues(), pts: gmsManager.getPtValues(), lastUpdate: null } }));
+  } catch (err) {
+    console.error('[WS INITIAL SEND ERROR]', err.message);
+  }
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[UNHANDLED REJECTION]', reason);
 });
 
 process.on('SIGINT', () => {
