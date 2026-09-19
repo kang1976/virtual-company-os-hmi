@@ -1,3 +1,4 @@
+// frontend/src/components/dashboard/ProcessGraph.tsx
 import React, { useState } from 'react';
 import {
   Crown,
@@ -6,133 +7,204 @@ import {
   Code2,
   ShieldCheck,
   Megaphone,
-  ChevronRight,
   X,
+  Sparkles,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
-export interface ProcessStageNode {
+export interface WorkflowNode {
   id: string;
   stageNumber: number;
   title: string;
   subtitle: string;
   agents: string[];
   icon: React.ElementType;
-  color: string;
+  themeColor: string;
   borderColor: string;
   accentBg: string;
+  progressColor: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
   description: string;
 }
 
-const STAGES: ProcessStageNode[] = [
-  {
-    id: 'stage-1',
-    stageNumber: 1,
-    title: 'CEO 지시 하달',
-    subtitle: '명령 발의 및 방향성 수립',
-    agents: ['CEO (대표이사)'],
-    icon: Crown,
-    color: 'text-amber-500',
-    borderColor: 'border-amber-500',
-    accentBg: 'bg-amber-500/10',
-    description: '대표님의 자연어 비즈니스 목표를 수신하여 전사 가상 오피스 파이프라인을 기동합니다.',
-  },
-  {
-    id: 'stage-2',
-    stageNumber: 2,
-    title: 'COO 전략 분해',
-    subtitle: 'WBS 수립 & 우선순위 책정',
-    agents: ['COO (최고운영책임자)'],
-    icon: BrainCircuit,
-    color: 'text-indigo-500',
-    borderColor: 'border-indigo-500',
-    accentBg: 'bg-indigo-500/10',
-    description: 'CEO 지시를 20대 전문 에이전트별 단위 태스크와 책임 규격으로 자동 분해하고 일정을 조율합니다.',
-  },
-  {
-    id: 'stage-3',
-    stageNumber: 3,
-    title: '특허 및 아키텍처 기획',
-    subtitle: 'FTO 선행조사 & 클린설계',
-    agents: ['변리사', '수석 아키텍트', 'UX 아키텍트'],
-    icon: Layers,
-    color: 'text-purple-500',
-    borderColor: 'border-purple-500',
-    accentBg: 'bg-purple-500/10',
-    description: '글로벌 3개국 특허 침해(FTO) 분석과 회피 설계를 수립하고, 클린 아키텍처와 반응형 UI 명세를 확정합니다.',
-  },
-  {
-    id: 'stage-4',
-    stageNumber: 4,
-    title: '기술개발 엔지니어링',
-    subtitle: '풀스택 & 크로스플랫폼 구현',
-    agents: ['프론트엔드', '백엔드', '모바일', 'PLC펌웨어', 'DB', 'DevOps'],
-    icon: Code2,
-    color: 'text-blue-500',
-    borderColor: 'border-blue-500',
-    accentBg: 'bg-blue-500/10',
-    description: 'React, FastAPI, Flutter, Omron PLC FINS 통신 프로토콜 코드를 병렬 작성하고 정밀 패치합니다.',
-  },
-  {
-    id: 'stage-5',
-    stageNumber: 5,
-    title: '2단계 다층 보안·품질 심사',
-    subtitle: 'OWASP / 제로트러스트 / 50대 엣지테스트',
-    agents: ['수석 보안', '품질보증 QA', '심층 SecOps', '총괄 Senior QA'],
-    icon: ShieldCheck,
-    color: 'text-teal-500',
-    borderColor: 'border-teal-500',
-    accentBg: 'bg-teal-500/10',
-    description: '1차 보안/기능 검수 후 2차 산업제어망 제로트러스트 모의 침투 및 엣지 케이스 극한 부하를 최종 인가합니다.',
-  },
-  {
-    id: 'stage-6',
-    stageNumber: 6,
-    title: 'B2B 상품화 & 마케팅 릴리즈',
-    subtitle: '카탈로그 / 매뉴얼 / COO 최종 감사',
-    agents: ['상품화 마케터', 'COO 품질 승인관'],
-    icon: Megaphone,
-    color: 'text-rose-500',
-    borderColor: 'border-rose-500',
-    accentBg: 'bg-rose-500/10',
-    description: 'B2B 5대 USP 브로슈어와 사용자 가이드를 마크다운/원장에 동기화하고, 전사 감사 회의록을 영구 봉인합니다.',
-  },
-];
-
 interface ProcessGraphProps {
-  isExecuting: boolean;
-  executionStage: number; // 0: IDLE, 1: CEO, 2: COO, 3: DESIGN/PATENT, 4: DEV, 5: QA1, 6: QA2/MKT, 7: CLOSED
+  isExecuting?: boolean;
+  executionStage?: number; // 0: IDLE, 1: CEO, 2: COO, 3: DESIGN/PATENT, 4: DEV, 5: QA1, 6: QA2/MKT, 7: CLOSED
   tasks?: TaskItem[];
   onSelectDeliverable?: (task: TaskItem) => void;
 }
 
 export const ProcessGraph: React.FC<ProcessGraphProps> = ({
-  isExecuting,
-  executionStage,
+  isExecuting = false,
+  executionStage = 0,
   tasks = [],
   onSelectDeliverable,
 }) => {
-  const [selectedStage, setSelectedStage] = useState<ProcessStageNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
 
-  // 단계별 상태 판정 함수
-  const getStageStatus = (stageNum: number) => {
+  // 캔버스 크기: 1060 x 310
+  const nodes: WorkflowNode[] = [
+    {
+      id: 'node-ceo',
+      stageNumber: 1,
+      title: 'CEO 지시 하달',
+      subtitle: '자연어 비즈니스 목표',
+      agents: ['CEO (대표이사)'],
+      icon: Crown,
+      themeColor: '#D97706',
+      borderColor: 'border-amber-500',
+      accentBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+      progressColor: 'bg-amber-500',
+      x: 20,
+      y: 105,
+      w: 155,
+      h: 96,
+      description: '대표님의 목표 지시를 수신하여 전사 20대 자율 에이전트 오케스트레이션을 발의합니다.',
+    },
+    {
+      id: 'node-coo',
+      stageNumber: 2,
+      title: 'COO 전략 총괄 분해',
+      subtitle: 'WBS & 부서별 태스크 책정',
+      agents: ['COO (최고운영책임자)'],
+      icon: BrainCircuit,
+      themeColor: '#6366F1',
+      borderColor: 'border-indigo-500',
+      accentBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+      progressColor: 'bg-indigo-500',
+      x: 215,
+      y: 105,
+      w: 175,
+      h: 96,
+      description: 'CEO 지시를 분석하여 20개 전문 에이전트 간의 역할 분담과 책임 규격을 수립합니다.',
+    },
+    {
+      id: 'node-patent',
+      stageNumber: 3,
+      title: '특허 FTO 선행 조사',
+      subtitle: '3개국 DB 침해분석 & 회피',
+      agents: ['지식재산 총괄 변리사'],
+      icon: Layers,
+      themeColor: '#8B5CF6',
+      borderColor: 'border-purple-500',
+      accentBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+      progressColor: 'bg-purple-500',
+      x: 430,
+      y: 25,
+      w: 175,
+      h: 94,
+      description: 'KR/US/EP 3개국 특허를 전수 스크리닝하여 회피 설계를 개발팀에 전달합니다.',
+    },
+    {
+      id: 'node-design',
+      stageNumber: 3,
+      title: 'UI/UX 디자인 감리',
+      subtitle: 'VS Code 테마 & 터치 IA',
+      agents: ['수석 디자인 디렉터', 'UI 마감감리관', 'UX 아키텍트'],
+      icon: Sparkles,
+      themeColor: '#EC4899',
+      borderColor: 'border-pink-500',
+      accentBg: 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
+      progressColor: 'bg-pink-500',
+      x: 430,
+      y: 185,
+      w: 175,
+      h: 94,
+      description: '초고대비 다크/라이트 테마, 44px 터치 타깃, 반응형 인터페이스를 승인합니다.',
+    },
+    {
+      id: 'node-dev',
+      stageNumber: 4,
+      title: '기술개발 엔지니어링',
+      subtitle: 'Full-stack & PLC 펌웨어',
+      agents: ['수석 아키텍트', '프론트', '백엔드', '모바일', 'PLC펌웨어', 'DB', 'DevOps'],
+      icon: Code2,
+      themeColor: '#3B82F6',
+      borderColor: 'border-blue-500',
+      accentBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      progressColor: 'bg-blue-500',
+      x: 645,
+      y: 105,
+      w: 185,
+      h: 96,
+      description: 'FastAPI, React, Flutter, Omron PLC FINS 산업 통신 프로토콜을 병렬 구현합니다.',
+    },
+    {
+      id: 'node-qa',
+      stageNumber: 5,
+      title: '2단계 다층 보안·품질',
+      subtitle: 'OWASP / 제로트러스트 99점',
+      agents: ['수석 보안', '품질 QA', 'SecOps', 'Senior QA'],
+      icon: ShieldCheck,
+      themeColor: '#14B8A6',
+      borderColor: 'border-teal-500',
+      accentBg: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
+      progressColor: 'bg-teal-500',
+      x: 870,
+      y: 35,
+      w: 175,
+      h: 94,
+      description: '1차 보안/기능 통과 후 2차 산업제어망 침투 테스트 및 50대 엣지 부하를 최종 인가합니다.',
+    },
+    {
+      id: 'node-mkt',
+      stageNumber: 6,
+      title: 'B2B 상품화 & 릴리즈',
+      subtitle: '카탈로그 / 매뉴얼 / COO 감사',
+      agents: ['상품화 마케터', 'COO 품질승인관'],
+      icon: Megaphone,
+      themeColor: '#F43F5E',
+      borderColor: 'border-rose-500',
+      accentBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+      progressColor: 'bg-rose-500',
+      x: 870,
+      y: 180,
+      w: 175,
+      h: 94,
+      description: 'B2B 5대 USP 카탈로그와 운용 가이드를 원장에 영구 봉인하고 전사 릴리즈합니다.',
+    },
+  ];
+
+  // 노드별 상태 판정 함수
+  const getNodeStatus = (stageNum: number) => {
     if (!isExecuting && executionStage === 0) {
       if (tasks.length > 0) {
-        return { status: 'COMPLETED', label: '완료됨', color: 'bg-emerald-500', isCurrent: false };
+        return { status: 'COMPLETED', label: 'OK', isRunning: false };
       }
-      return { status: 'IDLE', label: '대기 중', color: 'bg-slate-400', isCurrent: false };
+      return { status: 'IDLE', label: '대기', isRunning: false };
     }
 
     if (executionStage === stageNum) {
-      return { status: 'ACTIVE', label: '실시간 가동 중', color: 'bg-blue-500', isCurrent: true };
+      return { status: 'WORKING', label: '실행 중', isRunning: true };
     }
     if (executionStage > stageNum) {
-      return { status: 'COMPLETED', label: '승인 통과', color: 'bg-emerald-500', isCurrent: false };
+      return { status: 'COMPLETED', label: 'OK', isRunning: false };
     }
-    return { status: 'QUEUED', label: '대기열', color: 'bg-slate-400', isCurrent: false };
+    return { status: 'QUEUED', label: '대기열', isRunning: false };
   };
 
-  // 전체 진척률 계산 (0 ~ 100%)
+  // 베지에 곡선(Curved Wire) 정의 - 카드를 가로지르지 않고 우측 핀 -> 좌측 핀으로 우아하게 연결
+  const wires = [
+    // 1. CEO -> COO (직선 느낌의 부드러운 곡선)
+    { fromX: 20 + 155, fromY: 105 + 48, toX: 215, toY: 105 + 48, active: executionStage >= 1 },
+    // 2. COO -> 특허 (위로 부드럽게 분기)
+    { fromX: 215 + 175, fromY: 105 + 32, toX: 430, toY: 25 + 47, active: executionStage >= 2 },
+    // 3. COO -> 디자인 (아래로 부드럽게 분기)
+    { fromX: 215 + 175, fromY: 105 + 64, toX: 430, toY: 185 + 47, active: executionStage >= 2 },
+    // 4. 특허 -> 개발 (아래로 부드럽게 합류)
+    { fromX: 430 + 175, fromY: 25 + 47, toX: 645, toY: 105 + 32, active: executionStage >= 3 },
+    // 5. 디자인 -> 개발 (위로 부드럽게 합류)
+    { fromX: 430 + 175, fromY: 185 + 47, toX: 645, toY: 105 + 64, active: executionStage >= 3 },
+    // 6. 개발 -> 보안품질 (위로 분기)
+    { fromX: 645 + 185, fromY: 105 + 32, toX: 870, toY: 35 + 47, active: executionStage >= 4 },
+    // 7. 개발 -> 상품화 (아래로 분기)
+    { fromX: 645 + 185, fromY: 105 + 64, toX: 870, toY: 180 + 47, active: executionStage >= 4 },
+  ];
+
+  // 전체 공정률
   const progressPercent = Math.min(
     100,
     isExecuting
@@ -143,126 +215,163 @@ export const ProcessGraph: React.FC<ProcessGraphProps> = ({
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg backdrop-blur-sm transition-colors relative overflow-hidden">
-      {/* 상단 헤더 및 실시간 진척도 */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
+    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg backdrop-blur-sm transition-colors space-y-4">
+      {/* 상단 타이틀 바 */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
               <BrainCircuit className="w-5 h-5" />
             </span>
-            <h2 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">
-              CEO 실시간 오케스트레이션 공정 그래프 (Process Flow Graph)
+            <h2 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg flex items-center gap-2">
+              실시간 비주얼 노드 공정 파이프라인 (Visual Node Flow)
             </h2>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-            대표님 지시가 20대 전문 에이전트 간에 인계되며 검증되는 6단계 전사 공정 파이프라인
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            노드와 연결선(Wire)을 통해 지시가 분기·합류하며 완수되는 n8n 스타일의 자율 공정 캔버스
           </p>
         </div>
 
-        {/* 종합 진척률 게이지 바 */}
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex items-center gap-3">
           <div className="text-right">
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">
-              전체 공정 진척도
-            </span>
-            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 font-mono">
+            <span className="text-[10px] text-slate-500 font-bold uppercase block">공정 완수율</span>
+            <span className="text-base font-black text-indigo-600 dark:text-indigo-400 font-mono">
               {progressPercent}%
             </span>
           </div>
-          <div className="w-32 sm:w-44 bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700">
+          <div className="w-28 bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700">
             <div
-              className="bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500 h-full transition-all duration-500 rounded-full relative"
+              className="bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
-            >
-              {isExecuting && (
-                <div className="absolute inset-0 bg-white/30 animate-[shimmer_1.5s_infinite] w-full" />
-              )}
-            </div>
+            />
           </div>
         </div>
       </div>
 
-      {/* 6단계 노드 파이프라인 그래프 (데스크톱: 가로 연결선, 모바일: 그리드) */}
-      <div className="relative">
-        {/* 배경 연결 라인 (데스크톱) */}
-        <div className="hidden lg:block absolute top-1/2 left-8 right-8 h-1 -translate-y-1/2 bg-slate-200 dark:bg-slate-800 z-0" />
-        {/* 진행 완료 연결 라인 (데스크톱) */}
-        <div
-          className="hidden lg:block absolute top-1/2 left-8 h-1 -translate-y-1/2 bg-indigo-500 transition-all duration-500 z-0"
-          style={{
-            width: `${Math.max(0, (progressPercent / 100) * 85)}%`,
-          }}
-        />
+      {/* 노드 캔버스 영역 (수평 스크롤 지원 및 베지에 곡선 와이어 연결) */}
+      <div className="relative w-full overflow-x-auto scrollbar-thin py-2">
+        <div className="relative min-w-[1060px] h-[305px] bg-slate-50/50 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-800/80 p-2">
+          {/* 1. SVG 베지에 곡선 와이어 레이어 (노드 사이를 아름답게 연결) */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            {wires.map((wire, idx) => {
+              // 부드러운 S자 베지에 곡선 계산
+              const dx = (wire.toX - wire.fromX) * 0.5;
+              const pathD = `M ${wire.fromX} ${wire.fromY} C ${wire.fromX + dx} ${wire.fromY}, ${wire.toX - dx} ${wire.toY}, ${wire.toX} ${wire.toY}`;
+              const isWireActive = wire.active;
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 relative z-10">
-          {STAGES.map((stage) => {
-            const { status, label, isCurrent } = getStageStatus(stage.stageNumber);
-            const Icon = stage.icon;
+              return (
+                <g key={idx}>
+                  {/* 베이스 와이어 라인 */}
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={isWireActive ? '#10B981' : '#94A3B8'}
+                    strokeWidth={isWireActive ? '2.5' : '1.5'}
+                    strokeDasharray={isWireActive ? 'none' : '4 3'}
+                    strokeOpacity={isWireActive ? 0.9 : 0.4}
+                    className="transition-all duration-500"
+                  />
+                  {/* 활성화된 라인 위의 빛 펄스 애니메이션 */}
+                  {isWireActive && isExecuting && (
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="#FFFFFF"
+                      strokeWidth="3"
+                      strokeDasharray="8 20"
+                      className="animate-[dash_1.5s_linear_infinite]"
+                      strokeOpacity={0.8}
+                    />
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* 2. 인터랙티브 노드 카드 레이어 (레퍼런스 이미지 디자인 완벽 반영) */}
+          {nodes.map((node) => {
+            const { status, label, isRunning } = getNodeStatus(node.stageNumber);
             const isCompleted = status === 'COMPLETED';
+            const Icon = node.icon;
 
             return (
               <div
-                key={stage.id}
-                onClick={() => setSelectedStage(stage)}
-                className={`group relative rounded-xl p-3 sm:p-3.5 border-2 transition-all cursor-pointer select-none flex flex-col justify-between ${
-                  isCurrent
-                    ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-500 shadow-md shadow-blue-500/20 scale-[1.02]'
+                key={node.id}
+                onClick={() => setSelectedNode(node)}
+                style={{
+                  position: 'absolute',
+                  left: `${node.x}px`,
+                  top: `${node.y}px`,
+                  width: `${node.w}px`,
+                  height: `${node.h}px`,
+                }}
+                className={`group rounded-xl p-3 border-2 transition-all cursor-pointer select-none bg-white dark:bg-slate-900 shadow-md flex flex-col justify-between z-10 hover:scale-[1.02] hover:shadow-lg ${
+                  isRunning
+                    ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-blue-500/20'
                     : isCompleted
-                    ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-500/70 hover:border-emerald-500'
-                    : 'bg-white dark:bg-slate-950/60 border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
+                    ? 'border-emerald-500/80 hover:border-emerald-500'
+                    : 'border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
                 }`}
               >
-                {/* 상단 단계 번호 및 펄스 뱃지 */}
-                <div className="flex items-center justify-between mb-2">
-                  <span
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
-                      isCurrent
-                        ? 'bg-blue-600 text-white animate-pulse'
-                        : isCompleted
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {isCompleted ? '✓' : stage.stageNumber}
-                  </span>
+                {/* 좌측 입력 포트 핀 (Dot) */}
+                <div
+                  style={{ backgroundColor: node.themeColor }}
+                  className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 shadow-sm"
+                />
+
+                {/* 우측 출력 포트 핀 (Dot) */}
+                <div
+                  style={{ backgroundColor: isCompleted ? '#10B981' : node.themeColor }}
+                  className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 shadow-sm"
+                />
+
+                {/* 상단 헤더: 아이콘 + 이름 + 상태 뱃지 */}
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: node.themeColor }} />
+                    <h3 className="font-extrabold text-slate-900 dark:text-white text-xs truncate">
+                      {node.title}
+                    </h3>
+                  </div>
 
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ${
-                      isCurrent
-                        ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300'
+                    className={`text-[9px] font-black px-1 py-0.2 rounded shrink-0 ${
+                      isRunning
+                        ? 'bg-blue-100 dark:bg-blue-950 text-blue-600 animate-pulse'
                         : isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-                        : 'bg-slate-200/60 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                     }`}
                   >
-                    {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />}
                     {label}
                   </span>
                 </div>
 
-                {/* 노드 아이콘 및 타이틀 */}
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div
-                    className={`p-1.5 rounded-lg ${stage.accentBg} ${stage.color} shrink-0`}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm line-clamp-1">
-                    {stage.title}
-                  </h3>
-                </div>
-
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mb-2 font-medium">
-                  {stage.subtitle}
+                {/* 부제목 & 담당자 요약 */}
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1 font-medium">
+                  {node.subtitle}
                 </p>
 
-                {/* 하단 에이전트 참여 뱃지 */}
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500 dark:text-slate-400 truncate max-w-[85px]">
-                    {stage.agents[0]} {stage.agents.length > 1 && `외 ${stage.agents.length - 1}인`}
-                  </span>
-                  <ChevronRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                {/* 하단 미니 진행률 바 및 참여 인원 (레퍼런스 이미지 스타일) */}
+                <div className="space-y-1 pt-1.5 border-t border-slate-100 dark:border-slate-800/80">
+                  <div className="flex items-center justify-between text-[9px] text-slate-400">
+                    <span className="truncate max-w-[95px]">{node.agents[0]}</span>
+                    <span className="font-mono font-bold text-slate-600 dark:text-slate-300">
+                      {isCompleted ? '100%' : isRunning ? '50%' : '0%'}
+                    </span>
+                  </div>
+                  {/* 노드 하단 진행률 바 */}
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        isCompleted
+                          ? 'bg-emerald-500 w-full'
+                          : isRunning
+                          ? `${node.progressColor} w-1/2 animate-pulse`
+                          : 'w-0'
+                      }`}
+                    />
+                  </div>
                 </div>
               </div>
             );
@@ -270,32 +379,30 @@ export const ProcessGraph: React.FC<ProcessGraphProps> = ({
         </div>
       </div>
 
-      {/* 선택된 단계 상세 모달 (클릭 시 팝업) */}
-      {selectedStage && (
+      {/* 노드 클릭 시 나타나는 원클릭 상세 모달 */}
+      {selectedNode && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                  <selectedStage.icon className="w-5 h-5" />
+                <span
+                  style={{ backgroundColor: `${selectedNode.themeColor}20`, color: selectedNode.themeColor }}
+                  className="p-2 rounded-xl"
+                >
+                  <selectedNode.icon className="w-5 h-5" />
                 </span>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
-                      STEP {selectedStage.stageNumber}
-                    </span>
-                    <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                      {selectedStage.title}
-                    </h3>
-                  </div>
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+                    {selectedNode.title}
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {selectedStage.subtitle}
+                    {selectedNode.subtitle}
                   </p>
                 </div>
               </div>
               <button
-                onClick={() => setSelectedStage(null)}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                onClick={() => setSelectedNode(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -303,19 +410,19 @@ export const ProcessGraph: React.FC<ProcessGraphProps> = ({
 
             <div className="space-y-3 text-xs">
               <div>
-                <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1">공정 개요</h4>
-                <p className="text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 leading-relaxed">
-                  {selectedStage.description}
+                <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1">공정 설명</h4>
+                <p className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 leading-relaxed border border-slate-200 dark:border-slate-800">
+                  {selectedNode.description}
                 </p>
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1.5">투입 전문 에이전트</h4>
+                <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1">배정된 에이전트</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedStage.agents.map((agent, i) => (
+                  {selectedNode.agents.map((agent, i) => (
                     <span
                       key={i}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 font-medium"
+                      className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800/80"
                     >
                       {agent}
                     </span>
@@ -323,13 +430,13 @@ export const ProcessGraph: React.FC<ProcessGraphProps> = ({
                 </div>
               </div>
 
-              {/* 연관된 실제 태스크 리스트 */}
+              {/* 실제 태스크 산출물 연동 */}
               <div>
-                <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1.5">실행 장부 태스크 연동</h4>
-                <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1">실시간 산출물 및 태스크</h4>
+                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                   {tasks.length === 0 ? (
-                    <div className="p-2.5 text-center text-slate-400 bg-slate-50 dark:bg-slate-950 rounded-lg">
-                      등록된 실행 태스크가 없습니다.
+                    <div className="p-3 text-center text-slate-400 bg-slate-50 dark:bg-slate-950 rounded-xl">
+                      등록된 태스크가 없습니다.
                     </div>
                   ) : (
                     tasks.map((t) => (
@@ -338,12 +445,12 @@ export const ProcessGraph: React.FC<ProcessGraphProps> = ({
                         onClick={() => {
                           if (onSelectDeliverable) {
                             onSelectDeliverable(t);
-                            setSelectedStage(null);
+                            setSelectedNode(null);
                           }
                         }}
-                        className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center justify-between cursor-pointer"
+                        className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center justify-between cursor-pointer"
                       >
-                        <span className="font-medium text-slate-800 dark:text-slate-200 truncate pr-2">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate pr-2">
                           {t.title}
                         </span>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 shrink-0">
@@ -356,10 +463,10 @@ export const ProcessGraph: React.FC<ProcessGraphProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="pt-2 flex justify-end border-t border-slate-200 dark:border-slate-800">
               <button
-                onClick={() => setSelectedStage(null)}
-                className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs hover:opacity-90 transition-opacity"
+                onClick={() => setSelectedNode(null)}
+                className="px-4 py-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs"
               >
                 닫기
               </button>
