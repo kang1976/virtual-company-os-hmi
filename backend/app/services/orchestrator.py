@@ -12,6 +12,10 @@ from backend.app.agents.dev.frontend import FrontendDevAgent
 from backend.app.agents.security import SecurityAgent, SecOpsAuditAgent
 from backend.app.agents.qa import QAAgent, SeniorQAAgent
 from backend.app.agents.marketing import ProductMarketingAgent
+from backend.app.services.rag_service import CompanyLedgerRAGService
+from backend.app.services.workflow_action import WorkflowActionService
+from backend.app.services.web_research import WebResearchService
+from backend.app.services.finance_service import FinanceCostService
 
 
 class CompanyOrchestrator:
@@ -26,6 +30,10 @@ class CompanyOrchestrator:
         self.senior_qa = SeniorQAAgent()
         self.marketing = ProductMarketingAgent()
         self.sync = LedgerSyncService()
+        self.rag = CompanyLedgerRAGService()
+        self.workflow = WorkflowActionService()
+        self.research = WebResearchService()
+        self.finance = FinanceCostService()
         self.broadcast = broadcast_fn or (lambda event, data: None)
 
     async def dispatch_ceo_command(self, instruction: str) -> Dict[str, Any]:
@@ -34,6 +42,10 @@ class CompanyOrchestrator:
         timestamp_id = int(now.timestamp()) % 10000
         prj_id = f"PRJ-{today_str}-{timestamp_id:04d}"
         cmd_id = f"CMD-{today_str}-{timestamp_id:04d}"
+
+        # 0. 사내 과거 4대 장부 로컬 RAG 검색 (0원 오픈소스 지식 기억)
+        past_insights = await self.rag.search_company_history(instruction, limit=3)
+        past_note = f" (사내 지식 {len(past_insights)}건 참조)" if past_insights else ""
 
         # 1. 지시 원장 기록
         cmd_dict = {
@@ -47,6 +59,7 @@ class CompanyOrchestrator:
         }
         await self.sync.sync_command(cmd_dict)
         self.broadcast("COMMAND_CREATED", cmd_dict)
+        await self.workflow.trigger_event("COMMAND_CREATED", cmd_dict)
 
         # 2. COO 업무 분해
         decomp = await self.coo.decompose_command(instruction)
@@ -542,6 +555,18 @@ class CompanyOrchestrator:
             )
         except Exception as e:
             logger.warning(f"텔레그램 알림 발송 건너뜀 (미설정 또는 오류): {e}")
+
+        # 7. n8n 스타일 워크플로우 이벤트 자동 디스패치 (0원 오픈소스 액션 파이프라인)
+        try:
+            await self.workflow.trigger_event("PROJECT_COMPLETED", {
+                "project_id": prj_id,
+                "command_id": cmd_id,
+                "instruction": instruction,
+                "coo_approved": coo_approved,
+                "completed_tasks_count": len(completed_tasks),
+            })
+        except Exception as e:
+            logger.warning(f"워크플로우 이벤트 발송 예외: {e}")
 
         return {
             "status": "SUCCESS" if coo_approved else "NEEDS_REVISION",
