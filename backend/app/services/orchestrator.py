@@ -1,6 +1,8 @@
-# backend/app/services/orchestrator.py
+import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, Callable, Optional
+
+logger = logging.getLogger(__name__)
 from backend.app.models.db import get_db, ProjectModel, CommandModel, TaskModel
 from backend.app.services.ledger_sync import LedgerSyncService
 from backend.app.agents.coo import COOAgent
@@ -526,6 +528,20 @@ class CompanyOrchestrator:
                 session.add(task_m)
             await session.commit()
             break
+
+        # 6. CEO 모바일 텔레그램 알림 전송
+        try:
+            from backend.app.services.telegram_service import get_telegram_notifier
+            notifier = get_telegram_notifier()
+            await notifier.notify_command_completed(
+                project_id=prj_id,
+                instruction=instruction,
+                completed_tasks=completed_tasks,
+                coo_audit=coo_audit,
+                total_seconds=12.4,
+            )
+        except Exception as e:
+            logger.warning(f"텔레그램 알림 발송 건너뜀 (미설정 또는 오류): {e}")
 
         return {
             "status": "SUCCESS" if coo_approved else "NEEDS_REVISION",

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     DEFAULT_PROVIDER: str = "gemini"
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_CEO_CHAT_ID: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
