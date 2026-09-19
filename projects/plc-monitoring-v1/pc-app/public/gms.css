@@ -1,45 +1,45 @@
 :root {
-  --bg: #f5f7fa; --panel: #ffffff; --panel-border: #d8dee5; --text: #1c232b; --muted: #5b6672;
-  --accent: #1a9b5c; --accent-dim: #cdebd9; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
-  --error: #c23c3c; --input-bg: #eef1f5; --bg-alt: #eef1f5; --flash-bg: #e3f7ec; --danger-bg: #fbe4e4;
-  --primary-text: #0d3d26; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #7a8794;
-  --valve-open: #c23c3c;
+  --bg: #f8f9fa; --panel: #ffffff; --panel-border: #e5e7eb; --text: #111827; --muted: #4b5563;
+  --accent: #0066b8; --accent-dim: #e0f2fe; --warn: #b45309; --warn-bg: #fef3c7; --warn-text: #92400e;
+  --error: #dc2626; --input-bg: #f3f4f6; --bg-alt: #f1f5f9; --flash-bg: #e0f2fe; --danger-bg: #fee2e2;
+  --primary-text: #0369a1; --danger-text: #991b1b; --send-tag: #0284c7; --hex-text: #64748b;
+  --valve-open: #dc2626;
   --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 :root[data-theme='dark'] {
-  --bg: #0b0e11; --panel: #171d24; --panel-border: #3d4a59; --text: #e7ecf1; --muted: #9aa7b8;
-  --accent: #3ddc84; --accent-dim: #1f6f45; --warn: #e6b450; --warn-bg: #3a2e12; --warn-text: #ffe9b3;
-  --error: #e65a5a; --input-bg: #232b35; --bg-alt: #0e1216; --flash-bg: #0f1c15; --danger-bg: #4a2323;
-  --primary-text: #eafff2; --danger-text: #ffdede; --send-tag: #6fa8ff; --hex-text: #7c8998;
-  --valve-open: #e65a5a;
+  --bg: #0f172a; --panel: #1e293b; --panel-border: #334155; --text: #f8fafc; --muted: #94a3b8;
+  --accent: #38bdf8; --accent-dim: #0c4a6e; --warn: #f59e0b; --warn-bg: #451a03; --warn-text: #fde68a;
+  --error: #ef4444; --input-bg: #0f172a; --bg-alt: #020617; --flash-bg: #082f49; --danger-bg: #450a0a;
+  --primary-text: #e0f2fe; --danger-text: #fecaca; --send-tag: #38bdf8; --hex-text: #94a3b8;
+  --valve-open: #ef4444;
 }
 :root[data-theme='orange'] {
-  --bg: #fdf6f0; --panel: #ffffff; --panel-border: #f0d4b4; --text: #2b1d10; --muted: #8a6a4a;
-  --accent: #ff8a00; --accent-dim: #ffe3bf; --warn: #b45f00; --warn-bg: #fff1dc; --warn-text: #7a3e00;
-  --error: #c23c3c; --input-bg: #fff3e6; --bg-alt: #fff3e6; --flash-bg: #ffedd6; --danger-bg: #fbe4e4;
-  --primary-text: #7a3d00; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #a3805e;
-  --valve-open: #c23c3c;
+  --bg: #fdf6f0; --panel: #ffffff; --panel-border: #fed7aa; --text: #2b1d10; --muted: #8a6a4a;
+  --accent: #ea580c; --accent-dim: #ffedd5; --warn: #b45309; --warn-bg: #fff1dc; --warn-text: #7a3e00;
+  --error: #dc2626; --input-bg: #fff7ed; --bg-alt: #ffedd5; --flash-bg: #ffedd5; --danger-bg: #fee2e2;
+  --primary-text: #7a3d00; --danger-text: #991b1b; --send-tag: #ea580c; --hex-text: #a3805e;
+  --valve-open: #dc2626;
 }
 :root[data-theme='blue'] {
-  --bg: #eef4fc; --panel: #ffffff; --panel-border: #c7dbf2; --text: #16233a; --muted: #5c7699;
-  --accent: #2f6fed; --accent-dim: #d7e6ff; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
-  --error: #c23c3c; --input-bg: #e7f0fb; --bg-alt: #e7f0fb; --flash-bg: #dbe9fc; --danger-bg: #fbe4e4;
-  --primary-text: #0b3a8a; --danger-text: #6b1f1f; --send-tag: #7c4dff; --hex-text: #7a92b8;
-  --valve-open: #c23c3c;
+  --bg: #f0f9ff; --panel: #ffffff; --panel-border: #bae6fd; --text: #082f49; --muted: #0369a1;
+  --accent: #0284c7; --accent-dim: #e0f2fe; --warn: #b45309; --warn-bg: #fef3c7; --warn-text: #92400e;
+  --error: #dc2626; --input-bg: #e0f2fe; --bg-alt: #bae6fd; --flash-bg: #e0f2fe; --danger-bg: #fee2e2;
+  --primary-text: #0369a1; --danger-text: #991b1b; --send-tag: #0284c7; --hex-text: #0284c7;
+  --valve-open: #dc2626;
 }
 :root[data-theme='green'] {
-  --bg: #eefaf3; --panel: #ffffff; --panel-border: #bfe6d0; --text: #123324; --muted: #4f8067;
-  --accent: #16a34a; --accent-dim: #d3f3df; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
-  --error: #c23c3c; --input-bg: #e6f7ec; --bg-alt: #e6f7ec; --flash-bg: #d7f4e2; --danger-bg: #fbe4e4;
-  --primary-text: #0b5c30; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #6ea183;
-  --valve-open: #c23c3c;
+  --bg: #f0fdf4; --panel: #ffffff; --panel-border: #bbf7d0; --text: #052e16; --muted: #15803d;
+  --accent: #16a34a; --accent-dim: #dcfce7; --warn: #b45309; --warn-bg: #fef3c7; --warn-text: #92400e;
+  --error: #dc2626; --input-bg: #dcfce7; --bg-alt: #bbf7d0; --flash-bg: #dcfce7; --danger-bg: #fee2e2;
+  --primary-text: #166534; --danger-text: #991b1b; --send-tag: #16a34a; --hex-text: #15803d;
+  --valve-open: #dc2626;
 }
 :root[data-theme='gray'] {
-  --bg: #f2f3f5; --panel: #ffffff; --panel-border: #d6d9de; --text: #202329; --muted: #63676f;
-  --accent: #4b5563; --accent-dim: #e2e4e8; --warn: #9a6a00; --warn-bg: #fdf1d9; --warn-text: #6b4a00;
-  --error: #c23c3c; --input-bg: #eceef1; --bg-alt: #eceef1; --flash-bg: #e4e6ea; --danger-bg: #fbe4e4;
-  --primary-text: #1f2937; --danger-text: #6b1f1f; --send-tag: #2563c9; --hex-text: #8a8f99;
-  --valve-open: #c23c3c;
+  --bg: #f8fafc; --panel: #ffffff; --panel-border: #cbd5e1; --text: #0f172a; --muted: #64748b;
+  --accent: #475569; --accent-dim: #f1f5f9; --warn: #b45309; --warn-bg: #fef3c7; --warn-text: #92400e;
+  --error: #dc2626; --input-bg: #f1f5f9; --bg-alt: #e2e8f0; --flash-bg: #f1f5f9; --danger-bg: #fee2e2;
+  --primary-text: #1e293b; --danger-text: #991b1b; --send-tag: #475569; --hex-text: #64748b;
+  --valve-open: #dc2626;
 }
 
 /* ── 배관도(#gmsSvg, SK_M15_GC_PID.svg에서 가져온 원본) 다크 테마 보정 ──
@@ -115,13 +115,44 @@ header h1 span { color: var(--muted); font-weight: 400; cursor: pointer; }
 .page-tabs .page-tab:hover { color: var(--text); }
 .page-tabs .page-tab.active { background: var(--accent-dim); color: var(--primary-text); font-weight: 700; border-color: var(--accent); top: 0; z-index: 1; }
 
-select, button, input { background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text); padding: 6px 10px; border-radius: 4px; font-size: 14px; }
-button { cursor: pointer; }
+select, button, input {
+  background: var(--input-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+select:focus-visible, button:focus-visible, input:focus-visible {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+button { cursor: pointer; font-weight: 600; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled, input:disabled, select:disabled { opacity: 0.4; cursor: not-allowed; }
-button.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); }
-button.danger { background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); }
-button.paused { background: var(--warn-bg); border-color: var(--warn); color: var(--warn-text); }
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+button.danger {
+  background: var(--error);
+  border-color: var(--error);
+  color: #ffffff !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+button.paused {
+  background: var(--warn);
+  border-color: var(--warn);
+  color: #ffffff !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
 input[type=number] { width: 90px; font-family: var(--mono); }
 
 /* ── 화면 배율 컨트롤(−/%/+) - 모든 페이지 공통 ── */
