@@ -111,14 +111,17 @@
   background-color: #cbd5e1 !important; /* slate-300 */
 }
 
-/* 라이트 모드 경계선 */
+/* 라이트 모드 경계선 (선명한 2px 테두리 보장) */
+:root[data-theme="modern-light"] .border-slate-200,
+:root[data-theme="modern-light"] .border-slate-300,
+:root[data-theme="modern-light"] .border-slate-400,
+:root[data-theme="modern-light"] .border-slate-700,
+:root[data-theme="modern-light"] .border-slate-700\/80,
 :root[data-theme="modern-light"] .border-slate-800,
 :root[data-theme="modern-light"] .border-slate-800\/90,
 :root[data-theme="modern-light"] .border-slate-800\/80,
-:root[data-theme="modern-light"] .border-slate-800\/60,
-:root[data-theme="modern-light"] .border-slate-700,
-:root[data-theme="modern-light"] .border-slate-700\/80 {
-  border-color: #cbd5e1 !important; /* slate-300 */
+:root[data-theme="modern-light"] .border-slate-800\/60 {
+  border-color: #94a3b8 !important; /* slate-400 - 선명하고 또렷한 경계선 */
 }
 
 /* 라이트 모드 텍스트 고대비 보정 */
@@ -129,6 +132,7 @@
 :root[data-theme="modern-light"] .text-slate-100,
 :root[data-theme="modern-light"] .text-slate-200 {
   color: #0f172a !important; /* slate-900 */
+  font-weight: 700 !important;
 }
 
 /* 제목이나 카드 본문 등 일반 컨테이너의 text-white만 어둡게 변환 */
@@ -162,53 +166,59 @@
   stroke: #ffffff !important;
 }
 
-/* 비활성화 버튼(disabled) 라이트 모드 고대비 스타일링 */
+/* 비활성화 버튼(disabled) 라이트 모드 고대비 스타일링 - 흐릿함 완전 제거 */
 :root[data-theme="modern-light"] button:disabled,
 :root[data-theme="modern-light"] button[disabled] {
-  background-color: #e2e8f0 !important; /* slate-200 */
-  color: #94a3b8 !important; /* slate-400 */
-  border-color: #cbd5e1 !important; /* slate-300 */
+  background-color: #cbd5e1 !important; /* slate-300 */
+  color: #334155 !important; /* slate-700 - 선명하게 읽히는 진한 색상 */
+  border: 2px solid #94a3b8 !important; /* slate-400 */
+  font-weight: 700 !important;
   box-shadow: none !important;
   cursor: not-allowed !important;
 }
 
 :root[data-theme="modern-light"] button:disabled svg,
 :root[data-theme="modern-light"] button[disabled] svg {
-  color: #94a3b8 !important;
-  stroke: #94a3b8 !important;
+  color: #334155 !important;
+  stroke: #334155 !important;
 }
 
 /* 추천 프리셋 칩 버튼 라이트 모드 보정 */
 :root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80,
 :root[data-theme="modern-light"] .rounded-full.bg-slate-800 {
-  background-color: #f1f5f9 !important; /* slate-100 */
-  color: #334155 !important; /* slate-700 */
-  border-color: #cbd5e1 !important; /* slate-300 */
+  background-color: #ffffff !important;
+  color: #1e293b !important; /* slate-800 */
+  border: 1.5px solid #94a3b8 !important; /* slate-400 */
+  font-weight: 600 !important;
 }
 
 :root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80:hover,
 :root[data-theme="modern-light"] .rounded-full.bg-slate-800:hover {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #0f172a !important; /* slate-900 */
+  border-color: #0284c7 !important;
 }
 
 :root[data-theme="modern-light"] .text-slate-300,
 :root[data-theme="modern-light"] .text-slate-400 {
-  color: #334155 !important; /* slate-700 */
+  color: #334155 !important; /* slate-700 - 가독성 향상 */
+  font-weight: 500 !important;
 }
 
 :root[data-theme="modern-light"] .text-slate-500,
 :root[data-theme="modern-light"] .text-slate-600 {
-  color: #64748b !important; /* slate-500 */
+  color: #1e293b !important; /* slate-800 */
+  font-weight: 600 !important;
 }
 
-/* 라이트 모드 폼 컨트롤 */
+/* 라이트 모드 폼 컨트롤 (인풋, 셀렉트박스 선명한 테두리) */
 :root[data-theme="modern-light"] input,
 :root[data-theme="modern-light"] select,
 :root[data-theme="modern-light"] textarea {
   background-color: #ffffff !important;
   color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  border: 2px solid #94a3b8 !important; /* slate-400 */
+  font-weight: 500 !important;
 }
 
 :root[data-theme="modern-light"] select option {
@@ -218,33 +228,43 @@
 
 :root[data-theme="modern-light"] input::placeholder,
 :root[data-theme="modern-light"] textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #64748b !important; /* slate-500 - 또렷한 플레이스홀더 */
 }
 
 /* 라이트 모드 파스텔 텍스트 고대비 보정 (흰 배경에서도 또렷하게 보이도록 진한 톤 적용) */
 :root[data-theme="modern-light"] .text-sky-200,
-:root[data-theme="modern-light"] .text-sky-300 {
-  color: #0369a1 !important; /* sky-700 */
+:root[data-theme="modern-light"] .text-sky-300,
+:root[data-theme="modern-light"] .text-sky-400 {
+  color: #0284c7 !important; /* sky-600 */
+  font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-indigo-200,
-:root[data-theme="modern-light"] .text-indigo-300 {
+:root[data-theme="modern-light"] .text-indigo-300,
+:root[data-theme="modern-light"] .text-indigo-400 {
   color: #4338ca !important; /* indigo-700 */
+  font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-amber-200,
-:root[data-theme="modern-light"] .text-amber-300 {
+:root[data-theme="modern-light"] .text-amber-300,
+:root[data-theme="modern-light"] .text-amber-400 {
   color: #b45309 !important; /* amber-700 */
+  font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-emerald-200,
-:root[data-theme="modern-light"] .text-emerald-300 {
+:root[data-theme="modern-light"] .text-emerald-300,
+:root[data-theme="modern-light"] .text-emerald-400 {
   color: #047857 !important; /* emerald-700 */
+  font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-purple-200,
-:root[data-theme="modern-light"] .text-purple-300 {
+:root[data-theme="modern-light"] .text-purple-300,
+:root[data-theme="modern-light"] .text-purple-400 {
   color: #6b21a8 !important; /* purple-700 */
+  font-weight: 600 !important;
 }
 
 /* ==========================================================================
-   2. 사이버 다크 테마 (Cyber Dark Theme) 고대비 경계선 보강 (OLED 모드 완전 삭제)
+   2. 사이버 다크 테마 (Cyber Dark Theme) 고대비 경계선 보강 (선명한 구획감)
    ========================================================================== */
 :root:not([data-theme="modern-light"]) .border-slate-800,
 :root:not([data-theme="modern-light"]) .border-slate-800\/90,
@@ -254,7 +274,7 @@
 .dark .border-slate-800\/90,
 .dark .border-slate-800\/80,
 .dark .border-slate-800\/60 {
-  border-color: #334155 !important; /* slate-700으로 선명한 카드 및 패널 경계선 부여 */
+  border-color: #475569 !important; /* slate-600으로 선명한 카드 및 패널 경계선 부여 */
 }
 
 :root:not([data-theme="modern-light"]) .border-slate-700,
@@ -263,7 +283,25 @@
 .dark .border-slate-700,
 .dark .border-slate-700\/80,
 .dark .border-slate-700\/60 {
-  border-color: #475569 !important; /* slate-600으로 모달 및 주요 컨테이너 경계선 극대화 */
+  border-color: #64748b !important; /* slate-500으로 모달 및 주요 컨테이너 경계선 극대화 */
+}
+
+/* 다크 모드 텍스트 시인성 보정 (흐릿한 텍스트 방지) */
+:root:not([data-theme="modern-light"]) .text-slate-400,
+.dark .text-slate-400 {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+:root:not([data-theme="modern-light"]) .text-slate-500,
+.dark .text-slate-500 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+/* 텍스트 하단 잘림(Clipping) 방지 공통 클래스 */
+.text-safe-render {
+  line-height: 1.45 !important;
+  padding-bottom: 2px !important;
+  word-break: keep-all;
 }
 
 

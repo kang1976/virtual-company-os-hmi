@@ -20,7 +20,6 @@ import {
   X,
   Copy,
   Check,
-  FileText,
   HelpCircle,
   BookOpen,
   Kanban,
@@ -130,25 +129,25 @@ export const CommandBar: React.FC<CommandBarProps> = ({
   return (
     <div className="space-y-4">
       {/* CEO 지시 입력 메인 패널 */}
-      <div className="bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden backdrop-blur-sm transition-colors">
+      <div className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden backdrop-blur-sm transition-colors">
         {/* 상단 액센트 글로우 */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500" />
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500" />
 
         {/* 헤더 & 설명 */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 shrink-0">
+            <div className="p-2 rounded-lg bg-sky-500/10 border-2 border-sky-500/40 text-sky-600 dark:text-sky-400 shrink-0">
               <Terminal className="w-5 h-5" />
             </div>
             <div>
               <h2 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base md:text-lg flex items-center gap-1.5 sm:gap-2">
                 CEO 자율 지시 관제실
-                <span className="text-[10px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400">
                   (Executive Terminal)
                 </span>
               </h2>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
-                자연어로 지시를 내리면 가상 조직의 에이전트들이 협업 파이프라인을 자율 구동합니다.
+              <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 font-medium">
+                자연어로 지시를 내리면 가상 조직의 7대 에이전트가 2차 다층 검증 파이프라인을 자율 구동합니다.
               </p>
             </div>
           </div>
@@ -156,16 +155,16 @@ export const CommandBar: React.FC<CommandBarProps> = ({
           {/* 대상 팀 & 우선순위 셀렉터 */}
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {/* 우선순위 선택 */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-800 text-xs flex-1 sm:flex-initial">
-              <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">우선순위:</span>
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-lg border-2 border-slate-300 dark:border-slate-700 text-xs flex-1 sm:flex-initial shadow-sm">
+              <span className="text-slate-700 dark:text-slate-300 font-bold shrink-0">우선순위:</span>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
                 disabled={isExecuting}
-                className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer font-medium w-full sm:w-auto"
+                className="bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer font-bold w-full sm:w-auto"
               >
                 {PRIORITIES.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                  <option key={p.id} value={p.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-semibold">
                     {p.label}
                   </option>
                 ))}
@@ -173,33 +172,21 @@ export const CommandBar: React.FC<CommandBarProps> = ({
             </div>
 
             {/* 담당 팀 선택 */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-800 text-xs flex-1 sm:flex-initial">
-              <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">수신:</span>
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-lg border-2 border-slate-300 dark:border-slate-700 text-xs flex-1 sm:flex-initial shadow-sm">
+              <span className="text-slate-700 dark:text-slate-300 font-bold shrink-0">수신:</span>
               <select
                 value={targetTeam}
                 onChange={(e) => setTargetTeam(e.target.value)}
                 disabled={isExecuting}
-                className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer font-medium w-full sm:w-auto"
+                className="bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer font-bold w-full sm:w-auto"
               >
                 {TARGET_TEAMS.map((t) => (
-                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-semibold">
                     {t.label}
                   </option>
                 ))}
               </select>
             </div>
-
-            {/* 완수 보고서 상단 퀵 버튼 */}
-            {latestResult && (
-              <button
-                type="button"
-                onClick={() => setShowResultModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 text-xs font-bold shadow-sm transition-all active:scale-95 shrink-0 ml-auto sm:ml-0"
-              >
-                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>🏆 완수 보고서 열람</span>
-              </button>
-            )}
           </div>
         </div>
 
@@ -212,15 +199,15 @@ export const CommandBar: React.FC<CommandBarProps> = ({
               onChange={(e) => setInstruction(e.target.value)}
               disabled={isExecuting}
               placeholder="예: Omron PLC 모바일 제어 선행특허 동향 조사 및 FTO 회피설계 분석 지시"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all shadow-inner disabled:opacity-60 min-h-[44px]"
+              className="w-full bg-white dark:bg-slate-950 border-2 border-slate-400 dark:border-slate-600 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all shadow-inner font-medium disabled:opacity-60 min-h-[46px]"
             />
             <button
               type="submit"
               disabled={isExecuting || !instruction.trim()}
-              className={`min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shrink-0 ${
+              className={`min-h-[46px] px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shrink-0 border-2 ${
                 isExecuting || !instruction.trim()
-                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-300 dark:border-slate-700/60 cursor-not-allowed'
-                  : 'bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 active:scale-95 cursor-pointer text-white-force'
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 cursor-not-allowed shadow-none'
+                  : 'bg-sky-600 hover:bg-sky-500 text-white border-sky-600 shadow-md shadow-sky-600/30 active:scale-95 cursor-pointer text-white-force'
               }`}
             >
               {isExecuting ? (
@@ -239,7 +226,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
 
           {/* 에러 메시지 알림 */}
           {errorMsg && (
-            <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 rounded-xl text-xs animate-in fade-in">
+            <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950 border-2 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 rounded-xl text-xs font-medium animate-in fade-in">
               <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -247,8 +234,8 @@ export const CommandBar: React.FC<CommandBarProps> = ({
 
           {/* 추천 지시 프리셋 칩 목록 */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mr-1 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-sky-600 dark:text-sky-400" />
+            <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold mr-1 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
               추천 지시:
             </span>
             {PRESET_COMMANDS.map((preset, idx) => (
@@ -257,51 +244,40 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                 type="button"
                 onClick={() => handleSelectPreset(preset)}
                 disabled={isExecuting}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700/80 transition-all hover:border-sky-500 dark:hover:border-sky-500 active:scale-95 disabled:opacity-40"
+                className="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border-2 border-slate-300 dark:border-slate-700 transition-all hover:border-sky-500 dark:hover:border-sky-400 active:scale-95 disabled:opacity-40 shadow-sm"
               >
                 {preset}
               </button>
             ))}
           </div>
 
-          {/* 결과 확인 방법 실시간 팁 배너 */}
-          <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sky-600 dark:text-sky-400">💡 결과물 확인 안내:</span>
-              <span>지시 발령 시 5대 전문 에이전트가 협업하여 즉시</span>
-              <strong className="text-indigo-600 dark:text-indigo-400 underline cursor-pointer" onClick={() => onNavigateTab?.('kanban')}>[칸반 보드]</strong>
+          {/* 결과 확인 방법 실시간 팁 배너 (중복 완수보고서 버튼 제거) */}
+          <div className="pt-2.5 border-t-2 border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-sky-700 dark:text-sky-400">💡 결과물 확인 경로:</span>
+              <span>지시 발령 시 7대 전문 에이전트가 협업하여 즉시</span>
+              <strong className="text-indigo-700 dark:text-indigo-400 font-bold underline cursor-pointer hover:text-indigo-600" onClick={() => onNavigateTab?.('kanban')}>[칸반 보드]</strong>
               <span>와</span>
-              <strong className="text-emerald-600 dark:text-emerald-400 underline cursor-pointer" onClick={() => onNavigateTab?.('ledgers')}>[4대 장부 원장]</strong>
-              <span>에 영구 기록됩니다.</span>
+              <strong className="text-emerald-700 dark:text-emerald-400 font-bold underline cursor-pointer hover:text-emerald-600" onClick={() => onNavigateTab?.('ledgers')}>[4대 장부 원장]</strong>
+              <span>에 4단계로 영구 기록됩니다.</span>
             </div>
-            {latestResult && (
-              <button
-                type="button"
-                onClick={() => setShowResultModal(true)}
-                className="text-xs font-bold px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 shadow-sm flex items-center gap-1.5 ml-auto active:scale-95 transition-all"
-              >
-                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>🏆 최근 완수 보고서 열람 ({latestResult.command_id})</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
         </form>
 
-        {/* 자율 실행 중 실시간 파이프라인 5단계 스테퍼 */}
+        {/* 자율 실행 중 실시간 파이프라인 7단계 스테퍼 */}
         {isExecuting && (
-          <div className="mt-4 pt-4 border-t border-slate-800/80">
+          <div className="mt-4 pt-4 border-t-2 border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-xs font-semibold text-sky-400 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-                5단계 에이전트 파이프라인 자율 수행 중
+              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping" />
+                7단계 다층 재검증 파이프라인 자율 수행 중
               </span>
-              <span className="text-xs text-slate-400 font-mono">
-                진행: {executionStage}/5
+              <span className="text-xs text-slate-700 dark:text-slate-300 font-mono font-bold">
+                진행: {executionStage}/7
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
               {PIPELINE_STEPS.map((item) => {
                 const IconComponent = item.icon;
                 const isCurrent = executionStage === item.step;
@@ -309,32 +285,32 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                 return (
                   <div
                     key={item.step}
-                    className={`p-2.5 rounded-xl border text-xs transition-all ${
+                    className={`p-2.5 rounded-xl border-2 text-xs transition-all ${
                       isCurrent
-                        ? 'bg-sky-950/50 border-sky-500/60 shadow-md shadow-sky-500/10 ring-1 ring-sky-500/30'
+                        ? 'bg-sky-50 dark:bg-sky-950/80 border-sky-500 text-sky-950 dark:text-sky-100 shadow-md ring-2 ring-sky-500/30 font-bold'
                         : isPassed
-                        ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-                        : 'bg-slate-950/50 border-slate-800/80 text-slate-500'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-semibold'
+                        : 'bg-slate-50 dark:bg-slate-950/60 border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold flex items-center gap-1 text-[11px] sm:text-xs">
+                      <span className="font-bold flex items-center gap-1 text-[11px] sm:text-xs">
                         <IconComponent
                           className={`w-3.5 h-3.5 ${
-                            isCurrent ? 'text-sky-400 animate-bounce' : isPassed ? 'text-emerald-400' : 'text-slate-600'
+                            isCurrent ? 'text-sky-600 dark:text-sky-400 animate-bounce' : isPassed ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'
                           }`}
                         />
                         {item.name}
                       </span>
                       {isPassed ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       ) : isCurrent ? (
-                        <Clock className="w-3.5 h-3.5 text-sky-400 animate-spin" />
+                        <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 animate-spin" />
                       ) : (
-                        <span className="text-[10px] text-slate-600">대기</span>
+                        <span className="text-[10px] text-slate-400 font-normal">대기</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-400 leading-tight line-clamp-1">{item.desc}</p>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight line-clamp-1">{item.desc}</p>
                   </div>
                 );
               })}
@@ -345,50 +321,50 @@ export const CommandBar: React.FC<CommandBarProps> = ({
 
       {/* 최근 실행 결과 브리핑 카드 */}
       {latestResult && (
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-lg relative transition-colors">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-4 sm:p-5 shadow-xl relative transition-colors">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b-2 border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
+              <div className="p-2 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-slate-900 dark:text-white text-xs sm:text-sm">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                     최근 명령 처리 브리핑
                   </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-                    {latestResult.status === 'SUCCESS' ? '수행 완료' : latestResult.status}
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400 dark:border-emerald-700">
+                    {latestResult.status === 'SUCCESS' ? '전 공정 검증 완료' : latestResult.status}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
-                  <span>프로젝트: <strong className="text-slate-800 dark:text-slate-200">{latestResult.project_id}</strong></span>
+                <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-600 dark:text-slate-300 mt-1 font-mono">
+                  <span>프로젝트: <strong className="text-slate-900 dark:text-white font-bold">{latestResult.project_id}</strong></span>
                   <span>·</span>
-                  <span>지시: <strong className="text-slate-800 dark:text-slate-200">{latestResult.command_id}</strong></span>
+                  <span>지시: <strong className="text-slate-900 dark:text-white font-bold">{latestResult.command_id}</strong></span>
                 </div>
               </div>
             </div>
 
-            {/* 완수 보고서 팝업 및 탭 이동 숏컷 버튼군 */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {/* 완수 보고서 팝업 및 탭 이동 단일 대표 액션 버튼군 */}
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setShowResultModal(true)}
-                className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs text-white font-medium shadow-sm transition-colors text-white-force"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-xs text-white font-bold shadow-md ring-1 ring-sky-400/50 transition-all active:scale-95 text-white-force cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
-                <span>🏆 완수 보고서 열람</span>
+                <Award className="w-4 h-4 text-amber-300" />
+                <span>🏆 CEO 업무 완수 종합 보고서 열람</span>
               </button>
               {onNavigateTab && (
                 <>
                   <button
                     onClick={() => onNavigateTab('kanban')}
-                    className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 transition-colors"
+                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs text-slate-800 dark:text-slate-200 font-bold border-2 border-slate-300 dark:border-slate-700 transition-colors shadow-sm cursor-pointer"
                   >
                     <span>칸반 보드</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => onNavigateTab('ledgers')}
-                    className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 transition-colors"
+                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs text-slate-800 dark:text-slate-200 font-bold border-2 border-slate-300 dark:border-slate-700 transition-colors shadow-sm cursor-pointer"
                   >
                     <FolderOpen className="w-3.5 h-3.5" />
                     <span>4대 장부 원장</span>
@@ -534,24 +510,23 @@ export const CommandBar: React.FC<CommandBarProps> = ({
               </div>
             </div>
 
-            {/* 모달 본문 정보 스크롤 영역 */}
-            <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
+            {/* 모달 본문 정보 스크롤 영역 (하단 pb-14로 잘림 방지 및 여백 확보) */}
+            <div className="p-5 pb-14 flex-1 overflow-y-auto space-y-5 text-xs">
               {/* 1. 총괄 요약 브리핑 */}
-              <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border-2 border-slate-300 dark:border-slate-700">
-
-                <div className="flex items-center justify-between mb-1.5">
+              <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border-2 border-slate-300 dark:border-slate-700 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
                   <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs sm:text-sm">
                     <Terminal className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     총괄 수행 요약 (COO 브리핑)
                   </span>
                   <button
                     onClick={() => handleCopyResult(latestResult.summary || '')}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] transition-colors"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-medium transition-colors border border-slate-300 dark:border-slate-700"
                   >
                     {copiedSummary ? (
                       <>
                         <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-emerald-600 dark:text-emerald-400 font-medium">복사됨!</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">복사됨!</span>
                       </>
                     ) : (
                       <>
@@ -561,61 +536,61 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                     )}
                   </button>
                 </div>
-                <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-sans whitespace-pre-wrap">
+                <div className="text-slate-800 dark:text-slate-200 leading-relaxed font-sans whitespace-pre-wrap text-safe-render">
                   {latestResult.summary || '전 공정 검증 완료 및 4대 장부 최종 마감되었습니다.'}
                 </div>
               </div>
 
               {/* 2. COO 최종 품질검수 감사 결과 */}
               {latestResult.coo_audit && (
-                <div className="bg-indigo-50/50 dark:bg-slate-950/90 rounded-xl p-4 border border-indigo-200 dark:border-indigo-900/60">
+                <div className="bg-indigo-50/70 dark:bg-slate-950/90 rounded-xl p-4 border-2 border-indigo-200 dark:border-indigo-900/80 shadow-sm">
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-indigo-200 dark:border-slate-800">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span className="font-bold text-slate-900 dark:text-white">COO 전사 최종 품질 종합검수 (Quality Gate) 감사 리포트</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">COO 전사 최종 품질 종합검수 (Quality Gate) 감사 리포트</span>
                     </div>
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                         latestResult.coo_audit.approved
-                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                          : 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                          : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700'
                       }`}
                     >
                       {latestResult.coo_audit.approved ? '최종 마감 승인 (CLOSED)' : '재검토 권고 (REVISION)'}
                     </span>
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 mb-3 leading-relaxed">
+                  <p className="text-slate-800 dark:text-slate-200 mb-3 leading-relaxed text-safe-render">
                     {latestResult.coo_audit.executive_summary}
                   </p>
                   {latestResult.coo_audit.checked_items && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3 bg-white dark:bg-slate-900/80 p-2.5 rounded-lg border border-indigo-100 dark:border-slate-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3 bg-white dark:bg-slate-900 p-2.5 rounded-lg border-2 border-indigo-100 dark:border-slate-800">
                       {latestResult.coo_audit.checked_items.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400">
                           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                          <span className="text-slate-700 dark:text-slate-300 truncate">{item}</span>
+                          <span className="text-slate-800 dark:text-slate-200 truncate font-medium">{item}</span>
                         </div>
                       ))}
                     </div>
                   )}
                   {latestResult.coo_audit.directive_feedback && (
-                    <div className="text-[11px] text-indigo-700 dark:text-indigo-300 italic bg-white/50 dark:bg-slate-900/40 p-2 rounded border border-indigo-100 dark:border-slate-800/60">
+                    <div className="text-[11px] text-indigo-900 dark:text-indigo-300 italic bg-white dark:bg-slate-900/80 p-2.5 rounded-lg border border-indigo-200 dark:border-slate-800/80 leading-relaxed text-safe-render">
                       &bull; COO 총평: {latestResult.coo_audit.directive_feedback}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* 3. 생성된 세부 공정별 산출물 태스크 목록 */}
+              {/* 3. 생성된 세부 공정별 산출물 태스크 목록 (고대비 2px 보더 및 텍스트 잘림 방지) */}
               {latestResult.completed_tasks && latestResult.completed_tasks.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs sm:text-sm">
                       <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       공정별 개별 산출물 ({latestResult.completed_tasks.length}건)
                     </span>
-                    <span className="text-[11px] text-slate-500">카드를 클릭하면 상세 원장 팝업이 열립니다</span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">카드를 클릭하면 상세 원장 팝업이 열립니다</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {latestResult.completed_tasks.map((task) => (
                       <div
                         key={task.id}
@@ -623,23 +598,23 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                           setShowResultModal(false);
                           onSelectDeliverable?.(task);
                         }}
-                        className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-sky-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer group shadow-sm"
+                        className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 hover:border-sky-500 dark:hover:border-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800/90 transition-all cursor-pointer group shadow-sm text-safe-render"
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-mono text-xs text-sky-600 dark:text-sky-400 font-semibold">{task.id}</span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="font-mono text-xs text-sky-700 dark:text-sky-400 font-bold">{task.id}</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                             {task.status}
                           </span>
                         </div>
-                        <h5 className="font-semibold text-slate-900 dark:text-white text-xs mb-1 group-hover:text-sky-600 dark:group-hover:text-sky-300 line-clamp-1">
+                        <h5 className="font-bold text-slate-900 dark:text-white text-xs mb-1.5 group-hover:text-sky-600 dark:group-hover:text-sky-300 line-clamp-1">
                           {task.title}
                         </h5>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
+                        <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed mb-2.5 text-safe-render line-clamp-2">
                           {task.deliverable || '산출물이 원장에 동기화되었습니다.'}
                         </p>
-                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-slate-800/80 text-[10px] text-slate-500">
-                          <span>담당: <strong className="text-slate-700 dark:text-slate-300">{task.assignee}</strong></span>
-                          <span className="text-sky-600 dark:text-sky-400 flex items-center gap-0.5 group-hover:underline">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-400">
+                          <span>담당: <strong className="text-slate-900 dark:text-slate-200 font-bold">{task.assignee}</strong></span>
+                          <span className="text-sky-700 dark:text-sky-400 font-semibold flex items-center gap-0.5 group-hover:underline">
                             <span>4단계 원장 보기</span>
                             <ExternalLink className="w-3 h-3" />
                           </span>
@@ -651,8 +626,8 @@ export const CommandBar: React.FC<CommandBarProps> = ({
               )}
             </div>
 
-            {/* 모달 하단 액션 바 */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 flex flex-wrap items-center justify-between gap-2">
+            {/* 모달 하단 액션 바 (고대비 2px 보더 및 뚜렷한 배경) */}
+            <div className="p-4 border-t-2 border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/95 flex flex-wrap items-center justify-between gap-2 shadow-inner">
               <div className="flex items-center gap-2">
                 {onNavigateTab && (
                   <>
@@ -661,7 +636,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                         setShowResultModal(false);
                         onNavigateTab('ledgers');
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center gap-1 text-white-force"
+                      className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 text-white-force shadow-sm border border-emerald-500"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>🏛️ 4대 장부(특허 원장) 바로 열람</span>
@@ -671,7 +646,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                         setShowResultModal(false);
                         onNavigateTab('kanban');
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors flex items-center gap-1 text-white-force"
+                      className="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 text-white-force shadow-sm border border-indigo-500"
                     >
                       <Kanban className="w-3.5 h-3.5" />
                       <span>📊 5단계 칸반 보드 이동</span>
@@ -681,7 +656,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
               </div>
               <button
                 onClick={() => setShowResultModal(false)}
-                className="px-4 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-medium text-xs transition-colors"
+                className="px-5 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors border border-slate-300 dark:border-slate-600"
               >
                 닫기
               </button>

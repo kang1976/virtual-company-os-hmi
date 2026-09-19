@@ -319,15 +319,15 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
   }, [tree, searchQuery]);
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px] sm:h-[750px] backdrop-blur-sm">
+    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px] sm:h-[750px] backdrop-blur-sm">
       {/* 모바일 화면 전용 상단 탭 전환 바 (md 미만에서만 표시) */}
-      <div className="flex md:hidden border-b border-slate-800 bg-slate-950 p-2 gap-1.5 shrink-0">
+      <div className="flex md:hidden border-b-2 border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 p-2 gap-1.5 shrink-0">
         <button
           onClick={() => setMobileTab('tree')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
             mobileTab === 'tree'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-slate-900 text-slate-400 border border-slate-800'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
@@ -335,10 +335,10 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
         </button>
         <button
           onClick={() => setMobileTab('content')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
             mobileTab === 'content'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-slate-900 text-slate-400 border border-slate-800'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
           }`}
         >
           <FileCode className="w-3.5 h-3.5" />
@@ -350,15 +350,15 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
 
       {/* 좌측 패널: 4대 장부 폴더 트리 탐색기 */}
       <div
-        className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex-col bg-slate-950/70 ${
+        className={`w-full md:w-80 lg:w-96 border-b-2 md:border-b-0 md:border-r-2 border-slate-300 dark:border-slate-800 flex-col bg-slate-50 dark:bg-slate-950/70 ${
           mobileTab === 'tree' ? 'flex flex-1 md:flex-initial' : 'hidden md:flex'
         }`}
       >
         {/* 탐색기 상단 헤더 & 새로고침 */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-emerald-400">
+        <div className="p-4 border-b-2 border-slate-300 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
             <BookOpen className="w-4 h-4" />
-            <span className="font-bold text-sm text-white">4대 장부 탐색기</span>
+            <span className="font-bold text-sm text-slate-900 dark:text-white">4대 장부 탐색기</span>
           </div>
           <button
             onClick={fetchTree}

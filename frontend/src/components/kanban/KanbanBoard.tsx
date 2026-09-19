@@ -376,14 +376,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           return (
             <div
               key={col.id}
-              className="bg-slate-900/60 border border-slate-800/90 rounded-xl overflow-hidden flex flex-col min-h-[380px] shadow-sm"
+              className="bg-slate-50 dark:bg-slate-900/60 border-2 border-slate-300 dark:border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[380px] shadow-sm"
             >
               {/* 컬럼 헤더 */}
-              <div className={`px-3 py-2.5 border-b border-slate-800 flex items-center justify-between ${col.headerBg}`}>
+              <div className={`px-3 py-2.5 border-b-2 border-slate-300 dark:border-slate-800 flex items-center justify-between ${col.headerBg}`}>
                 <div className="flex items-center gap-1.5">
-                  <ColIcon className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="font-bold text-xs text-white">{col.label}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">({col.subLabel})</span>
+                  <ColIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <span className="font-bold text-xs text-slate-900 dark:text-white">{col.label}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">({col.subLabel})</span>
                 </div>
                 <span
                   className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full border ${col.badgeBg} ${col.badgeText} border-current/20`}
@@ -395,7 +395,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               {/* 태스크 카드 목록 컨테이너 */}
               <div className="p-2 flex-1 space-y-2.5 overflow-y-auto max-h-[calc(100vh-320px)] scrollbar-thin">
                 {colTasks.length === 0 ? (
-                  <div className="h-32 flex flex-col items-center justify-center text-center p-3 border border-dashed border-slate-800/80 rounded-lg text-slate-600 text-xs">
+                  <div className="h-32 flex flex-col items-center justify-center text-center p-3 border-2 border-dashed border-slate-300 dark:border-slate-800/80 rounded-lg text-slate-500 dark:text-slate-600 text-xs">
                     <span>태스크 없음</span>
                   </div>
                 ) : (
@@ -409,22 +409,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       <div
                         key={task.id}
                         onClick={() => setActiveModalTask(task)}
-                        className="p-3 bg-slate-950/90 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-lg shadow transition-all cursor-pointer group relative overflow-hidden"
+                        className="p-3 bg-white dark:bg-slate-950/90 hover:bg-slate-100 dark:hover:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-lg shadow-sm transition-all cursor-pointer group relative overflow-hidden text-safe-render"
                       >
                         {/* 카드 상단: ID 및 우선순위 */}
                         <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className="text-[10px] font-mono text-slate-400 group-hover:text-indigo-400 transition-colors">
+                          <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {task.id}
                           </span>
                           <span
-                            className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${priorityStyle.badge}`}
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${priorityStyle.badge}`}
                           >
                             {priorityStyle.text}
                           </span>
                         </div>
 
                         {/* 카드 본문: 타이틀 */}
-                        <h4 className="text-xs font-semibold text-slate-200 group-hover:text-white leading-snug line-clamp-2 mb-2">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-white leading-snug line-clamp-2 mb-2">
                           {task.title}
                         </h4>
 

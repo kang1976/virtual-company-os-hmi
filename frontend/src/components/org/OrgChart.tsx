@@ -12,6 +12,7 @@ import {
   Briefcase,
   Lock,
   Palette,
+  Eye,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -219,6 +220,27 @@ const AGENT_NODES: OrgAgentNode[] = [
     accentBg: 'bg-teal-950/40',
     icon: CheckCircle2,
   },
+  {
+    id: 'VISUAL_QA',
+    name: 'VisualQAAgent',
+    koreanName: '시각·접근성 감리관',
+    role: 'WCAG 2.1 AA 고대비 4.5:1 및 시각적 결함(잘림/경계선) 전수 감리',
+    team: '디자인감리실 (Visual QA)',
+    isHuman: false,
+    model: 'Gemini 2.5 Pro',
+    description: '라이트/다크 테마 환경에서 카드 경계선 시인성(2px 보더), 텍스트 하단 잘림(Clipping), 명암비(4.5:1 이상) 및 UI 중복 요소를 전수 실측 감리하여 최종 시각 품질 승인을 판정합니다.',
+    responsibilities: [
+      'WCAG 2.1 AA 명암비 4.5:1 이상 전수 실측 및 보정 명령',
+      '카드 및 패널 2px 고대비 테두리 구획선 필수 검증',
+      '텍스트 하단 잘림(Descender Clipping) 및 폰트 깨짐 0건 검증',
+      '버튼 및 액션 요소 중복 난립 감리 및 단일화 승인',
+      '라이트/다크 듀얼 테마 시각 완성도 최종 인가 (VISUAL_PASS)',
+    ],
+    color: 'text-pink-400',
+    borderColor: 'border-pink-500/50',
+    accentBg: 'bg-pink-950/40',
+    icon: Eye,
+  },
 ];
 
 export const OrgChart: React.FC<OrgChartProps> = ({
@@ -269,6 +291,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         if (executionStage === 6) return { status: '2차 스트레스 재검증 중...', color: 'bg-teal-400', isPulse: true };
         if (executionStage > 6) return { status: '재검증 인증(PASS)', color: 'bg-emerald-500', isPulse: false };
       }
+      if (agentId === 'VISUAL_QA') {
+        if (executionStage === 6) return { status: '시각/접근성 감리 중...', color: 'bg-pink-400', isPulse: true };
+        if (executionStage > 6) return { status: '시각 인가(VISUAL_PASS)', color: 'bg-emerald-500', isPulse: false };
+      }
     }
 
     // 실제 tasks 기록 기반 상태 확인
@@ -281,6 +307,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
       if (agentId === 'QA' && a.includes('qa') && !a.includes('senior')) return true;
       if (agentId === 'SECOPS' && (a.includes('secops') || a.includes('감리'))) return true;
       if (agentId === 'SENIOR_QA' && (a.includes('senior') || a.includes('재검증'))) return true;
+      if (agentId === 'VISUAL_QA' && (a.includes('visual') || a.includes('접근성') || a.includes('디자인감리') || a.includes('시각'))) return true;
       if (agentId === 'COO' && a.includes('coo')) return true;
       return false;
     });
@@ -307,26 +334,26 @@ export const OrgChart: React.FC<OrgChartProps> = ({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* 헤더 안내 바 */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-sm">
+      {/* 헤더 안내 바 (고대비 2px 보더 및 뚜렷한 가독성) */}
+      <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-sm">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
+          <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 shrink-0">
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-              가상 회사 조직도 및 2차 다층 재검증 체계
+            <h2 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2">
+              가상 회사 조직도 및 3대 품질·보안·시각 감리 체계
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-400">
-              인간 CEO 지시 → COO 총괄 분해 → 1차 전문 실무(특허·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA)
+            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
+              인간 CEO 지시 → COO 총괄 분해 → 1차 전문 실무(특허·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA) → 시각·접근성 감리(Visual QA)
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs w-full sm:w-auto justify-end">
-          <span className="px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800 flex items-center gap-1.5 text-[11px]">
+          <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-800 flex items-center gap-1.5 text-[11px] font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            자율 에이전트 8개체 가동 중 (1차 + 2차 재검증관)
+            자율 에이전트 9개체 가동 중 (1차 + 2차 재검증 + 시각감리관)
           </span>
         </div>
       </div>
@@ -334,7 +361,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
       {/* 조직도 계층 뷰어 & 상세 모달/사이드 패널 그리드 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* 좌측 2열: 계층도 시각화 */}
-        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden backdrop-blur-sm flex flex-col items-center">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden backdrop-blur-sm flex flex-col items-center">
           {/* 계층 1: 인간 CEO */}
           <div className="w-full max-w-md flex flex-col items-center">
             {renderAgentCard(ceoNode, getAgentStatus('CEO'), selectedAgent?.id === 'CEO', () => setSelectedAgent(ceoNode))}
@@ -348,10 +375,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
             {renderAgentCard(cooNode, getAgentStatus('COO'), selectedAgent?.id === 'COO', () => setSelectedAgent(cooNode))}
           </div>
 
-          {/* 연결선 2 (수평 분기선) */}
+          {/* 연결선 2 (수평 분기선 - 8대 전문 에이전트 연결) */}
           <div className="w-full max-w-4xl flex flex-col items-center my-1 hidden sm:flex">
             <div className="h-4 w-0.5 bg-sky-500/80" />
-            <div className="w-[94%] h-0.5 bg-slate-700" />
+            <div className="w-[94%] h-0.5 bg-slate-300 dark:bg-slate-700" />
             <div className="w-[94%] flex justify-between">
               <div className="h-4 w-0.5 bg-purple-500/80" />
               <div className="h-4 w-0.5 bg-cyan-500/80" />
@@ -360,6 +387,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
               <div className="h-4 w-0.5 bg-emerald-500/80" />
               <div className="h-4 w-0.5 bg-red-500/80" />
               <div className="h-4 w-0.5 bg-teal-500/80" />
+              <div className="h-4 w-0.5 bg-pink-500/80" />
             </div>
           </div>
 
@@ -382,46 +410,46 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         </div>
 
         {/* 우측 1열: 선택된 에이전트 상세 프로필 */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-sm flex flex-col">
+        <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-sm flex flex-col">
           {selectedAgent ? (
             <div className="space-y-4 sm:space-y-5 flex-1 flex flex-col">
               {/* 상단 프로필 헤더 */}
-              <div className="flex items-start justify-between pb-3 sm:pb-4 border-b border-slate-800">
+              <div className="flex items-start justify-between pb-3 sm:pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className={`p-2.5 sm:p-3 rounded-xl ${selectedAgent.accentBg} border ${selectedAgent.borderColor} ${selectedAgent.color} shrink-0`}>
                     <selectedAgent.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
                       {selectedAgent.team}
                     </span>
-                    <h3 className="font-bold text-base sm:text-lg text-white leading-tight">
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white leading-tight">
                       {selectedAgent.koreanName}
                     </h3>
-                    <span className="text-xs font-mono text-slate-400">{selectedAgent.name}</span>
+                    <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{selectedAgent.name}</span>
                   </div>
                 </div>
               </div>
 
               {/* 상태 및 엔진 뱃지 */}
               <div className="grid grid-cols-2 gap-2.5">
-                <div className="bg-slate-950/80 p-2.5 sm:p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] sm:text-[11px] text-slate-500 block mb-1">실시간 상태</span>
+                <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 block mb-1 font-medium">실시간 상태</span>
                   <div className="flex items-center gap-1.5">
                     <span
                       className={`w-2 h-2 rounded-full ${getAgentStatus(selectedAgent.id).color} ${
                         getAgentStatus(selectedAgent.id).isPulse ? 'animate-ping' : ''
                       }`}
                     />
-                    <span className="text-xs font-medium text-slate-200 truncate">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                       {getAgentStatus(selectedAgent.id).status}
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-slate-950/80 p-2.5 sm:p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] sm:text-[11px] text-slate-500 block mb-1">지능 엔진</span>
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-sky-400 truncate">
+                <div className="bg-slate-50 dark:bg-slate-950/80 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 block mb-1 font-medium">지능 엔진</span>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-sky-700 dark:text-sky-400 truncate">
                     <BrainCircuit className="w-3.5 h-3.5 shrink-0" />
                     <span>{selectedAgent.model}</span>
                   </div>
@@ -430,28 +458,28 @@ export const OrgChart: React.FC<OrgChartProps> = ({
 
               {/* 역할 설명 */}
               <div>
-                <span className="text-xs font-semibold text-slate-300 block mb-1.5 flex items-center gap-1.5">
-                  <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-200 block mb-1.5 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   주요 역할 및 미션
                 </span>
-                <p className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-safe-render">
                   {selectedAgent.description}
                 </p>
               </div>
 
               {/* 핵심 담당 업무 목록 */}
               <div className="flex-1">
-                <span className="text-xs font-semibold text-slate-300 block mb-2 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-200 block mb-2 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   책임 업무 (Responsibilities)
                 </span>
                 <ul className="space-y-1.5">
                   {selectedAgent.responsibilities.map((resp, idx) => (
                     <li
                       key={idx}
-                      className="text-xs text-slate-300 bg-slate-950/40 px-2.5 py-1.5 rounded-lg border border-slate-800/60 flex items-start gap-2"
+                      className="text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-950/40 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 flex items-start gap-2 text-safe-render font-medium"
                     >
-                      <span className="text-sky-500 font-bold">•</span>
+                      <span className="text-sky-600 dark:text-sky-400 font-bold">•</span>
                       <span>{resp}</span>
                     </li>
                   ))}
@@ -459,9 +487,9 @@ export const OrgChart: React.FC<OrgChartProps> = ({
               </div>
 
               {/* 푸터 배너 */}
-              <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-                <span>자율 에이전트 V4.0 프로토콜</span>
-                <span className="text-sky-400 font-medium">활성 가동</span>
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
+                <span>자율 에이전트 V4.5 프로토콜</span>
+                <span className="text-sky-600 dark:text-sky-400 font-bold">9개체 활성 가동</span>
               </div>
             </div>
           ) : (
@@ -486,10 +514,10 @@ function renderAgentCard(
   return (
     <div
       onClick={onClick}
-      className={`w-full p-3 sm:p-4 rounded-xl border cursor-pointer transition-all duration-200 relative group overflow-hidden ${
+      className={`w-full p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 relative group overflow-hidden ${
         isSelected
-          ? `${agent.accentBg} ${agent.borderColor} ring-2 ring-sky-500/40 shadow-lg shadow-sky-500/10`
-          : 'bg-slate-950/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80'
+          ? `${agent.accentBg} ${agent.borderColor} ring-2 ring-sky-500/50 shadow-lg shadow-sky-500/10`
+          : 'bg-white dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 hover:border-sky-400 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-900/80 shadow-sm'
       }`}
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -498,8 +526,8 @@ function renderAgentCard(
             <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
           <div>
-            <span className="text-[9px] sm:text-[10px] font-semibold text-slate-400 block truncate">{agent.team}</span>
-            <h4 className="font-bold text-xs sm:text-sm text-white leading-tight truncate">
+            <span className="text-[9px] sm:text-[10px] font-semibold text-slate-500 dark:text-slate-400 block truncate">{agent.team}</span>
+            <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-tight truncate">
               {agent.koreanName}
             </h4>
           </div>
@@ -515,13 +543,13 @@ function renderAgentCard(
         </div>
       </div>
 
-      <div className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-1 mb-1.5">
+      <div className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 mb-1.5 font-medium">
         {agent.role}
       </div>
 
-      <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/80 text-[9px] sm:text-[10px]">
-        <span className="text-slate-500 font-mono truncate">{agent.name}</span>
-        <span className="font-medium text-slate-300 truncate ml-1">{liveStatus.status}</span>
+      <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-slate-800 text-[9px] sm:text-[10px]">
+        <span className="text-slate-500 dark:text-slate-400 font-mono truncate">{agent.name}</span>
+        <span className="font-bold text-slate-700 dark:text-slate-300 truncate ml-1">{liveStatus.status}</span>
       </div>
     </div>
   );
