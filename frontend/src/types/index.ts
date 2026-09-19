@@ -24,6 +24,8 @@ export interface TaskItem {
   execution_plan?: string | null;
   action_log?: string | null;
   verification_checklist?: string | null;
+  elapsed_seconds?: number | null;
+  latency_status?: 'SMOOTH' | 'ACTIVE' | 'LAG' | 'BOTTLENECK' | string | null;
 }
 
 export interface ProjectItem {

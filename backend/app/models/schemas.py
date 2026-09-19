@@ -40,6 +40,8 @@ class TaskCreate(BaseModel):
     execution_plan: Optional[str] = None
     action_log: Optional[str] = None
     verification_checklist: Optional[str] = None
+    elapsed_seconds: Optional[float] = 0.0
+    latency_status: Optional[str] = "SMOOTH"
 
 class TaskResponse(BaseModel):
     id: str
@@ -54,4 +56,6 @@ class TaskResponse(BaseModel):
     execution_plan: Optional[str] = None
     action_log: Optional[str] = None
     verification_checklist: Optional[str] = None
+    elapsed_seconds: Optional[float] = 0.0
+    latency_status: Optional[str] = "SMOOTH"
 

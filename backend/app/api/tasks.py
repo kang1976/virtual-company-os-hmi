@@ -25,6 +25,8 @@ async def list_tasks():
                 "execution_plan": t.execution_plan,
                 "action_log": t.action_log,
                 "verification_checklist": t.verification_checklist,
+                "elapsed_seconds": getattr(t, "elapsed_seconds", 0.0) or 0.0,
+                "latency_status": getattr(t, "latency_status", "SMOOTH") or "SMOOTH",
             }
             for t in tasks
         ]

@@ -17,6 +17,8 @@ import { CommandBar } from './components/ceo/CommandBar';
 import { KanbanBoard } from './components/kanban/KanbanBoard';
 import { LedgerViewer } from './components/ledgers/LedgerViewer';
 import { OrgChart } from './components/org/OrgChart';
+import { ProcessGraph } from './components/dashboard/ProcessGraph';
+import { LagBottleneckRadar } from './components/dashboard/LagBottleneckRadar';
 import { getHealth, getTasks, postCommand, resetSystemData, getLatestCommand } from './api/client';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useTheme } from './hooks/useTheme';
@@ -304,7 +306,25 @@ export default function App() {
               }}
             />
 
-            {/* 2. 핵심 운영 지표 KPI 위젯 그리드 (관제 모니터링 고대비 2px 구획) */}
+            {/* 2. [신설] CEO 실시간 오케스트레이션 공정 그래프 (Process Flow Graph) */}
+            <ProcessGraph
+              isExecuting={isExecutingCommand}
+              executionStage={executionStage}
+              tasks={tasks}
+              onSelectDeliverable={(task) => {
+                setSelectedDeliverableTask(task);
+                setActiveTab('kanban');
+              }}
+            />
+
+            {/* 3. [신설] 에이전트 실시간 지연 및 랙(병목) 감지 레이더 (Lag & Bottleneck Radar) */}
+            <LagBottleneckRadar
+              isExecuting={isExecutingCommand}
+              executionStage={executionStage}
+              tasks={tasks}
+            />
+
+            {/* 4. 핵심 운영 지표 KPI 위젯 그리드 (관제 모니터링 고대비 2px 구획) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
                 <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1 font-medium">
