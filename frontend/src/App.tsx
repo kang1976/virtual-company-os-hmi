@@ -304,49 +304,49 @@ export default function App() {
               }}
             />
 
-            {/* 2. 핵심 운영 지표 KPI 위젯 그리드 */}
+            {/* 2. 핵심 운영 지표 KPI 위젯 그리드 (관제 모니터링 고대비 2px 구획) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1">
+              <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1 font-medium">
                   <span>총 누적 태스크</span>
                   <Activity className="w-4 h-4 text-sky-500" />
                 </div>
                 <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{totalTaskCount}건</div>
-                <span className="text-[11px] text-sky-600 dark:text-sky-400 flex items-center gap-1 mt-1 font-medium">
+                <span className="text-[11px] text-sky-600 dark:text-sky-400 flex items-center gap-1 mt-1 font-bold">
                   <TrendingUp className="w-3 h-3" />
                   실시간 전사 업무 누계
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1">
+              <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1 font-medium">
                   <span>검증 종결 (CLOSED)</span>
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 </div>
                 <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{closedTaskCount}건</div>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-1 font-medium">
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-1 font-bold">
                   독립 QA 품질 승인 마감
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1">
+              <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1 font-medium">
                   <span>진행 및 심사 중</span>
                   <Clock className="w-4 h-4 text-amber-500" />
                 </div>
                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 font-mono">{inProgressCount}건</div>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">
+                <span className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 block font-medium">
                   {blockedCount > 0 ? `반려/차단: ${blockedCount}건` : '에이전트 작업 및 품질 심사'}
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1">
+              <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors">
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs mb-1 font-medium">
                   <span>특허 Gatekeeper 통과율</span>
                   <ShieldCheck className="w-4 h-4 text-purple-500" />
                 </div>
                 <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-mono">100%</div>
-                <span className="text-[11px] text-purple-600 dark:text-purple-400 mt-1 block truncate font-medium">
+                <span className="text-[11px] text-purple-600 dark:text-purple-400 mt-1 block truncate font-bold">
                   FTO 회피 설계 100% 반영
                 </span>
               </div>
@@ -355,27 +355,27 @@ export default function App() {
             {/* 3. 3대 패널 스냅샷 (칸반 미리보기, 4대 장부 현황, 조직도 상태) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* 패널 A: 5단계 칸반 요약 카드 */}
-              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
+              <section className="bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                     <KanbanIcon className="w-4 h-4" />
-                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm">5단계 업무 칸반</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">5단계 업무 칸반</h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('kanban')}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-0.5 font-medium"
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-0.5 font-bold"
                   >
                     <span>전체 보드</span>
                     <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
                   최근 파이프라인에서 실행된 태스크 상태 현황
                 </p>
 
                 <div className="flex-1 space-y-2 overflow-y-auto max-h-56 scrollbar-thin">
                   {tasks.length === 0 ? (
-                    <div className="h-36 flex items-center justify-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-slate-400 dark:text-slate-600 text-xs">
+                    <div className="h-36 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-400 dark:text-slate-600 text-xs">
                       등록된 태스크가 없습니다.
                     </div>
                   ) : (
@@ -386,23 +386,23 @@ export default function App() {
                           setSelectedDeliverableTask(t);
                           setActiveTab('kanban');
                         }}
-                        className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between cursor-pointer transition-colors group"
+                        className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-300 dark:border-slate-800/80 flex items-center justify-between cursor-pointer transition-colors group"
                       >
                         <div className="truncate pr-2">
-                          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block">
+                          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block font-bold">
                             {t.id}
                           </span>
-                          <span className="text-xs font-medium text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors truncate block">
+                          <span className="text-xs font-semibold text-slate-900 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors truncate block">
                             {t.title}
                           </span>
                         </div>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border shrink-0 ${
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded border shrink-0 ${
                             t.status === 'CLOSED' || t.status === 'VERIFIED'
-                              ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                              ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
                               : t.status === 'WORKING'
-                              ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border-sky-300 dark:border-sky-800'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700'
+                              ? 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-400 border-sky-300 dark:border-sky-800'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-300 dark:border-slate-700'
                           }`}
                         >
                           {t.status}
@@ -414,94 +414,97 @@ export default function App() {
               </section>
 
               {/* 패널 B: 4대 장부 탐색기 요약 */}
-              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
+              <section className="bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                     <BookOpen className="w-4 h-4" />
-                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm">4대 장부 시스템</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">4대 장부 시스템</h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('ledgers')}
-                    className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-0.5 font-medium"
+                    className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-0.5 font-bold"
                   >
                     <span>원장 열람</span>
                     <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
                   이중 저장소(DB + Markdown)를 통해 완벽한 감사 추적성을 보장합니다.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 text-xs flex-1">
                   <div
                     onClick={() => setActiveTab('ledgers')}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 hover:border-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
                   >
-                    <span className="text-amber-600 dark:text-amber-400 font-semibold block mb-0.5">지시 원장</span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">CEO 하달 명령 기록</span>
+                    <span className="text-amber-700 dark:text-amber-400 font-bold block mb-0.5">지시 원장</span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">CEO 하달 명령 기록</span>
                   </div>
                   <div
                     onClick={() => setActiveTab('ledgers')}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 hover:border-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
                   >
-                    <span className="text-indigo-600 dark:text-indigo-400 font-semibold block mb-0.5">업무 원장</span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">5단계 공정 검증 마감</span>
+                    <span className="text-indigo-700 dark:text-indigo-400 font-bold block mb-0.5">업무 원장</span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">5단계 공정 검증 마감</span>
                   </div>
                   <div
                     onClick={() => setActiveTab('ledgers')}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 hover:border-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
                   >
-                    <span className="text-purple-600 dark:text-purple-400 font-semibold block mb-0.5">특허 지식 원장</span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">FTO 조사 및 회피설계</span>
+                    <span className="text-purple-700 dark:text-purple-400 font-bold block mb-0.5">특허 지식 원장</span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">FTO 조사 및 회피설계</span>
                   </div>
                   <div
                     onClick={() => setActiveTab('ledgers')}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 hover:border-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
                   >
-                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold block mb-0.5">회의록 원장</span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">에이전트 협의 이력</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-bold block mb-0.5">회의록 원장</span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">에이전트 협의 이력</span>
                   </div>
                 </div>
               </section>
 
-              {/* 패널 C: 조직도 요약 카드 */}
-              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
+              {/* 패널 C: 조직도 요약 카드 (전체 9개 자율 에이전트 Roster) */}
+              <section className="bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                     <Users className="w-4 h-4" />
-                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm">가상 조직 에이전트</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">가상 조직 에이전트 (9개체)</h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('org')}
-                    className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-0.5 font-medium"
+                    className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-0.5 font-bold"
                   >
                     <span>조직도 보기</span>
                     <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  자율 에이전트 가동 상태 및 역할
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                  자율 에이전트 실시간 가동 상태 (1차 + 2차 재검증 + 시각감리)
                 </p>
 
-                <div className="space-y-2 flex-1">
+                <div className="space-y-1.5 flex-1 overflow-y-auto max-h-56 scrollbar-thin pr-0.5">
                   {[
-                    { name: 'COOAgent', role: '총괄 운영 및 업무 분해', status: '정상 가동', color: 'text-sky-600 dark:text-sky-400' },
-                    { name: 'PatentSearchAgent', role: '특허 Gatekeeper (FTO)', status: '정상 가동', color: 'text-purple-600 dark:text-purple-400' },
-                    { name: 'FrontendDevAgent', role: '모바일 반응형 및 UI/UX 개발', status: '정상 가동', color: 'text-cyan-600 dark:text-cyan-400' },
-                    { name: 'BackendDevAgent', role: '회피설계 및 시스템 구현', status: '정상 가동', color: 'text-blue-600 dark:text-blue-400' },
-                    { name: 'SecurityAgent', role: '정보보안 및 OWASP 취약점 심사', status: '정상 가동', color: 'text-rose-600 dark:text-rose-400' },
-                    { name: 'QAAgent', role: '독립 품질 및 규격 검수', status: '정상 가동', color: 'text-emerald-600 dark:text-emerald-400' },
+                    { name: 'COOAgent', role: '총괄 운영 및 업무 분해', status: '정상 가동', color: 'text-sky-700 dark:text-sky-400' },
+                    { name: 'PatentSearchAgent', role: '특허 Gatekeeper (FTO)', status: '정상 가동', color: 'text-purple-700 dark:text-purple-400' },
+                    { name: 'FrontendDevAgent', role: '모바일 반응형 및 UI/UX 개발', status: '정상 가동', color: 'text-cyan-700 dark:text-cyan-400' },
+                    { name: 'BackendDevAgent', role: '회피설계 및 시스템 구현', status: '정상 가동', color: 'text-blue-700 dark:text-blue-400' },
+                    { name: 'SecurityAgent', role: '1차 정보보안 및 OWASP 심사', status: '정상 가동', color: 'text-rose-700 dark:text-rose-400' },
+                    { name: 'QAAgent', role: '1차 독립 품질 규격 검수', status: '정상 가동', color: 'text-emerald-700 dark:text-emerald-400' },
+                    { name: 'SecOpsAuditAgent', role: '2차 수석 보안감리 (제로트러스트)', status: '정상 가동', color: 'text-red-700 dark:text-red-400' },
+                    { name: 'SeniorQAAgent', role: '2차 수석 품질 재검증 (50건 엣지)', status: '정상 가동', color: 'text-teal-700 dark:text-teal-400' },
+                    { name: 'VisualQAAgent', role: '시각·접근성 감리 (WCAG 4.5:1)', status: '정상 가동', color: 'text-pink-700 dark:text-pink-400' },
                   ].map((agent) => (
                     <div
                       key={agent.name}
                       onClick={() => setActiveTab('org')}
-                      className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+                      className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800/80 flex items-center justify-between text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
                     >
-                      <div>
-                        <span className={`font-semibold block ${agent.color}`}>{agent.name}</span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400">{agent.role}</span>
+                      <div className="truncate pr-1">
+                        <span className={`font-bold block ${agent.color} truncate`}>{agent.name}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">{agent.role}</span>
                       </div>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center gap-1 font-bold shrink-0">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         {agent.status}
                       </span>
@@ -544,24 +547,24 @@ export default function App() {
           </div>
         )}
 
-        {/* ================= 하단 실시간 이벤트 수신 로그 티커 바 ================= */}
-        <section className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 shadow-md text-xs backdrop-blur-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800/80">
+        {/* ================= 하단 실시간 이벤트 수신 로그 티커 바 (관제 모니터링 콘솔) ================= */}
+        <section className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-3.5 shadow-md text-xs backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2 border-b-2 border-slate-200 dark:border-slate-800/80">
             <div className="flex items-center gap-2">
-              <Radio className="w-4 h-4 text-sky-400" />
-              <span className="font-semibold text-white">
-                실시간 WebSocket 이벤트 스트림
+              <Radio className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+              <span className="font-bold text-slate-900 dark:text-white">
+                실시간 관제 이벤트 스트림 (WebSocket)
               </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                 수신 {liveEvents.length}건
               </span>
             </div>
-            <div className="flex items-center gap-3 text-slate-500 text-[11px]">
-              <span>연결 상태: <strong className={isConnected ? 'text-emerald-400' : 'text-slate-400'}>{status}</strong></span>
+            <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-[11px] font-medium">
+              <span>연결 상태: <strong className={isConnected ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500'}>{status}</strong></span>
               {liveEvents.length > 0 && (
                 <button
                   onClick={() => setLiveEvents([])}
-                  className="hover:text-slate-300 underline"
+                  className="hover:text-slate-800 dark:hover:text-slate-200 underline font-semibold"
                 >
                   로그 지우기
                 </button>
@@ -571,28 +574,28 @@ export default function App() {
 
           <div className="max-h-24 overflow-y-auto space-y-1.5 scrollbar-thin">
             {liveEvents.length === 0 ? (
-              <div className="text-slate-500 italic py-1 text-center">
-                실시간 이벤트를 대기하고 있습니다...
+              <div className="text-slate-500 dark:text-slate-400 italic py-1 text-center font-medium">
+                실시간 관제 이벤트를 대기하고 있습니다...
               </div>
             ) : (
               liveEvents.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-start gap-2.5 font-mono text-[11px] text-slate-300 py-0.5 leading-snug"
+                  className="flex items-start gap-2.5 font-mono text-[11px] text-slate-700 dark:text-slate-300 py-0.5 leading-snug"
                 >
-                  <span className="text-slate-500 shrink-0">[{item.timestamp}]</span>
+                  <span className="text-slate-500 shrink-0 font-semibold">[{item.timestamp}]</span>
                   <span
-                    className={`font-semibold shrink-0 px-1.5 py-0.2 rounded text-[10px] ${
+                    className={`font-bold shrink-0 px-1.5 py-0.5 rounded text-[10px] ${
                       item.type === 'success'
-                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
+                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60'
                         : item.type === 'warn'
-                        ? 'bg-amber-950 text-amber-400 border border-amber-800/60'
-                        : 'bg-sky-950 text-sky-400 border border-sky-800/60'
+                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-800/60'
+                        : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-400 border border-sky-300 dark:border-sky-800/60'
                     }`}
                   >
                     {item.event}
                   </span>
-                  <span className="truncate text-slate-300">{item.message}</span>
+                  <span className="truncate text-slate-800 dark:text-slate-200 font-medium">{item.message}</span>
                 </div>
               ))
             )}
@@ -601,12 +604,12 @@ export default function App() {
       </main>
 
       {/* 글로벌 푸터 */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 px-6 py-4 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+      <footer className="border-t-2 border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 px-6 py-4 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
           <div>
-            AI Virtual Company OS <span className="text-sky-500 font-semibold">V4.0</span> &copy; 2026 Virtual Company Inc. 자율 멀티 에이전트 가상회사
+            AI Virtual Company OS <span className="text-sky-600 dark:text-sky-400 font-bold">V4.5</span> &copy; 2026 Virtual Company Inc. 산업용 3-in-1 PLC 관제 자율 가상회사
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-4 text-[11px] font-medium">
             <span>아키텍처: FastAPI + React + Tailwind + WebSocket</span>
             <span>이중 원장 감사 보증</span>
           </div>
