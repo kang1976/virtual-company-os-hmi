@@ -13,6 +13,28 @@ from backend.app.agents.marketing import (
     CommercialPackageSchema,
 )
 from backend.app.agents.design import ChiefDesignAgent, DesignSpecSchema
+from backend.app.agents.engineering_agents import (
+    SoftwareArchitectAgent,
+    ArchitectureSpecSchema,
+    MobileAppBuilderAgent,
+    MobileSpecSchema,
+    EmbeddedFirmwareAgent,
+    EmbeddedSpecSchema,
+    DatabaseOptimizerAgent,
+    DBOptimizerSchema,
+    DevOpsAutomatorAgent,
+    DevOpsSpecSchema,
+    CodeReviewerAgent,
+    CodeReviewSchema,
+    MinimalChangeAgent,
+    MinimalPatchSchema,
+)
+from backend.app.agents.design_specialists import (
+    UIFinishGateAgent,
+    FinishGateAuditSchema,
+    UXArchitectAgent,
+    UXArchitectureSchema,
+)
 
 __all__ = [
     "BaseAgent",
@@ -40,6 +62,24 @@ __all__ = [
     "CommercialPackageSchema",
     "ChiefDesignAgent",
     "DesignSpecSchema",
+    "SoftwareArchitectAgent",
+    "ArchitectureSpecSchema",
+    "MobileAppBuilderAgent",
+    "MobileSpecSchema",
+    "EmbeddedFirmwareAgent",
+    "EmbeddedSpecSchema",
+    "DatabaseOptimizerAgent",
+    "DBOptimizerSchema",
+    "DevOpsAutomatorAgent",
+    "DevOpsSpecSchema",
+    "CodeReviewerAgent",
+    "CodeReviewSchema",
+    "MinimalChangeAgent",
+    "MinimalPatchSchema",
+    "UIFinishGateAgent",
+    "FinishGateAuditSchema",
+    "UXArchitectAgent",
+    "UXArchitectureSchema",
 ]
 
 

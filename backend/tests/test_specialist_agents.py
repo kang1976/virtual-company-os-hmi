@@ -19,6 +19,15 @@ from backend.app.agents import (
     COOApprovalSchema,
     ChiefDesignAgent,
     DesignSpecSchema,
+    SoftwareArchitectAgent,
+    MobileAppBuilderAgent,
+    EmbeddedFirmwareAgent,
+    DatabaseOptimizerAgent,
+    DevOpsAutomatorAgent,
+    CodeReviewerAgent,
+    MinimalChangeAgent,
+    UIFinishGateAgent,
+    UXArchitectAgent,
 )
 
 @pytest.mark.asyncio
@@ -220,5 +229,70 @@ async def test_chief_design_agent():
     )
     assert schema.design_approval is True
     assert len(schema.visual_affordance_rules) == 2
+
+
+@pytest.mark.asyncio
+async def test_agency_internalized_engineering_and_design_agents():
+    # 1. 아키텍트
+    arch = SoftwareArchitectAgent()
+    assert arch.name == "SoftwareArchitectAgent"
+    arch_res = await arch.design_system("산업용 실시간 PLC 관제 분산 시스템")
+    assert "architecture_pattern" in arch_res
+    assert "approved" in arch_res
+
+    # 2. 모바일 앱 빌더
+    mob = MobileAppBuilderAgent()
+    assert mob.name == "MobileAppBuilderAgent"
+    mob_res = await mob.build_mobile_spec("Z폴드 듀얼 반응형 및 P2P 직결 통신")
+    assert "platform" in mob_res
+    assert "touch_affordance_score" in mob_res
+
+    # 3. 임베디드 펌웨어
+    emb = EmbeddedFirmwareAgent()
+    assert emb.name == "EmbeddedFirmwareAgent"
+    emb_res = await emb.design_plc_protocol("Omron CJ2H-EIP")
+    assert "protocol" in emb_res
+    assert "fail_safe_mechanism" in emb_res
+
+    # 4. 데이터베이스 최적화
+    db_opt = DatabaseOptimizerAgent()
+    assert db_opt.name == "DatabaseOptimizerAgent"
+    db_res = await db_opt.optimize_schema(["tasks", "commands", "projects"])
+    assert "indexing_strategy" in db_res
+
+    # 5. 데브옵스/SRE
+    devops = DevOpsAutomatorAgent()
+    assert devops.name == "DevOpsAutomatorAgent"
+    dop_res = await devops.build_pipeline("VirtualCompanyOS")
+    assert "pipeline_steps" in dop_res
+
+    # 6. 코드 리뷰어
+    reviewer = CodeReviewerAgent()
+    assert reviewer.name == "CodeReviewerAgent"
+    rev_res = await reviewer.review_pull_request("+ async def run(): pass")
+    assert "code_quality_score" in rev_res
+    assert "review_approved" in rev_res
+
+    # 7. 최소 수정 패치 전문가
+    minimal = MinimalChangeAgent()
+    assert minimal.name == "MinimalChangeAgent"
+    min_res = await minimal.inspect_patch_scope("버튼 글자 흑화 수정", "- text-black\n+ text-white")
+    assert "zero_side_effect_audit" in min_res
+    assert "patch_approved" in min_res
+
+    # 8. UI 마감 감리관
+    finish_gate = UIFinishGateAgent()
+    assert finish_gate.name == "UIFinishGateAgent"
+    fg_res = await finish_gate.audit_finish_gate("PLC 관제 대시보드", "border: 1px solid #E5E7EB; text-shadow applied")
+    assert "anti_generic_verdict" in fg_res
+    assert "gate_approved" in fg_res
+
+    # 9. UX 아키텍트
+    ux_arch = UXArchitectAgent()
+    assert ux_arch.name == "UXArchitectAgent"
+    ux_res = await ux_arch.design_user_flow("원클릭 장부 열람 및 긴급 제어")
+    assert "touch_target_guarantee" in ux_res
+    assert "responsive_flow_approved" in ux_res
+
 
 

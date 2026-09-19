@@ -467,35 +467,43 @@ export default function App() {
               {/* 패널 C: 조직도 요약 카드 (전체 9개 자율 에이전트 Roster) */}
               <section className="bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col backdrop-blur-sm transition-colors">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                     <Users className="w-4 h-4" />
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">가상 조직 에이전트 (11개체)</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">전문 소프트웨어 개발 조직 (20개체)</h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('org')}
-                    className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-0.5 font-bold"
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-0.5 font-bold"
                   >
-                    <span>조직도 보기</span>
+                    <span>부서별 조직도 보기</span>
                     <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
-                  자율 에이전트 실시간 가동 상태 (실무 + 3대 감리 + 상품화 마케팅)
+                  Agency Agents 내재화 (개발본부 9 · 디자인 3 · 보안품질 4 · 마케팅 1 · 경영 3)
                 </p>
 
                 <div className="space-y-1.5 flex-1 overflow-y-auto max-h-56 scrollbar-thin pr-0.5">
                   {[
-                    { name: 'COOAgent', role: '총괄 운영 및 업무 분해', status: '정상 가동', color: 'text-sky-700 dark:text-sky-400' },
-                    { name: 'PatentSearchAgent', role: '특허 Gatekeeper (FTO)', status: '정상 가동', color: 'text-purple-700 dark:text-purple-400' },
-                    { name: 'ChiefDesignAgent', role: '디자인 전공 수석 디렉터 (초고대비/색채)', status: '정상 가동', color: 'text-violet-700 dark:text-violet-400' },
-                    { name: 'FrontendDevAgent', role: '모바일 반응형 및 UI/UX 개발', status: '정상 가동', color: 'text-cyan-700 dark:text-cyan-400' },
-                    { name: 'BackendDevAgent', role: '회피설계 및 시스템 구현', status: '정상 가동', color: 'text-blue-700 dark:text-blue-400' },
+                    { name: 'SoftwareArchitectAgent', role: '소프트웨어 수석 아키텍트 (DDD)', status: '정상 가동', color: 'text-indigo-700 dark:text-indigo-400' },
+                    { name: 'BackendDevAgent', role: '분산 백엔드 & 비동기 API 구현', status: '정상 가동', color: 'text-blue-700 dark:text-blue-400' },
+                    { name: 'FrontendDevAgent', role: 'React/Tailwind 모던 반응형 UI', status: '정상 가동', color: 'text-cyan-700 dark:text-cyan-400' },
+                    { name: 'MobileAppBuilderAgent', role: 'Flutter 크로스플랫폼 & Z폴드 앱', status: '정상 가동', color: 'text-sky-700 dark:text-sky-400' },
+                    { name: 'EmbeddedFirmwareAgent', role: 'Omron PLC FINS 산업제어 펌웨어', status: '정상 가동', color: 'text-amber-700 dark:text-amber-400' },
+                    { name: 'DatabaseOptimizerAgent', role: 'DB 스키마 인덱싱 & WAL 튜닝', status: '정상 가동', color: 'text-emerald-700 dark:text-emerald-400' },
+                    { name: 'DevOpsAutomatorAgent', role: 'CI/CD 자동화 & SRE 무중단 복구', status: '정상 가동', color: 'text-teal-700 dark:text-teal-400' },
+                    { name: 'CodeReviewerAgent', role: '수석 코드 리뷰어 & 클린코드 게이트', status: '정상 가동', color: 'text-violet-700 dark:text-violet-400' },
+                    { name: 'MinimalChangeAgent', role: '최소 수정 패치 (사이드이펙트 제로)', status: '정상 가동', color: 'text-blue-700 dark:text-blue-500' },
+                    { name: 'ChiefDesignAgent', role: '디자인 전공 수석 디렉터 (초고대비)', status: '정상 가동', color: 'text-violet-700 dark:text-violet-400' },
+                    { name: 'UIFinishGateAgent', role: 'UI 마감 감리관 (Anti-Generic)', status: '정상 가동', color: 'text-pink-700 dark:text-pink-400' },
+                    { name: 'UXArchitectAgent', role: 'UX 정보구조 & 터치 44px 아키텍트', status: '정상 가동', color: 'text-fuchsia-700 dark:text-fuchsia-400' },
                     { name: 'SecurityAgent', role: '1차 정보보안 및 OWASP 심사', status: '정상 가동', color: 'text-rose-700 dark:text-rose-400' },
-                    { name: 'QAAgent', role: '1차 독립 품질 규격 검수', status: '정상 가동', color: 'text-emerald-700 dark:text-emerald-400' },
                     { name: 'SecOpsAuditAgent', role: '2차 수석 보안감리 (제로트러스트)', status: '정상 가동', color: 'text-red-700 dark:text-red-400' },
+                    { name: 'QAAgent', role: '1차 독립 품질 규격 검수', status: '정상 가동', color: 'text-emerald-700 dark:text-emerald-400' },
                     { name: 'SeniorQAAgent', role: '2차 수석 품질 재검증 (50건 엣지)', status: '정상 가동', color: 'text-teal-700 dark:text-teal-400' },
-                    { name: 'VisualQAAgent', role: '시각·접근성 감리 (WCAG 4.5:1)', status: '정상 가동', color: 'text-pink-700 dark:text-pink-400' },
-                    { name: 'ProductMarketingAgent', role: '상품화 카탈로그 및 운용 매뉴얼', status: '정상 가동', color: 'text-amber-700 dark:text-amber-400' },
+                    { name: 'ProductMarketingAgent', role: '상품화 카탈로그 및 기술 배틀카드', status: '정상 가동', color: 'text-amber-700 dark:text-amber-400' },
+                    { name: 'PatentSearchAgent', role: '특허 선행기술 조사 & FTO 게이트', status: '정상 가동', color: 'text-purple-700 dark:text-purple-400' },
+                    { name: 'COOAgent', role: '총괄 운영 및 자율 오케스트레이션', status: '정상 가동', color: 'text-sky-700 dark:text-sky-400' },
                   ].map((agent) => (
                     <div
                       key={agent.name}
