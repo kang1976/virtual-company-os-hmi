@@ -91,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const currentTheme = getThemeDisplay();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 transition-colors shadow-md">
+    <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 transition-colors shadow-md">
       <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:gap-3">
         {/* 상단 라인: 로고, 시스템 타이틀, 상태 뱃지, 제어 버튼군 */}
         <div className="flex items-center justify-between gap-2 w-full">
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Cpu className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-900" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
             </div>
 
             <div>
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* API 서버 상태 뱃지 */}
             <div
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950/80 border border-slate-300 dark:border-white/25 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300"
               title={healthError ? `오류: ${healthError}` : 'FastAPI 백엔드 서버'}
             >
               <Activity className="w-3 h-3 text-slate-400" />
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* 실시간 WS 연결 뱃지 */}
             <div
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950/80 border border-slate-300 dark:border-white/25 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300"
               title={`실시간 웹소켓 (${wsStatus}${reconnectCount > 0 ? `, 재접속: ${reconnectCount}회` : ''})`}
             >
               <Radio className="w-3 h-3 text-slate-400" />
@@ -169,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onThemeToggle}
               title={`테마 변경 (현재: ${currentTheme.label})`}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700/80 text-xs active:scale-95 transition-all"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-white/25 text-xs active:scale-95 transition-all"
               aria-label="테마 변경"
             >
               {currentTheme.icon}
@@ -180,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onFullscreenToggle}
               title={isFullscreen ? '전체화면 종료 (ESC)' : '전체화면 모드로 전환'}
-              className="p-1.5 sm:p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700/80 active:scale-95 transition-all"
+              className="p-1.5 sm:p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-white/25 active:scale-95 transition-all"
               aria-label="전체화면 전환"
             >
               {isFullscreen ? (
@@ -196,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onRefreshAll}
                 disabled={isRefreshing}
                 title="데이터 수동 새로고침"
-                className="p-1.5 sm:p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700/80 active:scale-95 transition-all disabled:opacity-50"
+                className="p-1.5 sm:p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-white/25 active:scale-95 transition-all disabled:opacity-50"
                 aria-label="새로고침"
               >
                 <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isRefreshing ? 'animate-spin text-sky-600 dark:text-sky-400' : ''}`} />
@@ -208,7 +208,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onResetData}
                 title="데이터 전체 초기화 (DB 및 4대 장부 리셋)"
-                className="p-1.5 sm:p-2 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 hover:text-rose-900 dark:hover:text-rose-100 border border-rose-300 dark:border-rose-800/60 active:scale-95 transition-all"
+                className="p-1.5 sm:p-2 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 hover:text-rose-900 dark:hover:text-rose-100 border border-rose-300 dark:border-rose-500/50 active:scale-95 transition-all"
                 aria-label="데이터 초기화"
               >
                 <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200" />
@@ -218,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* 하단 라인: 모바일 친화적 탭 네비게이션 */}
-        <nav className="flex items-center bg-slate-100 dark:bg-slate-950/80 p-1 rounded-xl border border-slate-300 dark:border-slate-800/90 overflow-x-auto scrollbar-none gap-1">
+        <nav className="flex items-center bg-slate-100 dark:bg-slate-950/80 p-1 rounded-xl border-2 border-slate-300 dark:border-white/25 overflow-x-auto scrollbar-none gap-1">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -230,7 +230,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   isActive
                     ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30 font-semibold text-white-force'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-800/60'
-
                 }`}
               >
                 {tab.icon}

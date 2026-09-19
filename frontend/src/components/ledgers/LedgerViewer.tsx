@@ -128,7 +128,7 @@ function renderMarkdownContent(content: string) {
     // 제목 1 (#)
     if (line.startsWith('# ')) {
       elements.push(
-        <h1 key={`h1-${i}`} className="text-lg font-bold text-slate-900 dark:text-white mt-4 mb-2 pb-1.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+        <h1 key={`h1-${i}`} className="text-lg font-bold text-slate-900 dark:text-white mt-4 mb-2 pb-1.5 border-b border-slate-200 dark:border-white/20 flex items-center gap-2">
           <span className="w-1.5 h-4 bg-sky-500 rounded-full inline-block" />
           {line.replace(/^#\s+/, '')}
         </h1>
@@ -159,7 +159,7 @@ function renderMarkdownContent(content: string) {
 
     // 구분선 (---)
     if (line.trim() === '---' || line.trim() === '***') {
-      elements.push(<hr key={`hr-${i}`} className="my-4 border-slate-200 dark:border-slate-800" />);
+      elements.push(<hr key={`hr-${i}`} className="my-4 border-slate-200 dark:border-white/20" />);
       continue;
     }
 
@@ -342,15 +342,15 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
   }, [tree, searchQuery]);
 
   return (
-    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px] sm:h-[750px] backdrop-blur-sm">
+    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-white/30 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[650px] sm:h-[750px] backdrop-blur-sm">
       {/* 모바일 화면 전용 상단 탭 전환 바 (md 미만에서만 표시) */}
-      <div className="flex md:hidden border-b-2 border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 p-2 gap-1.5 shrink-0">
+      <div className="flex md:hidden border-b-2 border-slate-300 dark:border-white/25 bg-slate-100 dark:bg-slate-950 p-2 gap-1.5 shrink-0">
         <button
           onClick={() => setMobileTab('tree')}
           className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
             mobileTab === 'tree'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-white/20'
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
@@ -361,7 +361,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
           className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
             mobileTab === 'content'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-white/20'
           }`}
         >
           <FileCode className="w-3.5 h-3.5" />
@@ -373,12 +373,12 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
 
       {/* 좌측 패널: 4대 장부 폴더 트리 탐색기 */}
       <div
-        className={`w-full md:w-80 lg:w-96 border-b-2 md:border-b-0 md:border-r-2 border-slate-300 dark:border-slate-800 flex-col bg-slate-50 dark:bg-slate-950/70 ${
+        className={`w-full md:w-80 lg:w-96 border-b-2 md:border-b-0 md:border-r-2 border-slate-300 dark:border-white/25 flex-col bg-slate-50 dark:bg-slate-950/70 ${
           mobileTab === 'tree' ? 'flex flex-1 md:flex-initial' : 'hidden md:flex'
         }`}
       >
         {/* 탐색기 상단 헤더 & 새로고침 */}
-        <div className="p-4 border-b-2 border-slate-300 dark:border-slate-800 flex items-center justify-between">
+        <div className="p-4 border-b-2 border-slate-300 dark:border-white/25 flex items-center justify-between">
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
             <BookOpen className="w-4 h-4" />
             <span className="font-bold text-sm text-slate-900 dark:text-white">4대 장부 탐색기</span>
@@ -386,7 +386,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
           <button
             onClick={fetchTree}
             disabled={loadingTree}
-            className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-800 shadow-sm transition-colors disabled:opacity-50"
+            className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-white/25 shadow-sm transition-colors disabled:opacity-50"
             title="원장 트리 새로고침"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loadingTree ? 'animate-spin text-emerald-500 dark:text-emerald-400' : ''}`} />
@@ -394,15 +394,15 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
         </div>
 
         {/* 파일 검색 바 */}
-        <div className="px-3 pt-3 pb-2 border-b border-slate-200 dark:border-slate-800/80">
+        <div className="px-3 pt-3 pb-2 border-b border-slate-200 dark:border-white/20">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="원장 파일 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg pl-8 pr-2.5 py-1 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-sm"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/25 rounded-lg pl-8 pr-2.5 py-1 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-sm"
             />
           </div>
         </div>
@@ -425,13 +425,13 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                   {/* 폴더 헤더 행 */}
                   <div
                     onClick={() => toggleFolder(folderKey)}
-                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors group"
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-2 truncate">
                       {isOpen ? (
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 shrink-0" />
                       ) : (
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 shrink-0" />
                       )}
                       {isOpen ? (
                         <FolderOpen className={`w-4 h-4 ${cfg.color} shrink-0`} />
@@ -442,14 +442,14 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                         {cfg.name}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-transparent dark:border-white/10">
                       {fileCount}
                     </span>
                   </div>
 
                   {/* 하위 파일 목록 */}
                   {isOpen && (
-                    <div className="ml-5 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
+                    <div className="ml-5 pl-2 border-l border-slate-200 dark:border-white/20 space-y-0.5">
                       {files && files.length > 0 ? (
                         files.map((file: string) => {
                           const isSelected = selectedFolder === folderKey && selectedFile === file;
@@ -463,8 +463,8 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                               }}
                               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-all ${
                                 isSelected
-                                  ? 'bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-800/60 shadow-sm'
-                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-900/60'
+                                  ? 'bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-500/70 shadow-sm'
+                                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
                               }`}
                               title={file}
                             >
@@ -474,7 +474,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                           );
                         })
                       ) : (
-                        <div className="px-2 py-1 text-[11px] text-slate-400 dark:text-slate-600 italic">
+                        <div className="px-2 py-1 text-[11px] text-slate-400 dark:text-slate-500 italic">
                           기록된 파일 없음
                         </div>
                       )}
@@ -491,7 +491,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
         </div>
 
         {/* 하단 동기화 상태 풋노트 */}
-        <div className="p-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between bg-slate-100/70 dark:bg-transparent">
+        <div className="p-3 border-t border-slate-200 dark:border-white/20 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between bg-slate-100/70 dark:bg-transparent">
           <span>이중 원장 (DB + Markdown)</span>
           <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -507,12 +507,12 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
         }`}
       >
         {/* 파일 뷰어 상단 헤더 */}
-        <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/90 dark:bg-slate-950/60 backdrop-blur-sm shadow-sm">
+        <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-white/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/90 dark:bg-slate-950/60 backdrop-blur-sm shadow-sm">
           <div className="flex items-center gap-2.5">
             {/* 모바일 전용 목록으로 돌아가기 버튼 */}
             <button
               onClick={() => setMobileTab('tree')}
-              className="md:hidden p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 text-xs shrink-0 shadow-sm"
+              className="md:hidden p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-white/20 text-xs shrink-0 shadow-sm"
               title="원장 목록으로 돌아가기"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
@@ -526,7 +526,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                   {selectedFile || '원장 파일을 선택하세요'}
                 </h3>
                 {selectedFolder && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/20">
                     {selectedFolder}
                   </span>
                 )}
@@ -545,7 +545,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
               <button
                 onClick={handleCopy}
                 disabled={!fileContent}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs border border-slate-300 dark:border-slate-700 shadow-sm transition-colors disabled:opacity-50 font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs border border-slate-300 dark:border-white/25 shadow-sm transition-colors disabled:opacity-50 font-medium"
                 title="원장 본문 클립보드 복사"
               >
                 {copied ? (
@@ -564,7 +564,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
               <button
                 onClick={() => selectedFolder && selectedFile && fetchFile(selectedFolder, selectedFile)}
                 disabled={loadingFile}
-                className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 shadow-sm transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-white/25 shadow-sm transition-colors disabled:opacity-50"
                 title="현재 파일 새로고침"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loadingFile ? 'animate-spin text-emerald-600 dark:text-emerald-400' : ''}`} />
@@ -585,7 +585,7 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
               <span>{fileError}</span>
             </div>
           ) : selectedFile ? (
-            <div className="max-w-4xl mx-auto bg-white dark:bg-slate-950/70 p-6 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-md dark:shadow-inner text-slate-900 dark:text-slate-100">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-slate-950/80 p-6 sm:p-8 rounded-xl border-2 border-slate-200 dark:border-white/30 shadow-md dark:shadow-2xl text-slate-900 dark:text-slate-100">
               {renderMarkdownContent(fileContent)}
             </div>
           ) : (

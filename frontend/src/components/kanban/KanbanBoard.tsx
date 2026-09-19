@@ -242,7 +242,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   return (
     <div className="space-y-4">
       {/* 헤더 및 컨트롤 필터 바 */}
-      <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-white/30 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-sm">
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
             <Kanban className="w-5 h-5" />
@@ -270,7 +270,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               placeholder="업무명, 태스크 ID, 담당자 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 shadow-sm"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-white/25 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 shadow-sm"
             />
             {searchTerm && (
               <button
@@ -283,7 +283,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           </div>
 
           {/* 우선순위 필터 */}
-          <div className="flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-800 text-xs shadow-sm">
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-white/25 text-xs shadow-sm">
             <Filter className="w-3 h-3 text-slate-400 dark:text-slate-500" />
             <select
               value={priorityFilter}
@@ -303,7 +303,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
           {/* 담당 에이전트 필터 */}
           {uniqueAssignees.length > 0 && (
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-800 text-xs shadow-sm">
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-white/25 text-xs shadow-sm">
               <select
                 value={assigneeFilter}
                 onChange={(e) => setAssigneeFilter(e.target.value)}
@@ -326,7 +326,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <button
               onClick={onRefresh}
               disabled={isLoading}
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 shadow-sm transition-colors disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-white/25 shadow-sm transition-colors disabled:opacity-50"
               title="태스크 목록 새로고침"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-indigo-600 dark:text-indigo-400' : ''}`} />
@@ -342,7 +342,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
             mobileColumn === 'ALL'
               ? 'bg-indigo-600 text-white shadow-sm'
-              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-white/20'
           }`}
         >
           전체 보기 ({filteredTasks.length})
@@ -357,7 +357,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                 isActive
                   ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-white/20'
               }`}
             >
               <span>{col.label}</span>
@@ -376,10 +376,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           return (
             <div
               key={col.id}
-              className="bg-slate-50 dark:bg-slate-900/60 border-2 border-slate-300 dark:border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[380px] shadow-sm"
+              className="bg-slate-50 dark:bg-slate-900/60 border-2 border-slate-300 dark:border-white/25 rounded-xl overflow-hidden flex flex-col min-h-[380px] shadow-sm"
             >
               {/* 컬럼 헤더 */}
-              <div className={`px-3 py-2.5 border-b-2 border-slate-300 dark:border-slate-800 flex items-center justify-between ${col.headerBg}`}>
+              <div className={`px-3 py-2.5 border-b-2 border-slate-300 dark:border-white/20 flex items-center justify-between ${col.headerBg}`}>
                 <div className="flex items-center gap-1.5">
                   <ColIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   <span className="font-bold text-xs text-slate-900 dark:text-white">{col.label}</span>
@@ -395,7 +395,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               {/* 태스크 카드 목록 컨테이너 */}
               <div className="p-2 flex-1 space-y-2.5 overflow-y-auto max-h-[calc(100vh-320px)] scrollbar-thin">
                 {colTasks.length === 0 ? (
-                  <div className="h-32 flex flex-col items-center justify-center text-center p-3 border-2 border-dashed border-slate-300 dark:border-slate-800/80 rounded-lg text-slate-500 dark:text-slate-600 text-xs">
+                  <div className="h-32 flex flex-col items-center justify-center text-center p-3 border-2 border-dashed border-slate-300 dark:border-white/15 rounded-lg text-slate-500 dark:text-slate-500 text-xs">
                     <span>태스크 없음</span>
                   </div>
                 ) : (
@@ -409,7 +409,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       <div
                         key={task.id}
                         onClick={() => setActiveModalTask(task)}
-                        className="p-3 bg-white dark:bg-slate-950/90 hover:bg-slate-100 dark:hover:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-lg shadow-sm transition-all cursor-pointer group relative overflow-hidden text-safe-render"
+                        className="p-3 bg-white dark:bg-slate-950/90 hover:bg-slate-100 dark:hover:bg-slate-900 border-2 border-slate-300 dark:border-white/20 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-lg shadow-sm transition-all cursor-pointer group relative overflow-hidden text-safe-render"
                       >
                         {/* 카드 상단: ID 및 우선순위 */}
                         <div className="flex items-center justify-between gap-1 mb-1.5">
