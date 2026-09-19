@@ -11,36 +11,46 @@ class TelegramNotifier:
 
     def __init__(self, bot_token: Optional[str] = None, chat_id: Optional[str] = None):
         settings = get_settings()
-        self.bot_token = bot_token or settings.TELEGRAM_BOT_TOKEN
-        self.chat_id = chat_id or settings.TELEGRAM_CEO_CHAT_ID
+        self.bot_token = settings.TELEGRAM_BOT_TOKEN if bot_token is None else bot_token
+        self.chat_id = settings.TELEGRAM_CEO_CHAT_ID if chat_id is None else chat_id
         self.base_url = f"https://api.telegram.org/bot{self.bot_token}" if self.bot_token else None
 
     @property
     def is_configured(self) -> bool:
         return bool(self.bot_token and self.chat_id)
 
-    async def send_message(self, text: str, parse_mode: str = "HTML") -> bool:
+    async def send_message(self, text: str, parse_mode: Optional[str] = None) -> bool:
         """텔레그램 메시지 전송"""
         if not self.is_configured:
             logger.info(f"[Telegram Mock] 봇 미설정 상태 - 모의 전송 완료:\n{text}")
             return True
 
         url = f"{self.base_url}/sendMessage"
-        payload = {
+        payload_dict = {
             "chat_id": self.chat_id,
             "text": text,
-            "parse_mode": parse_mode,
         }
+        if parse_mode:
+            payload_dict["parse_mode"] = parse_mode
+
+        def _do_send():
+            import urllib.request
+            import json
+            data = json.dumps(payload_dict).encode("utf-8")
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.status == 200
 
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.post(url, json=payload)
-                if res.status_code == 200:
-                    logger.info("[Telegram] 대표님 스마트폰으로 알림 전송 성공")
-                    return True
-                else:
-                    logger.error(f"[Telegram] 전송 실패: {res.status_code} - {res.text}")
-                    return False
+            import asyncio
+            success = await asyncio.to_thread(_do_send)
+            if success:
+                logger.info("[Telegram] 대표님 스마트폰으로 알림 전송 성공")
+            return success
         except Exception as e:
             logger.error(f"[Telegram] 통신 오류: {e}")
             return False
