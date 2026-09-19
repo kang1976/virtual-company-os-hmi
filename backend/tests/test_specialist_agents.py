@@ -9,8 +9,12 @@ from backend.app.agents import (
     FrontendOutputSchema,
     SecurityAgent,
     SecurityOutputSchema,
+    SecOpsAuditAgent,
+    SecOpsAuditOutputSchema,
     QAAgent,
     QAOutputSchema,
+    SeniorQAAgent,
+    SeniorQAOutputSchema,
     COOAgent,
     COOApprovalSchema,
 )
@@ -48,7 +52,15 @@ def test_specialist_agent_attributes_and_exports():
     qa_agent = QAAgent()
     assert qa_agent.name == "QAAgent"
     assert qa_agent.department == "품질팀"
-    assert qa_agent.role == "품질 및 신뢰성 검증관"
+    assert qa_agent.role == "1차 품질 및 기능 검증관"
+
+    senior_qa = SeniorQAAgent()
+    assert senior_qa.name == "SeniorQAAgent"
+    assert senior_qa.role == "수석 품질 재검증관"
+
+    secops_agent = SecOpsAuditAgent()
+    assert secops_agent.name == "SecOpsAuditAgent"
+    assert secops_agent.role == "2차 수석 보안 감리관"
 
 def test_specialist_agent_schemas():
     pat_data = PatentOutputSchema(
@@ -93,13 +105,38 @@ async def test_security_agent_audit():
     sec_agent = SecurityAgent()
     assert sec_agent.name == "SecurityAgent"
     assert sec_agent.department == "보안팀"
-    assert sec_agent.role == "정보보안 및 취약점 심사관"
+    assert sec_agent.role == "1차 정보보안 및 취약점 심사관"
 
     res = await sec_agent.audit("PLC 통신 암호화 및 FastAPI 엔드포인트 코드", tech_stack="Python/FastAPI")
     assert "passed" in res
     assert "security_score" in res
     assert "cve_risk" in res
     assert "recommendations" in res
+
+
+@pytest.mark.asyncio
+async def test_secops_and_senior_qa_agents():
+    secops = SecOpsAuditAgent()
+    secops_res = await secops.deep_audit(
+        primary_sec_report="1차 보안 96점 통과",
+        full_code="FastAPI endpoints and PLC FINS drivers"
+    )
+    assert "passed" in secops_res
+    assert "zero_trust_score" in secops_res
+    assert "security_clearance" in secops_res
+    assert secops_res["zero_trust_score"] >= 90
+
+    senior_qa = SeniorQAAgent()
+    qa_res = await senior_qa.reverify(
+        primary_qa_report="1차 기능 95점 통과",
+        full_code="Full system deliverable",
+        instruction="PLC 통신 모니터링"
+    )
+    assert "passed" in qa_res
+    assert "reverification_score" in qa_res
+    assert "final_qa_verdict" in qa_res
+    assert qa_res["reverification_score"] >= 95
+
 
 
 @pytest.mark.asyncio

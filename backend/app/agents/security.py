@@ -12,8 +12,17 @@ class SecurityOutputSchema(BaseModel):
     recommendations: str = Field(description="보안 조치 및 취약점 개선 권고사항")
 
 
+class SecOpsAuditOutputSchema(BaseModel):
+    passed: bool = Field(description="2차 심층 보안 감리 적합 여부 (True/False)")
+    zero_trust_score: int = Field(description="제로트러스트 및 산업제어망 무결성 점수 (0~100점)")
+    deep_pen_test_items: List[str] = Field(description="심층 모의침투 및 통신 무결성 감사 항목")
+    ot_plc_security_risk: str = Field(description="산업제어망(OT/PLC FINS) 보안 위험도 (LOW, MEDIUM, HIGH)")
+    compliance_findings: str = Field(description="정보보호 컴플라이언스 및 제로데이 감사 소견")
+    security_clearance: str = Field(description="최종 보안 인가 상태 (CLEARED / REJECTED)")
+
+
 class SecurityAgent(BaseAgent):
-    """보안팀 전문 에이전트 (CISO / 보안 심사관)
+    """1차 보안팀 전문 에이전트 (CISO / 보안 심사관)
     
     개발 산출물의 OWASP Top 10, 입력값 검증, 암호화, API 접근통제, CVE 취약점을 엄격히 심사합니다.
     """
@@ -21,7 +30,7 @@ class SecurityAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="SecurityAgent",
-            role="정보보안 및 취약점 심사관",
+            role="1차 정보보안 및 취약점 심사관",
             department="보안팀"
         )
 
@@ -47,3 +56,40 @@ class SecurityAgent(BaseAgent):
 
 위 산출물에 대한 전방위 보안 및 취약점 심사를 수행하십시오."""
         return await self.execute(user_prompt, system_prompt, SecurityOutputSchema)
+
+
+class SecOpsAuditAgent(BaseAgent):
+    """2차 수석 보안 감리관 에이전트 (DevSecOps 수석 감사관)
+    
+    1차 보안 심사를 거친 산출물에 대해 산업제어망(OT/PLC) FINS 통신 패킷 위변조,
+    제로 트러스트 권한 탈취 방어, 메모리 오버플로우, 침해사고 모의 침투를 심층 감리합니다.
+    """
+
+    def __init__(self):
+        super().__init__(
+            name="SecOpsAuditAgent",
+            role="2차 수석 보안 감리관",
+            department="보안팀"
+        )
+
+    async def deep_audit(self, primary_sec_report: str, full_code: str, tech_stack: str = "FastAPI/React/PLC") -> Dict[str, Any]:
+        system_prompt = f"""당신은 가상기업의 최고 보안 감리관(Lead Security Auditor) {self.name}입니다.
+역할: {self.role} ({self.department})
+
+[2차 심층 보안 감리 지침]
+1. 1차 보안 심사 결과에 안주하지 않고, 제로 트러스트(Zero-Trust) 모델 및 산업제어망(OT) 특화 위협을 현미경 재심사하십시오:
+   - 산업용 PLC(FINS) 통신 패킷 스니핑/Replay Attack 방어 무결성
+   - 런타임 권한 상승(Privilege Escalation) 및 세션 하이재킹 모의 침투
+   - 메모리 오염, 버퍼 오버플로우, 시크릿 키 유출 여부
+   - OWASP ASVS Level 3 기준 최고 등급의 엄격한 재검증
+2. 최종 판정에서 90점 이상이고 제로트러스트 요건을 만족할 때만 security_clearance='CLEARED'를 부여하십시오.
+"""
+        user_prompt = f"""[1차 보안 심사 리포트]:
+{primary_sec_report}
+
+[전체 시스템 산출물 및 제어망 아키텍처]:
+{full_code}
+
+위 내역에 대해 2차 수석 보안 감리 및 심층 모의 침투 감리를 수행하십시오."""
+        return await self.execute(user_prompt, system_prompt, SecOpsAuditOutputSchema)
+

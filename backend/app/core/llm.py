@@ -101,6 +101,37 @@ class LLMClient:
                 ]
             elif name == "directive_feedback":
                 mock_data[name] = "품질 표준을 완벽히 충족함. 전 부서 마감 승인 및 이중 원장 기록 완료."
+            elif name == "reverification_score":
+                mock_data[name] = 98
+            elif name == "deep_audit_items":
+                mock_data[name] = [
+                    "경계 조건(Boundary Condition) 엣지 케이스 50건 무작위 샘플링 통과",
+                    "동시 접속 100회 부하 시 응답 지연 120ms 이내 안정성 실측",
+                    "비정상 PLC 패킷 유입 시 안전 모드 자동 전환 검증",
+                    "모바일 360px 뷰포트 터치 인터랙션 미스율 0% 실측"
+                ]
+            elif name == "stress_test_result":
+                mock_data[name] = "고부하 및 통신 단절 시뮬레이션 합격. 자동 락(Lock) 및 복구 기제 정상 작동."
+            elif name == "detailed_findings":
+                mock_data[name] = "1차 QA 통과 항목 전수 교차 검증 완료. 회귀 결함 0건, 기술 규격 완벽 일치 판정."
+            elif name == "final_qa_verdict":
+                mock_data[name] = "2차 수석 품질 심층 재검증 최종 합격 승인 (REVERIFIED_PASS)"
+            elif name == "zero_trust_score":
+                mock_data[name] = 99
+            elif name == "deep_pen_test_items":
+                mock_data[name] = [
+                    "산업제어망 OT/PLC FINS 패킷 변조 및 Replay Attack 방어 성공",
+                    "런타임 세션 탈취 및 권한 상승 모의 침투 차단 확인",
+                    "소스코드 및 환경변수 내 민감 키/크레덴셜 누출 0건 감사",
+                    "OWASP ASVS Level 3 제로 트러스트 보안 규격 준수"
+                ]
+            elif name == "ot_plc_security_risk":
+                mock_data[name] = "LOW (위험 없음 - 통신 무결성 해시 검증 완비)"
+            elif name == "compliance_findings":
+                mock_data[name] = "정보보호 컴플라이언스 100% 충족. 제로 트러스트 보안 인가 기준 통과."
+            elif name == "security_clearance":
+                mock_data[name] = "CLEARED (최종 보안 2차 인가 완료)"
+
             else:
                 annotation = field_info.annotation
                 if annotation is bool:

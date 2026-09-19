@@ -45,13 +45,15 @@ const PRESET_COMMANDS = [
 ];
 
 const TARGET_TEAMS = [
-  { id: '전체', label: '전사 총괄 (COO 자율 분해)' },
+  { id: '전체', label: '전사 총괄 (COO 자율 분해 및 다층 검증)' },
   { id: '운영기획팀', label: '운영기획팀 (COO)' },
   { id: 'IP특허팀', label: 'IP·특허팀 (Gatekeeper)' },
   { id: '프론트엔드팀', label: '프론트엔드팀 (UI/UX 디자인)' },
   { id: '백엔드개발팀', label: '백엔드개발팀 (회피설계)' },
-  { id: '보안팀', label: '보안팀 (취약점·CVE 심사)' },
-  { id: '품질QA팀', label: '품질QA팀 (독립 검수)' },
+  { id: '보안팀', label: '1차 보안팀 (OWASP/CVE 심사)' },
+  { id: '품질QA팀', label: '1차 품질QA팀 (독립 검수)' },
+  { id: '수석보안감리실', label: '2차 수석보안감리실 (OT/PLC 제로트러스트)' },
+  { id: '품질보증위원회', label: '2차 품질보증위원회 (극한 스트레스/엣지 검증)' },
 ];
 
 const PRIORITIES: { id: Priority; label: string; color: string }[] = [
@@ -67,8 +69,9 @@ const PIPELINE_STEPS = [
   { step: 2, name: '특허 FTO', desc: '선행특허 회피설계', icon: ShieldAlert },
   { step: 3, name: '프론트 UI', desc: '모바일/테마 UI 개발', icon: Palette },
   { step: 4, name: '시스템 개발', desc: '백엔드 아키텍처 구현', icon: Code2 },
-  { step: 5, name: '보안 심사', desc: 'OWASP/CVE 심사', icon: Lock },
-  { step: 6, name: 'COO 종합검수', desc: '품질 승인 및 마감', icon: Award },
+  { step: 5, name: '1차 보안/QA', desc: 'OWASP & 기능 검수', icon: Lock },
+  { step: 6, name: '2차 심층 재검증', desc: 'OT 제로트러스트 & 스트레스', icon: ShieldCheck },
+  { step: 7, name: 'COO 종합검수', desc: '품질 승인 및 원장 마감', icon: Award },
 ];
 
 export const CommandBar: React.FC<CommandBarProps> = ({
@@ -104,7 +107,12 @@ export const CommandBar: React.FC<CommandBarProps> = ({
     try {
       await onCommandSubmit(trimmed, targetTeam, priority);
     } catch (err: any) {
-      setErrorMsg(err.message || '명령 전달 중 오류가 발생했습니다.');
+      const msg = err.message || '';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Failed to')) {
+        setErrorMsg('⚠️ 백엔드 서버(:8000) 통신 일시 단절: 서버 프로세스가 종료되었거나 재기동 중입니다. 폴더의 [start_all.bat] 또는 [run_backend.bat]을 실행하여 서버를 재기동해 주세요.');
+      } else {
+        setErrorMsg(msg || '명령 전달 중 오류가 발생했습니다.');
+      }
     }
   };
 

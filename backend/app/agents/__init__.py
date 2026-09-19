@@ -4,8 +4,8 @@ from backend.app.agents.coo import COOAgent, TaskDecomposition, COODecomposition
 from backend.app.agents.patent.search import PatentSearchAgent, PatentOutputSchema
 from backend.app.agents.dev.backend import BackendDevAgent, DevOutputSchema
 from backend.app.agents.dev.frontend import FrontendDevAgent, FrontendOutputSchema
-from backend.app.agents.security import SecurityAgent, SecurityOutputSchema
-from backend.app.agents.qa import QAAgent, QAOutputSchema
+from backend.app.agents.security import SecurityAgent, SecurityOutputSchema, SecOpsAuditAgent, SecOpsAuditOutputSchema
+from backend.app.agents.qa import QAAgent, QAOutputSchema, SeniorQAAgent, SeniorQAOutputSchema
 
 __all__ = [
     "BaseAgent",
@@ -21,7 +21,12 @@ __all__ = [
     "FrontendOutputSchema",
     "SecurityAgent",
     "SecurityOutputSchema",
+    "SecOpsAuditAgent",
+    "SecOpsAuditOutputSchema",
     "QAAgent",
     "QAOutputSchema",
+    "SeniorQAAgent",
+    "SeniorQAOutputSchema",
 ]
+
 

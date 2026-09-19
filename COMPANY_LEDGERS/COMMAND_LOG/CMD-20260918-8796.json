@@ -1,9 +1,0 @@
-{
-  "id": "CMD-20260918-8796",
-  "project_id": "PRJ-20260918-8796",
-  "sender": "CEO",
-  "recipient": "COO",
-  "instruction": "plc-monitoring ver1.0 시스템 인수 및 3-in-1 모니터링 고도화: Omron CJ2H FINS 프로토콜 아키텍처 감사, 모바일 화면 3종 테마 연동 및 PWA 보안 하드닝 착수",
-  "priority": "P0",
-  "status": "PROCESSING"
-}

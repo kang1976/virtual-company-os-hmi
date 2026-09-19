@@ -1,0 +1,16 @@
+[
+  {
+    "id": "TSK-001",
+    "title": "아키텍처 설계",
+    "assignee": "CTO",
+    "priority": "P1",
+    "status": "WORKING"
+  },
+  {
+    "id": "TSK-002",
+    "title": "특허 조사",
+    "assignee": "CPO",
+    "priority": "P2",
+    "status": "SUBMITTED"
+  }
+]

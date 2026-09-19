@@ -162,22 +162,62 @@ const AGENT_NODES: OrgAgentNode[] = [
   {
     id: 'QA',
     name: 'QAAgent',
-    koreanName: '독립 품질검수 에이전트',
-    role: '품질 검증, 적합성 심사 및 업무 종결 승인',
+    koreanName: '1차 독립 품질검수관',
+    role: '기능 규격 검증, 기본 적합성 심사',
     team: '품질보증실 (QA)',
     isHuman: false,
     model: 'Gemini 2.5 Pro',
-    description: '개발팀과 완전히 독립된 시각에서 CEO 지시 요건 만족 여부와 코드 안정성을 검증하여 업무 종결을 결정합니다.',
+    description: '개발팀과 완전히 독립된 시각에서 CEO 지시 요건 만족 여부와 기능 일치도를 검증하여 1차 품질 합격 여부를 판정합니다.',
     responsibilities: [
       'CEO 요구사항 충족도 및 기능 적합성 평가',
-      '코드 보안성, 예외 처리 및 성능 스트레스 검증',
-      '검수 통과 시 VERIFIED/CLOSED 승인 처리',
-      '품질 미달 시 BLOCKED 반려 및 피드백 전송',
+      '핵심 사용자 시나리오 및 End-to-End 동작 검증',
+      '1차 기능 결함(Severity 1/2) 검출 및 리포팅',
+      '검수 통과 시 2차 수석 검증 단계로 이관',
     ],
     color: 'text-emerald-400',
     borderColor: 'border-emerald-500/50',
     accentBg: 'bg-emerald-950/40',
     icon: Award,
+  },
+  {
+    id: 'SECOPS',
+    name: 'SecOpsAuditAgent',
+    koreanName: '2차 수석 보안 감리관',
+    role: '산업제어망 OT/PLC FINS 제로트러스트 심층 감리',
+    team: '보안감리실 (SecOps)',
+    isHuman: false,
+    model: 'Gemini 2.5 Pro',
+    description: '1차 보안 심사를 거친 산출물에 대해 산업제어망 FINS 통신 패킷 위변조, 제로 트러스트 권한 탈취 방어, 메모리 오버플로우, 침해사고 모의 침투를 심층 감리합니다.',
+    responsibilities: [
+      '산업용 PLC(FINS) 통신 패킷 스니핑/Replay Attack 방어 실측',
+      '런타임 권한 상승(Privilege Escalation) 모의 침투(Pen-Test)',
+      'OWASP ASVS Level 3 제로 트러스트 규격 심사',
+      '최종 보안 인가 상태 (CLEARED / REJECTED) 부여',
+    ],
+    color: 'text-red-400',
+    borderColor: 'border-red-500/50',
+    accentBg: 'bg-red-950/40',
+    icon: Lock,
+  },
+  {
+    id: 'SENIOR_QA',
+    name: 'SeniorQAAgent',
+    koreanName: '2차 수석 품질 재검증관',
+    role: '1차 통과 항목 엣지 케이스 50건 및 극한 스트레스 실측',
+    team: '품질보증위원회 (Senior QA)',
+    isHuman: false,
+    model: 'Gemini 2.5 Pro',
+    description: '1차 QA 검증 결과에 안주하지 않고, 경계 조건 50건 무작위 샘플링, 100회 동시 요청 응답 지연시간 실측, 회귀 결함 정밀 실측을 수행하여 최종 품질 인증(REVERIFIED_PASS)을 부여합니다.',
+    responsibilities: [
+      '경계 조건(Boundary Condition) 엣지 케이스 50건 무작위 샘플링',
+      '동시 100건 부하 시 응답 지연(120ms 이내) 실측',
+      '통신 장애 시 안전 모드 복구력 및 예외 격리 검증',
+      '2차 수석 품질 심층 재검증 최종 합격 인증(REVERIFIED_PASS) 수여',
+    ],
+    color: 'text-teal-400',
+    borderColor: 'border-teal-500/50',
+    accentBg: 'bg-teal-950/40',
+    icon: CheckCircle2,
   },
 ];
 
@@ -205,16 +245,29 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         if (executionStage === 2) return { status: '특허 FTO 조사 중...', color: 'bg-purple-400', isPulse: true };
         if (executionStage > 2) return { status: '조사 완료', color: 'bg-emerald-500', isPulse: false };
       }
+      if (agentId === 'FRONTEND') {
+        if (executionStage === 3) return { status: '모바일/테마 UI 개발 중...', color: 'bg-cyan-400', isPulse: true };
+        if (executionStage > 3) return { status: 'UI 구현 완료', color: 'bg-emerald-500', isPulse: false };
+      }
       if (agentId === 'DEV') {
-        if (executionStage === 3) return { status: '회피설계 구현 중...', color: 'bg-blue-400', isPulse: true };
-        if (executionStage > 3) return { status: '산출물 제출 완료', color: 'bg-emerald-500', isPulse: false };
+        if (executionStage === 4) return { status: '회피설계 구현 중...', color: 'bg-blue-400', isPulse: true };
+        if (executionStage > 4) return { status: '산출물 제출 완료', color: 'bg-emerald-500', isPulse: false };
       }
       if (agentId === 'SECURITY') {
-        if (executionStage === 4) return { status: '보안 취약점 심사 중...', color: 'bg-rose-400', isPulse: true };
-        if (executionStage > 4) return { status: '보안 승인 완료', color: 'bg-emerald-500', isPulse: false };
+        if (executionStage === 5) return { status: '1차 보안 심사 중...', color: 'bg-rose-400', isPulse: true };
+        if (executionStage > 5) return { status: '1차 보안 적합', color: 'bg-emerald-500', isPulse: false };
       }
       if (agentId === 'QA') {
-        if (executionStage === 5) return { status: '독립 품질 검수 중...', color: 'bg-emerald-400', isPulse: true };
+        if (executionStage === 5) return { status: '1차 기능 검수 중...', color: 'bg-emerald-400', isPulse: true };
+        if (executionStage > 5) return { status: '1차 합격 완료', color: 'bg-emerald-500', isPulse: false };
+      }
+      if (agentId === 'SECOPS') {
+        if (executionStage === 6) return { status: '2차 제로트러스트 감리 중...', color: 'bg-red-400', isPulse: true };
+        if (executionStage > 6) return { status: '보안 인가(CLEARED)', color: 'bg-emerald-500', isPulse: false };
+      }
+      if (agentId === 'SENIOR_QA') {
+        if (executionStage === 6) return { status: '2차 스트레스 재검증 중...', color: 'bg-teal-400', isPulse: true };
+        if (executionStage > 6) return { status: '재검증 인증(PASS)', color: 'bg-emerald-500', isPulse: false };
       }
     }
 
@@ -222,9 +275,12 @@ export const OrgChart: React.FC<OrgChartProps> = ({
     const relevantTasks = tasks.filter((t) => {
       const a = (t.assignee || '').toLowerCase();
       if (agentId === 'PATENT' && a.includes('patent')) return true;
+      if (agentId === 'FRONTEND' && (a.includes('frontend') || a.includes('ui'))) return true;
       if (agentId === 'DEV' && (a.includes('backend') || a.includes('dev'))) return true;
-      if (agentId === 'SECURITY' && (a.includes('security') || a.includes('보안'))) return true;
-      if (agentId === 'QA' && a.includes('qa')) return true;
+      if (agentId === 'SECURITY' && a.includes('security') && !a.includes('secops')) return true;
+      if (agentId === 'QA' && a.includes('qa') && !a.includes('senior')) return true;
+      if (agentId === 'SECOPS' && (a.includes('secops') || a.includes('감리'))) return true;
+      if (agentId === 'SENIOR_QA' && (a.includes('senior') || a.includes('재검증'))) return true;
       if (agentId === 'COO' && a.includes('coo')) return true;
       return false;
     });
@@ -259,10 +315,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </div>
           <div>
             <h2 className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-              가상 회사 조직도 및 에이전트 실시간 관제
+              가상 회사 조직도 및 2차 다층 재검증 체계
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-400">
-              인간 최고 의사결정권자(CEO)와 5대 전문 자율 에이전트가 협력하는 기업 거버넌스
+              인간 CEO 지시 → COO 총괄 분해 → 1차 전문 실무(특허·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA)
             </p>
           </div>
         </div>
@@ -270,7 +326,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         <div className="flex items-center gap-2 text-xs w-full sm:w-auto justify-end">
           <span className="px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800 flex items-center gap-1.5 text-[11px]">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            자율 에이전트 6개체 가동 중
+            자율 에이전트 8개체 가동 중 (1차 + 2차 재검증관)
           </span>
         </div>
       </div>
@@ -293,23 +349,25 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </div>
 
           {/* 연결선 2 (수평 분기선) */}
-          <div className="w-full max-w-3xl flex flex-col items-center my-1 hidden sm:flex">
+          <div className="w-full max-w-4xl flex flex-col items-center my-1 hidden sm:flex">
             <div className="h-4 w-0.5 bg-sky-500/80" />
-            <div className="w-[92%] h-0.5 bg-slate-700" />
-            <div className="w-[92%] flex justify-between">
+            <div className="w-[94%] h-0.5 bg-slate-700" />
+            <div className="w-[94%] flex justify-between">
               <div className="h-4 w-0.5 bg-purple-500/80" />
               <div className="h-4 w-0.5 bg-cyan-500/80" />
               <div className="h-4 w-0.5 bg-blue-500/80" />
               <div className="h-4 w-0.5 bg-rose-500/80" />
               <div className="h-4 w-0.5 bg-emerald-500/80" />
+              <div className="h-4 w-0.5 bg-red-500/80" />
+              <div className="h-4 w-0.5 bg-teal-500/80" />
             </div>
           </div>
 
           {/* 모바일 연결선 */}
           <div className="sm:hidden h-4 w-0.5 bg-sky-500/80 my-1" />
 
-          {/* 계층 3: 5대 전문 실무 에이전트 (특허, 프론트, 백엔드, 보안, QA) */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2 sm:gap-2.5 pt-1">
+          {/* 계층 3: 7대 전문 실무 및 2차 재검증 에이전트 */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
             {specialistNodes.map((agent) => (
               <div key={agent.id} className="flex flex-col items-center">
                 {renderAgentCard(

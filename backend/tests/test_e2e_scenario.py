@@ -70,6 +70,16 @@ async def test_complete_company_operation():
     assert sec_task is not None
     assert sec_task["status"] == "CLOSED"
 
+    # 2차 보안 감리관 확인
+    secops_task = next((t for t in completed_tasks if t["assignee"] == "SecOpsAuditAgent"), None)
+    assert secops_task is not None
+    assert secops_task["status"] == "CLOSED"
+
+    # 2차 수석 품질 재검증관 확인
+    senior_qa_task = next((t for t in completed_tasks if t["assignee"] == "SeniorQAAgent"), None)
+    assert senior_qa_task is not None
+    assert senior_qa_task["status"] == "CLOSED"
+
     # COO 최종 감사 확인
     assert "coo_audit" in result
     assert result["coo_audit"]["approved"] is True
@@ -95,9 +105,11 @@ async def test_complete_company_operation():
     assert "BackendAgent" in md_content
     assert "SecurityAgent" in md_content
     assert "QAAgent" in md_content
+    assert "SecOpsAuditAgent" in md_content
+    assert "SeniorQAAgent" in md_content
 
     json_tasks = json.loads(task_ledger_json.read_text(encoding="utf-8"))
-    assert len(json_tasks) >= 5
+    assert len(json_tasks) == 7
 
     # 4-1. 회의록 원장(MEETING_LOG) COO 최종 감사 확인
     meeting_files = list((settings.LEDGER_DIR / "MEETING_LOG").glob("*.md"))
@@ -110,12 +122,12 @@ async def test_complete_company_operation():
     assert cmd_id in cmd_content
     assert command_text in cmd_content
 
-    # 6. 실시간 브로드캐스트 이벤트 검증
+    # 6. 실시간 브로드캐스트 이벤트 수신
     event_names = [e[0] for e in broadcasted_events]
     assert "COMMAND_CREATED" in event_names
     assert "TASK_UPDATED" in event_names
 
-    # 7. DB 영속화 검증
+    # 7. DB 동기화 검증
     async for session in get_db():
         # 프로젝트 조회
         prj_stmt = select(ProjectModel).where(ProjectModel.id == prj_id)
@@ -131,13 +143,15 @@ async def test_complete_company_operation():
         # 태스크 조회
         tasks_stmt = select(TaskModel).where(TaskModel.project_id == prj_id)
         tasks_objs = (await session.execute(tasks_stmt)).scalars().all()
-        assert len(tasks_objs) == 5
+        assert len(tasks_objs) == 7
         task_assignees = {t.assignee for t in tasks_objs}
         assert "PatentSearchAgent" in task_assignees
         assert "FrontendAgent" in task_assignees
         assert "BackendAgent" in task_assignees
         assert "SecurityAgent" in task_assignees
         assert "QAAgent" in task_assignees
+        assert "SecOpsAuditAgent" in task_assignees
+        assert "SeniorQAAgent" in task_assignees
         break
 
 

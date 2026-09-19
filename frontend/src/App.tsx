@@ -218,11 +218,12 @@ export default function App() {
     setExecutionStage(1); // 1: COO 분해 시작
     addLiveLog('CEO 지시', `"${instruction}" (수신: ${targetTeam}, 우선순위: ${priority})`, 'info');
 
-    // 파이프라인 단계 시뮬레이션 타이머 (1: COO -> 2: 특허 -> 3: 프론트 -> 4: 백엔드 -> 5: 보안 -> 6: QA/COO 승인)
-    const timer1 = setTimeout(() => setExecutionStage(2), 600);  // 2: 특허 FTO
-    const timer2 = setTimeout(() => setExecutionStage(3), 1200); // 3: 프론트 UI
-    const timer3 = setTimeout(() => setExecutionStage(4), 1800); // 4: 백엔드 개발
-    const timer4 = setTimeout(() => setExecutionStage(5), 2400); // 5: 보안 심사
+    // 파이프라인 단계 시뮬레이션 타이머 (1: COO -> 2: 특허 -> 3: 프론트 -> 4: 백엔드 -> 5: 1차 검증 -> 6: 2차 재검증 -> 7: COO 승인)
+    const timer1 = setTimeout(() => setExecutionStage(2), 500);  // 2: 특허 FTO
+    const timer2 = setTimeout(() => setExecutionStage(3), 1000); // 3: 프론트 UI
+    const timer3 = setTimeout(() => setExecutionStage(4), 1500); // 4: 백엔드 개발
+    const timer4 = setTimeout(() => setExecutionStage(5), 2000); // 5: 1차 보안/QA
+    const timer5 = setTimeout(() => setExecutionStage(6), 2500); // 6: 2차 심층 재검증
 
     try {
       const response = await postCommand({
@@ -234,12 +235,11 @@ export default function App() {
       try {
         localStorage.setItem('latest_ceo_command_result', JSON.stringify(response));
       } catch {}
-      setExecutionStage(6); // 6: 완료 및 COO 최종 승인
-
+      setExecutionStage(7); // 7: 완료 및 COO 최종 승인
 
       addLiveLog(
         '명령 실행 완료',
-        `프로젝트 [${response.project_id}] 전 공정 완료 (완료 태스크 ${response.completed_tasks?.length || 0}건, COO 최종 품질검수 통과)`,
+        `프로젝트 [${response.project_id}] 2차 다층 재검증 및 전 공정 완료 (완료 태스크 ${response.completed_tasks?.length || 0}건, COO 최종 품질검수 통과)`,
         'success'
       );
 
@@ -255,6 +255,7 @@ export default function App() {
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
+      clearTimeout(timer5);
       setIsExecutingCommand(false);
     }
   };
