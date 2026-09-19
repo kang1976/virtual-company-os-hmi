@@ -12,6 +12,7 @@ from backend.app.agents.marketing import (
     ManualOutputSchema,
     CommercialPackageSchema,
 )
+from backend.app.agents.design import ChiefDesignAgent, DesignSpecSchema
 
 __all__ = [
     "BaseAgent",
@@ -37,6 +38,8 @@ __all__ = [
     "CatalogOutputSchema",
     "ManualOutputSchema",
     "CommercialPackageSchema",
+    "ChiefDesignAgent",
+    "DesignSpecSchema",
 ]
 
 

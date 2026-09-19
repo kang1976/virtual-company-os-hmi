@@ -469,7 +469,7 @@ export default function App() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                     <Users className="w-4 h-4" />
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">가상 조직 에이전트 (10개체)</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">가상 조직 에이전트 (11개체)</h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('org')}
@@ -487,6 +487,7 @@ export default function App() {
                   {[
                     { name: 'COOAgent', role: '총괄 운영 및 업무 분해', status: '정상 가동', color: 'text-sky-700 dark:text-sky-400' },
                     { name: 'PatentSearchAgent', role: '특허 Gatekeeper (FTO)', status: '정상 가동', color: 'text-purple-700 dark:text-purple-400' },
+                    { name: 'ChiefDesignAgent', role: '디자인 전공 수석 디렉터 (초고대비/색채)', status: '정상 가동', color: 'text-violet-700 dark:text-violet-400' },
                     { name: 'FrontendDevAgent', role: '모바일 반응형 및 UI/UX 개발', status: '정상 가동', color: 'text-cyan-700 dark:text-cyan-400' },
                     { name: 'BackendDevAgent', role: '회피설계 및 시스템 구현', status: '정상 가동', color: 'text-blue-700 dark:text-blue-400' },
                     { name: 'SecurityAgent', role: '1차 정보보안 및 OWASP 심사', status: '정상 가동', color: 'text-rose-700 dark:text-rose-400' },

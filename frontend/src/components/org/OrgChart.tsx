@@ -14,6 +14,7 @@ import {
   Palette,
   Eye,
   Megaphone,
+  Sparkles,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -99,6 +100,27 @@ const AGENT_NODES: OrgAgentNode[] = [
     borderColor: 'border-purple-500/50',
     accentBg: 'bg-purple-950/40',
     icon: ShieldAlert,
+  },
+  {
+    id: 'CHIEF_DESIGN',
+    name: 'ChiefDesignAgent',
+    koreanName: '디자인 전공 수석 크리에이티브 디렉터',
+    role: '색채 심리학, 초고대비 UI/UX 및 타이포그래피 설계',
+    team: '디자인센터 (Design & Creative Lab)',
+    isHuman: false,
+    model: 'Gemini 2.5 Pro',
+    description: '디자인 전공 수석 디렉터로서 WCAG AAA 7:1 이상 초고대비 배색, 텍스트 섀도우, 버튼 시인성(Affordance)을 총괄 설계하고 승인합니다.',
+    responsibilities: [
+      'WCAG AAA 7:1 초고대비 명암비 설계 및 가이드 수립',
+      '버튼 텍스트 시인성(Affordance) 및 텍스트 섀도우 규격 수립',
+      'VS Code Light / Cyber Dark / OLED Black 3종 테마 총괄 감리',
+      '색채 심리학 기반 가독성 및 타이포그래피 위계 최적화',
+      '디자인센터 최종 디자인 스펙 승인 (DESIGN_PASS)',
+    ],
+    color: 'text-violet-400',
+    borderColor: 'border-violet-500/50',
+    accentBg: 'bg-violet-950/40',
+    icon: Sparkles,
   },
   {
     id: 'FRONTEND',
@@ -289,6 +311,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         if (executionStage === 2) return { status: '특허 FTO 조사 중...', color: 'bg-purple-400', isPulse: true };
         if (executionStage > 2) return { status: '조사 완료', color: 'bg-emerald-500', isPulse: false };
       }
+      if (agentId === 'CHIEF_DESIGN') {
+        if (executionStage === 3) return { status: '초고대비 디자인 설계 중...', color: 'bg-violet-400', isPulse: true };
+        if (executionStage > 3) return { status: '디자인 승인(DESIGN_PASS)', color: 'bg-emerald-500', isPulse: false };
+      }
       if (agentId === 'FRONTEND') {
         if (executionStage === 3) return { status: '모바일/테마 UI 개발 중...', color: 'bg-cyan-400', isPulse: true };
         if (executionStage > 3) return { status: 'UI 구현 완료', color: 'bg-emerald-500', isPulse: false };
@@ -327,6 +353,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
     const relevantTasks = tasks.filter((t) => {
       const a = (t.assignee || '').toLowerCase();
       if (agentId === 'PATENT' && a.includes('patent')) return true;
+      if (agentId === 'CHIEF_DESIGN' && (a.includes('design') || a.includes('디자인') || a.includes('creative'))) return true;
       if (agentId === 'FRONTEND' && (a.includes('frontend') || a.includes('ui'))) return true;
       if (agentId === 'DEV' && (a.includes('backend') || a.includes('dev'))) return true;
       if (agentId === 'SECURITY' && a.includes('security') && !a.includes('secops')) return true;
@@ -369,10 +396,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </div>
           <div>
             <h2 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2">
-              가상 회사 조직도 및 3대 감리·상품화 마케팅 체계
+              가상 회사 조직도 및 디자인센터·3대 감리·상품화 마케팅 체계
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
-              인간 CEO 지시 → COO 총괄 분해 → 1차 실무(특허·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA) → 시각감리(Visual QA) → 상품화·기술문서(카탈로그·매뉴얼)
+              인간 CEO 지시 → COO 총괄 분해 → 1차 실무(특허·디자인·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA) → 시각감리(Visual QA) → 상품화·기술문서(카탈로그·매뉴얼)
             </p>
           </div>
         </div>
@@ -380,7 +407,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         <div className="flex items-center gap-2 text-xs w-full sm:w-auto justify-end">
           <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-800 flex items-center gap-1.5 text-[11px] font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            자율 에이전트 10개체 가동 중 (실무개발 + 3대 감리 + 상품화 마케팅)
+            자율 에이전트 11개체 가동 중 (실무개발 + 디자인센터 + 3대 감리 + 상품화 마케팅)
           </span>
         </div>
       </div>
@@ -402,12 +429,13 @@ export const OrgChart: React.FC<OrgChartProps> = ({
             {renderAgentCard(cooNode, getAgentStatus('COO'), selectedAgent?.id === 'COO', () => setSelectedAgent(cooNode))}
           </div>
 
-          {/* 연결선 2 (수평 분기선 - 8대 전문 에이전트 연결) */}
+          {/* 연결선 2 (수평 분기선 - 10대 전문 에이전트 연결) */}
           <div className="w-full max-w-4xl flex flex-col items-center my-1 hidden sm:flex">
             <div className="h-4 w-0.5 bg-sky-500/80" />
-            <div className="w-[94%] h-0.5 bg-slate-300 dark:bg-slate-700" />
-            <div className="w-[94%] flex justify-between">
+            <div className="w-[96%] h-0.5 bg-slate-300 dark:bg-slate-700" />
+            <div className="w-[96%] flex justify-between">
               <div className="h-4 w-0.5 bg-purple-500/80" />
+              <div className="h-4 w-0.5 bg-violet-500/80" />
               <div className="h-4 w-0.5 bg-cyan-500/80" />
               <div className="h-4 w-0.5 bg-blue-500/80" />
               <div className="h-4 w-0.5 bg-rose-500/80" />
@@ -415,6 +443,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
               <div className="h-4 w-0.5 bg-red-500/80" />
               <div className="h-4 w-0.5 bg-teal-500/80" />
               <div className="h-4 w-0.5 bg-pink-500/80" />
+              <div className="h-4 w-0.5 bg-amber-500/80" />
             </div>
           </div>
 

@@ -17,6 +17,8 @@ from backend.app.agents import (
     SeniorQAOutputSchema,
     COOAgent,
     COOApprovalSchema,
+    ChiefDesignAgent,
+    DesignSpecSchema,
 )
 
 @pytest.mark.asyncio
@@ -191,4 +193,32 @@ async def test_coo_verify_final_quality():
         directive_feedback="승인 완료"
     )
     assert approval_obj.approved is True
+
+
+@pytest.mark.asyncio
+async def test_chief_design_agent():
+    designer = ChiefDesignAgent()
+    assert designer.name == "ChiefDesignAgent"
+    assert designer.role == "디자인 전공 수석 크리에이티브 디렉터"
+    assert designer.department == "디자인센터 (Design & Creative Lab)"
+
+    res = await designer.create_design_spec("PLC 관제 대시보드 및 버튼 컴포넌트", theme="VS Code Light Modern")
+    assert "palette_name" in res
+    assert "primary_cta_spec" in res
+    assert "contrast_ratio_audit" in res
+    assert "typography_spec" in res
+    assert "visual_affordance_rules" in res
+    assert "design_approval" in res
+
+    schema = DesignSpecSchema(
+        palette_name="VS Code Light High Contrast",
+        primary_cta_spec="순백색 텍스트 섀도우 적용",
+        contrast_ratio_audit="WCAG AAA 12:1 초과",
+        typography_spec="Inter font-extrabold",
+        visual_affordance_rules=["버튼 테두리 1px 고대비", "호버 링 인디케이터"],
+        design_approval=True
+    )
+    assert schema.design_approval is True
+    assert len(schema.visual_affordance_rules) == 2
+
 

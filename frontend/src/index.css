@@ -62,7 +62,12 @@
 }
 
 /* ==========================================================================
-   1. 모던 라이트 테마 (Modern Light Theme) 전면 시각화 오버라이드
+   1. VS Code 스타일 모던 라이트 테마 (VS Code Light Modern Theme)
+   - 순백색(#FFFFFF) 에디터 캔버스 및 카드
+   - 뉴트럴 오프화이트(#F8F9FA) 메인 윈도우 배경
+   - 초정밀 1px/1.5px 보더라인(#E5E7EB, #D1D5DB)
+   - 눈이 편안하면서도 최고 명암비를 제공하는 딥 차콜(#111827, #1F2937) 텍스트
+   - VS Code 시그니처 블루(#0066B8) 및 Claude Code 스타일 포커스 링
    ========================================================================== */
 :root[data-theme="modern-light"] {
   color-scheme: light;
@@ -71,47 +76,51 @@
 :root[data-theme="modern-light"] html,
 :root[data-theme="modern-light"] body,
 :root[data-theme="modern-light"] .modern-light {
-  background-color: #f1f5f9 !important; /* slate-100 */
-  color: #0f172a !important; /* slate-900 */
+  background-color: #f8f9fa !important; /* VS Code 윈도우 캔버스 배경 */
+  color: #1f2937 !important; /* 딥 차콜 본문 */
 }
 
-/* 라이트 모드 메인 배경 및 카드 */
-:root[data-theme="modern-light"] header,
-:root[data-theme="modern-light"] footer,
-:root[data-theme="modern-light"] .bg-slate-950,
-:root[data-theme="modern-light"] .bg-slate-950\/90,
-:root[data-theme="modern-light"] .bg-slate-950\/80,
-:root[data-theme="modern-light"] .bg-slate-950\/70,
-:root[data-theme="modern-light"] .bg-slate-950\/60 {
+/* VS Code 상단 바 (헤더) */
+:root[data-theme="modern-light"] header {
   background-color: #ffffff !important;
-  color: #0f172a !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
+/* VS Code 에디터 및 카드 컨테이너 (순백색 #FFFFFF) */
+:root[data-theme="modern-light"] .bg-white,
 :root[data-theme="modern-light"] .bg-slate-900,
 :root[data-theme="modern-light"] .bg-slate-900\/95,
 :root[data-theme="modern-light"] .bg-slate-900\/90,
 :root[data-theme="modern-light"] .bg-slate-900\/80,
-:root[data-theme="modern-light"] .bg-slate-900\/70,
-:root[data-theme="modern-light"] .bg-slate-900\/60,
-:root[data-theme="modern-light"] .bg-slate-900\/50 {
-  background-color: #f8fafc !important; /* slate-50 */
+:root[data-theme="modern-light"] .bg-slate-950,
+:root[data-theme="modern-light"] .bg-slate-950\/90,
+:root[data-theme="modern-light"] .bg-slate-950\/80 {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
 }
 
+/* VS Code 사이드바 / 서브 패널 / 칩 배경 (은은한 라이트 그레이) */
+:root[data-theme="modern-light"] .bg-slate-50,
+:root[data-theme="modern-light"] .bg-slate-100,
 :root[data-theme="modern-light"] .bg-slate-800,
 :root[data-theme="modern-light"] .bg-slate-800\/80,
 :root[data-theme="modern-light"] .bg-slate-800\/70,
 :root[data-theme="modern-light"] .bg-slate-800\/60 {
-  background-color: #e2e8f0 !important; /* slate-200 */
-  color: #1e293b !important;
+  background-color: #f3f4f6 !important; /* VS Code 패널 라이트 그레이 */
+  color: #1f2937 !important;
 }
 
-:root[data-theme="modern-light"] .hover\:bg-slate-800:hover,
+/* VS Code 호버 인터랙션 */
+:root[data-theme="modern-light"] .hover\:bg-slate-100:hover,
+:root[data-theme="modern-light"] .hover\:bg-slate-200:hover,
 :root[data-theme="modern-light"] .hover\:bg-slate-700:hover,
+:root[data-theme="modern-light"] .hover\:bg-slate-800:hover,
 :root[data-theme="modern-light"] .hover\:bg-slate-900:hover {
-  background-color: #cbd5e1 !important; /* slate-300 */
+  background-color: #e5e7eb !important;
 }
 
-/* 라이트 모드 경계선 (선명한 2px 테두리 보장) */
+/* VS Code 초정밀 테두리 (미세하고 정갈한 1px 보더) */
 :root[data-theme="modern-light"] .border-slate-200,
 :root[data-theme="modern-light"] .border-slate-300,
 :root[data-theme="modern-light"] .border-slate-400,
@@ -121,145 +130,177 @@
 :root[data-theme="modern-light"] .border-slate-800\/90,
 :root[data-theme="modern-light"] .border-slate-800\/80,
 :root[data-theme="modern-light"] .border-slate-800\/60 {
-  border-color: #94a3b8 !important; /* slate-400 - 선명하고 또렷한 경계선 */
+  border-color: #e5e7eb !important;
 }
 
-/* 라이트 모드 텍스트 고대비 보정 */
+/* VS Code 텍스트 타이포그래피 (딥 차콜로 흐릿함 완전 배제) */
 :root[data-theme="modern-light"] h1,
 :root[data-theme="modern-light"] h2,
 :root[data-theme="modern-light"] h3,
 :root[data-theme="modern-light"] h4,
-:root[data-theme="modern-light"] .text-slate-100,
-:root[data-theme="modern-light"] .text-slate-200 {
-  color: #0f172a !important; /* slate-900 */
+:root[data-theme="modern-light"] .text-slate-900 {
+  color: #111827 !important; /* 최고 명암비 딥 블랙 */
   font-weight: 700 !important;
 }
 
-/* 제목이나 카드 본문 등 일반 컨테이너의 text-white만 어둡게 변환 */
-:root[data-theme="modern-light"] div:not([class*="bg-sky-"]):not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-purple-"]) > .text-white,
-:root[data-theme="modern-light"] p.text-white,
-:root[data-theme="modern-light"] h1.text-white,
-:root[data-theme="modern-light"] h2.text-white,
-:root[data-theme="modern-light"] h3.text-white,
-:root[data-theme="modern-light"] h4.text-white,
-:root[data-theme="modern-light"] span.text-white:not([class*="btn"]):not([class*="badge"]) {
-  color: #0f172a !important;
-}
-
-/* 원색 배경 버튼 및 배지의 흰색 글씨는 라이트 모드에서도 100% 흰색 유지 */
-:root[data-theme="modern-light"] button[class*="bg-sky-600"],
-:root[data-theme="modern-light"] button[class*="bg-sky-500"],
-:root[data-theme="modern-light"] button[class*="bg-indigo-600"],
-:root[data-theme="modern-light"] button[class*="bg-emerald-600"],
-:root[data-theme="modern-light"] button[class*="bg-rose-600"],
-:root[data-theme="modern-light"] button[class*="bg-purple-600"],
-:root[data-theme="modern-light"] .btn-primary,
-:root[data-theme="modern-light"] .text-white-force {
-  color: #ffffff !important;
-}
-
-:root[data-theme="modern-light"] button[class*="bg-sky-600"] svg,
-:root[data-theme="modern-light"] button[class*="bg-indigo-600"] svg,
-:root[data-theme="modern-light"] button[class*="bg-emerald-600"] svg,
-:root[data-theme="modern-light"] button[class*="bg-rose-600"] svg {
-  color: #ffffff !important;
-  stroke: #ffffff !important;
-}
-
-/* 비활성화 버튼(disabled) 라이트 모드 고대비 스타일링 - 흐릿함 완전 제거 */
-:root[data-theme="modern-light"] button:disabled,
-:root[data-theme="modern-light"] button[disabled] {
-  background-color: #cbd5e1 !important; /* slate-300 */
-  color: #334155 !important; /* slate-700 - 선명하게 읽히는 진한 색상 */
-  border: 2px solid #94a3b8 !important; /* slate-400 */
-  font-weight: 700 !important;
-  box-shadow: none !important;
-  cursor: not-allowed !important;
-}
-
-:root[data-theme="modern-light"] button:disabled svg,
-:root[data-theme="modern-light"] button[disabled] svg {
-  color: #334155 !important;
-  stroke: #334155 !important;
-}
-
-/* 추천 프리셋 칩 버튼 라이트 모드 보정 */
-:root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80,
-:root[data-theme="modern-light"] .rounded-full.bg-slate-800 {
-  background-color: #ffffff !important;
-  color: #1e293b !important; /* slate-800 */
-  border: 1.5px solid #94a3b8 !important; /* slate-400 */
-  font-weight: 600 !important;
-}
-
-:root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80:hover,
-:root[data-theme="modern-light"] .rounded-full.bg-slate-800:hover {
-  background-color: #e2e8f0 !important; /* slate-200 */
-  color: #0f172a !important; /* slate-900 */
-  border-color: #0284c7 !important;
-}
-
-:root[data-theme="modern-light"] .text-slate-300,
-:root[data-theme="modern-light"] .text-slate-400 {
-  color: #334155 !important; /* slate-700 - 가독성 향상 */
-  font-weight: 500 !important;
+:root[data-theme="modern-light"] .text-slate-700,
+:root[data-theme="modern-light"] .text-slate-800 {
+  color: #1f2937 !important;
 }
 
 :root[data-theme="modern-light"] .text-slate-500,
 :root[data-theme="modern-light"] .text-slate-600 {
-  color: #1e293b !important; /* slate-800 */
-  font-weight: 600 !important;
-}
-
-/* 라이트 모드 폼 컨트롤 (인풋, 셀렉트박스 선명한 테두리) */
-:root[data-theme="modern-light"] input,
-:root[data-theme="modern-light"] select,
-:root[data-theme="modern-light"] textarea {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border: 2px solid #94a3b8 !important; /* slate-400 */
+  color: #4b5563 !important; /* VS Code 서브라벨 */
   font-weight: 500 !important;
 }
 
-:root[data-theme="modern-light"] select option {
+:root[data-theme="modern-light"] .text-slate-300,
+:root[data-theme="modern-light"] .text-slate-400 {
+  color: #6b7280 !important; /* 부가정보 */
+}
+
+/* 일반 텍스트의 text-white는 라이트 모드에서 딥 차콜로 변환 */
+:root[data-theme="modern-light"] p.text-white,
+:root[data-theme="modern-light"] h1.text-white,
+:root[data-theme="modern-light"] h2.text-white,
+:root[data-theme="modern-light"] h3.text-white,
+:root[data-theme="modern-light"] h4.text-white {
+  color: #111827 !important;
+}
+
+/* VS Code 스타일 유채색 버튼 (에메랄드, 인디고, 스카이블루, 퍼플) - 100% 순백색 글자 */
+:root[data-theme="modern-light"] button[class*="bg-sky-"],
+:root[data-theme="modern-light"] button[class*="bg-indigo-"],
+:root[data-theme="modern-light"] button[class*="bg-emerald-"],
+:root[data-theme="modern-light"] button[class*="bg-purple-"],
+:root[data-theme="modern-light"] button[class*="bg-rose-"],
+:root[data-theme="modern-light"] button[class*="from-"],
+:root[data-theme="modern-light"] button[class*="bg-sky-"] *,
+:root[data-theme="modern-light"] button[class*="bg-indigo-"] *,
+:root[data-theme="modern-light"] button[class*="bg-emerald-"] *,
+:root[data-theme="modern-light"] button[class*="bg-purple-"] *,
+:root[data-theme="modern-light"] button[class*="bg-rose-"] *,
+:root[data-theme="modern-light"] button[class*="from-"] *,
+:root[data-theme="modern-light"] .text-white-force,
+:root[data-theme="modern-light"] .text-white-force * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+:root[data-theme="modern-light"] button[class*="bg-sky-"] svg,
+:root[data-theme="modern-light"] button[class*="bg-indigo-"] svg,
+:root[data-theme="modern-light"] button[class*="bg-emerald-"] svg,
+:root[data-theme="modern-light"] button[class*="bg-purple-"] svg,
+:root[data-theme="modern-light"] button[class*="from-"] svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* VS Code 보조 버튼 (Outline Button) */
+:root[data-theme="modern-light"] button[class*="bg-slate-100"],
+:root[data-theme="modern-light"] button[class*="bg-slate-200"] {
   background-color: #ffffff !important;
-  color: #0f172a !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+:root[data-theme="modern-light"] button[class*="bg-slate-100"] *,
+:root[data-theme="modern-light"] button[class*="bg-slate-200"] * {
+  color: #1f2937 !important;
+}
+
+/* 비활성화 버튼(disabled) VS Code 스타일 */
+:root[data-theme="modern-light"] button:disabled,
+:root[data-theme="modern-light"] button[disabled] {
+  background-color: #f3f4f6 !important;
+  color: #9ca3af !important;
+  border: 1px solid #e5e7eb !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+/* 추천 프리셋 칩 버튼 VS Code 스타일 */
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80,
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800 {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80:hover,
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+  border-color: #0066b8 !important;
+}
+
+/* VS Code 입력창 (CommandBar 인풋 - Claude Terminal 스타일 포커스 링) */
+:root[data-theme="modern-light"] input,
+:root[data-theme="modern-light"] textarea {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1.5px solid #d1d5db !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+:root[data-theme="modern-light"] input:focus,
+:root[data-theme="modern-light"] textarea:focus {
+  border-color: #8b5cf6 !important; /* VS Code Claude Code 터미널 퍼플 포커스 링 */
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+  outline: none !important;
 }
 
 :root[data-theme="modern-light"] input::placeholder,
 :root[data-theme="modern-light"] textarea::placeholder {
-  color: #64748b !important; /* slate-500 - 또렷한 플레이스홀더 */
+  color: #9ca3af !important;
 }
 
-/* 라이트 모드 파스텔 텍스트 고대비 보정 (흰 배경에서도 또렷하게 보이도록 진한 톤 적용) */
+/* VS Code 셀렉트박스 */
+:root[data-theme="modern-light"] select {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+:root[data-theme="modern-light"] select option {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* VS Code 스타일 파스텔 텍스트 */
 :root[data-theme="modern-light"] .text-sky-200,
 :root[data-theme="modern-light"] .text-sky-300,
 :root[data-theme="modern-light"] .text-sky-400 {
-  color: #0284c7 !important; /* sky-600 */
+  color: #0066b8 !important; /* VS Code 시그니처 블루 */
   font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-indigo-200,
 :root[data-theme="modern-light"] .text-indigo-300,
 :root[data-theme="modern-light"] .text-indigo-400 {
-  color: #4338ca !important; /* indigo-700 */
+  color: #4f46e5 !important;
   font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-amber-200,
 :root[data-theme="modern-light"] .text-amber-300,
 :root[data-theme="modern-light"] .text-amber-400 {
-  color: #b45309 !important; /* amber-700 */
+  color: #b45309 !important;
   font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-emerald-200,
 :root[data-theme="modern-light"] .text-emerald-300,
 :root[data-theme="modern-light"] .text-emerald-400 {
-  color: #047857 !important; /* emerald-700 */
+  color: #059669 !important;
   font-weight: 600 !important;
 }
 :root[data-theme="modern-light"] .text-purple-200,
 :root[data-theme="modern-light"] .text-purple-300,
 :root[data-theme="modern-light"] .text-purple-400 {
-  color: #6b21a8 !important; /* purple-700 */
+  color: #7c3aed !important;
   font-weight: 600 !important;
 }
 

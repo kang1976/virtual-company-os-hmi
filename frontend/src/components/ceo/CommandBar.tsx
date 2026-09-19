@@ -348,10 +348,10 @@ export const CommandBar: React.FC<CommandBarProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setShowResultModal(true)}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-xs text-white font-bold shadow-md ring-1 ring-sky-400/50 transition-all active:scale-95 text-white-force cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-xs text-white font-extrabold shadow-md ring-2 ring-sky-300 dark:ring-sky-400/50 transition-all active:scale-95 text-white-force cursor-pointer"
               >
-                <Award className="w-4 h-4 text-amber-300" />
-                <span>🏆 CEO 업무 완수 종합 보고서 열람</span>
+                <Award className="w-4 h-4 text-amber-300 drop-shadow" />
+                <span className="text-white text-white-force font-extrabold drop-shadow-sm">🏆 CEO 업무 완수 종합 보고서 열람</span>
               </button>
               {onNavigateTab && (
                 <>
@@ -636,20 +636,20 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                         setShowResultModal(false);
                         onNavigateTab('ledgers');
                       }}
-                      className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 text-white-force shadow-sm border border-emerald-500"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 text-white-force shadow-md border-2 border-emerald-400/80 cursor-pointer active:scale-95"
                     >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>🏛️ 4대 장부(특허 원장) 바로 열람</span>
+                      <BookOpen className="w-4 h-4 text-white drop-shadow" />
+                      <span className="text-white text-white-force font-extrabold drop-shadow-sm">🏛️ 4대 장부(특허 원장) 바로 열람</span>
                     </button>
                     <button
                       onClick={() => {
                         setShowResultModal(false);
                         onNavigateTab('kanban');
                       }}
-                      className="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 text-white-force shadow-sm border border-indigo-500"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 text-white-force shadow-md border-2 border-indigo-400/80 cursor-pointer active:scale-95"
                     >
-                      <Kanban className="w-3.5 h-3.5" />
-                      <span>📊 5단계 칸반 보드 이동</span>
+                      <Kanban className="w-4 h-4 text-white drop-shadow" />
+                      <span className="text-white text-white-force font-extrabold drop-shadow-sm">📊 5단계 칸반 보드 이동</span>
                     </button>
                   </>
                 )}
