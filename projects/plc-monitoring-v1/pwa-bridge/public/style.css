@@ -6,8 +6,8 @@
   --bg: #0f172a;
   --surface: #1e293b;
   --surface-2: #0f172a;
-  --border: #334155;
-  --border-strong: #475569;
+  --border: rgba(255, 255, 255, 0.25);
+  --border-strong: rgba(255, 255, 255, 0.35);
   --text: #f8fafc;
   --text-dim: #94a3b8;
   --primary: #0284c7;
@@ -40,8 +40,8 @@
   --bg: #000000;
   --surface: #0a0a0a;
   --surface-2: #050505;
-  --border: #262626;
-  --border-strong: #404040;
+  --border: rgba(255, 255, 255, 0.25);
+  --border-strong: rgba(255, 255, 255, 0.35);
   --text: #f8fafc;
   --text-dim: #737373;
   --primary: #0284c7;

@@ -7,7 +7,7 @@
   --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 :root[data-theme='dark'] {
-  --bg: #0f172a; --panel: #1e293b; --panel-border: #334155; --text: #f8fafc; --muted: #94a3b8;
+  --bg: #0f172a; --panel: #1e293b; --panel-border: rgba(255, 255, 255, 0.25); --text: #f8fafc; --muted: #94a3b8;
   --accent: #38bdf8; --accent-dim: #0c4a6e; --warn: #f59e0b; --warn-bg: #451a03; --warn-text: #fde68a;
   --error: #ef4444; --input-bg: #0f172a; --bg-alt: #020617; --flash-bg: #082f49; --danger-bg: #450a0a;
   --primary-text: #e0f2fe; --danger-text: #fecaca; --send-tag: #38bdf8; --hex-text: #94a3b8;

@@ -67,6 +67,17 @@ class _OmronFinsAppState extends State<OmronFinsApp> {
           surface: Color(0xFF1E293B),
           onSurface: Color(0xFFF8FAFC),
         ),
+        dividerTheme: const DividerThemeData(
+          color: Color(0x33FFFFFF),
+          thickness: 1,
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: const Color(0xFF111827),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1E293B),
           foregroundColor: Color(0xFFF8FAFC),
@@ -76,7 +87,7 @@ class _OmronFinsAppState extends State<OmronFinsApp> {
           color: const Color(0xFF1E293B),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0xFF334155), width: 1),
+            side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
@@ -276,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Card(
                 color: const Color(0xFF111827),
                 shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Color(0xFF1F2937)),
+                  side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
@@ -309,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFF0B1220),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF1F2937)),
+                          border: Border.all(color: const Color(0x40FFFFFF)),
                         ),
                         child: Row(
                           children: [
@@ -735,7 +746,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
         builder: (ctx, setDlgState) => AlertDialog(
           backgroundColor: const Color(0xFF111827),
           shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0xFF1F2937)),
+            side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
             borderRadius: BorderRadius.circular(14),
           ),
           title: Row(
@@ -1424,7 +1435,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF111827),
         shape: RoundedRectangleBorder(
-          side: const BorderSide(color: Color(0xFF1F2937)),
+          side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
           borderRadius: BorderRadius.circular(14),
         ),
         title: Row(
@@ -1564,7 +1575,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
             decoration: BoxDecoration(
               color: const Color(0xFF0F1626),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFF1F2937)),
+              border: Border.all(color: const Color(0x40FFFFFF)),
             ),
             child: Row(
               children: [
@@ -1762,8 +1773,8 @@ class _PwaMainShellState extends State<PwaMainShell> {
                     fillColor: const Color(0xFF111827),
                     prefixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF), size: 18),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF1F2937))),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF1F2937))),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0x40FFFFFF))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0x40FFFFFF))),
                   ),
                 ),
               ),
@@ -1965,7 +1976,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF111827),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF1F2937)),
+                    border: Border.all(color: const Color(0x40FFFFFF)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
@@ -2132,8 +2143,8 @@ class _PwaMainShellState extends State<PwaMainShell> {
                         drawVerticalLine: true,
                         horizontalInterval: yInterval,
                         verticalInterval: xInterval,
-                        getDrawingHorizontalLine: (_) => const FlLine(color: Color(0xFF1F2937), strokeWidth: 1),
-                        getDrawingVerticalLine: (_) => const FlLine(color: Color(0xFF1F2937), strokeWidth: 1),
+                        getDrawingHorizontalLine: (_) => const FlLine(color: Color(0x33FFFFFF), strokeWidth: 1),
+                        getDrawingVerticalLine: (_) => const FlLine(color: Color(0x33FFFFFF), strokeWidth: 1),
                       ),
                       titlesData: FlTitlesData(
                         leftTitles: AxisTitles(
@@ -2166,7 +2177,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       ),
-                      borderData: FlBorderData(show: true, border: Border.all(color: const Color(0xFF1F2937))),
+                      borderData: FlBorderData(show: true, border: Border.all(color: const Color(0x40FFFFFF))),
                       lineBarsData: _trendConfigs.map((cfg) {
                         final spots = cfg['spots'] as List<FlSpot>;
                         return LineChartBarData(
@@ -2393,7 +2404,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF0B1220),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF1F2937)),
+                      border: Border.all(color: const Color(0x40FFFFFF)),
                     ),
                     child: Row(
                       children: [
@@ -2531,7 +2542,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF070D18),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF1F2937)),
+                      border: Border.all(color: const Color(0x40FFFFFF)),
                     ),
                     child: _finsService.diagnosticLogs.isEmpty
                         ? const Text('통신 패킷 대기 중...', style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Color(0xFF6B7280)))
