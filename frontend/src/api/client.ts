@@ -69,6 +69,18 @@ export async function postCommand(command: CommandRequest | string): Promise<Com
 }
 
 /**
+ * 가장 최근 수행된 CEO 명령 및 종합 보고서 조회
+ */
+export async function getLatestCommand(): Promise<CommandResponse | null> {
+  try {
+    return await request<CommandResponse>('/api/commands/latest');
+  } catch {
+    return null;
+  }
+}
+
+
+/**
  * 전체 태스크 목록 조회
  */
 export async function getTasks(): Promise<TaskItem[]> {

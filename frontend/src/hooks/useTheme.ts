@@ -1,7 +1,7 @@
 // frontend/src/hooks/useTheme.ts
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'cyber-dark' | 'oled-black' | 'modern-light';
+export type ThemeMode = 'cyber-dark' | 'modern-light';
 
 export interface ThemeOption {
   id: ThemeMode;
@@ -13,19 +13,13 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'cyber-dark',
-    label: '사이버 다크',
+    label: '다크 모드',
     iconName: 'Moon',
-    description: '기본 하이테크 슬레이트 블루 테마',
-  },
-  {
-    id: 'oled-black',
-    label: 'OLED 제트블랙',
-    iconName: 'Sparkles',
-    description: '배터리 절약 및 딥블랙 고대비 테마',
+    description: '하이테크 사이버 다크 테마',
   },
   {
     id: 'modern-light',
-    label: '모던 라이트',
+    label: '라이트 모드',
     iconName: 'Sun',
     description: '주간 시인성 우수 클린 화이트 테마',
   },
@@ -37,7 +31,7 @@ export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     try {
       const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode;
-      if (saved && ['cyber-dark', 'oled-black', 'modern-light'].includes(saved)) {
+      if (saved && ['cyber-dark', 'modern-light'].includes(saved)) {
         return saved;
       }
     } catch {
@@ -60,15 +54,10 @@ export function useTheme() {
     }
   }, []);
 
-  // 테마 순환 토글
+  // 테마 2단계 토글 (다크 <-> 라이트)
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => {
-      const next: ThemeMode =
-        prev === 'cyber-dark'
-          ? 'oled-black'
-          : prev === 'oled-black'
-          ? 'modern-light'
-          : 'cyber-dark';
+      const next: ThemeMode = prev === 'cyber-dark' ? 'modern-light' : 'cyber-dark';
       try {
         localStorage.setItem(THEME_STORAGE_KEY, next);
       } catch {
@@ -128,12 +117,6 @@ export function useTheme() {
     } else {
       root.classList.add('dark');
       root.classList.remove('light');
-    }
-
-    if (theme === 'oled-black') {
-      root.classList.add('theme-oled');
-    } else {
-      root.classList.remove('theme-oled');
     }
   }, [theme]);
 

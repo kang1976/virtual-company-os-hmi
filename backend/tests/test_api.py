@@ -98,3 +98,18 @@ def test_api_system_reset():
     assert "deleted_files" in data
 
 
+def test_api_get_latest_command():
+    # After reset, may be None or post a command and verify
+    cmd_res = client.post("/api/commands", json={"instruction": "최신 지시 조회 테스트", "target_team": "전체"})
+    assert cmd_res.status_code == 200
+
+    latest_res = client.get("/api/commands/latest")
+    assert latest_res.status_code == 200
+    latest_data = latest_res.json()
+    assert latest_data is not None
+    assert "project_id" in latest_data
+    assert "command_id" in latest_data
+    assert "completed_tasks" in latest_data
+
+
+

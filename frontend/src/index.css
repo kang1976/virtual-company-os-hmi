@@ -8,20 +8,9 @@
     --bg-main: #020617;
     --bg-card: #0f172a;
     --bg-card-hover: #1e293b;
-    --border-color: #1e293b;
+    --border-color: #334155;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-  }
-
-  /* OLED 제트 블랙 모드 */
-  :root[data-theme="oled-black"] {
-    color-scheme: dark;
-    --bg-main: #000000;
-    --bg-card: #0a0a0a;
-    --bg-card-hover: #141414;
-    --border-color: #262626;
-    --text-primary: #ffffff;
-    --text-secondary: #a3a3a3;
   }
 
   /* 모던 라이트 모드 */
@@ -232,67 +221,51 @@
   color: #94a3b8 !important;
 }
 
+/* 라이트 모드 파스텔 텍스트 고대비 보정 (흰 배경에서도 또렷하게 보이도록 진한 톤 적용) */
+:root[data-theme="modern-light"] .text-sky-200,
+:root[data-theme="modern-light"] .text-sky-300 {
+  color: #0369a1 !important; /* sky-700 */
+}
+:root[data-theme="modern-light"] .text-indigo-200,
+:root[data-theme="modern-light"] .text-indigo-300 {
+  color: #4338ca !important; /* indigo-700 */
+}
+:root[data-theme="modern-light"] .text-amber-200,
+:root[data-theme="modern-light"] .text-amber-300 {
+  color: #b45309 !important; /* amber-700 */
+}
+:root[data-theme="modern-light"] .text-emerald-200,
+:root[data-theme="modern-light"] .text-emerald-300 {
+  color: #047857 !important; /* emerald-700 */
+}
+:root[data-theme="modern-light"] .text-purple-200,
+:root[data-theme="modern-light"] .text-purple-300 {
+  color: #6b21a8 !important; /* purple-700 */
+}
+
 /* ==========================================================================
-   2. OLED 제트블랙 테마 (OLED Jet Black Theme) 전면 시각화 오버라이드
+   2. 사이버 다크 테마 (Cyber Dark Theme) 고대비 경계선 보강 (OLED 모드 완전 삭제)
    ========================================================================== */
-:root[data-theme="oled-black"] {
-  color-scheme: dark;
+:root:not([data-theme="modern-light"]) .border-slate-800,
+:root:not([data-theme="modern-light"]) .border-slate-800\/90,
+:root:not([data-theme="modern-light"]) .border-slate-800\/80,
+:root:not([data-theme="modern-light"]) .border-slate-800\/60,
+.dark .border-slate-800,
+.dark .border-slate-800\/90,
+.dark .border-slate-800\/80,
+.dark .border-slate-800\/60 {
+  border-color: #334155 !important; /* slate-700으로 선명한 카드 및 패널 경계선 부여 */
 }
 
-:root[data-theme="oled-black"] html,
-:root[data-theme="oled-black"] body,
-:root[data-theme="oled-black"] .oled-black {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+:root:not([data-theme="modern-light"]) .border-slate-700,
+:root:not([data-theme="modern-light"]) .border-slate-700\/80,
+:root:not([data-theme="modern-light"]) .border-slate-700\/60,
+.dark .border-slate-700,
+.dark .border-slate-700\/80,
+.dark .border-slate-700\/60 {
+  border-color: #475569 !important; /* slate-600으로 모달 및 주요 컨테이너 경계선 극대화 */
 }
 
-:root[data-theme="oled-black"] header,
-:root[data-theme="oled-black"] footer,
-:root[data-theme="oled-black"] .bg-slate-950,
-:root[data-theme="oled-black"] .bg-slate-950\/90,
-:root[data-theme="oled-black"] .bg-slate-950\/80,
-:root[data-theme="oled-black"] .bg-slate-950\/70,
-:root[data-theme="oled-black"] .bg-slate-950\/60,
-:root[data-theme="oled-black"] .bg-slate-900,
-:root[data-theme="oled-black"] .bg-slate-900\/95,
-:root[data-theme="oled-black"] .bg-slate-900\/90,
-:root[data-theme="oled-black"] .bg-slate-900\/80,
-:root[data-theme="oled-black"] .bg-slate-900\/70,
-:root[data-theme="oled-black"] .bg-slate-900\/60,
-:root[data-theme="oled-black"] .bg-slate-900\/50 {
-  background-color: #000000 !important; /* 순수 제트블랙 */
-}
-
-:root[data-theme="oled-black"] .border-slate-800,
-:root[data-theme="oled-black"] .border-slate-800\/90,
-:root[data-theme="oled-black"] .border-slate-800\/80,
-:root[data-theme="oled-black"] .border-slate-800\/60,
-:root[data-theme="oled-black"] .border-slate-700,
-:root[data-theme="oled-black"] .border-slate-700\/80 {
-  border-color: #262626 !important; /* 딥 차콜 고대비 */
-}
-
-:root[data-theme="oled-black"] input,
-:root[data-theme="oled-black"] select,
-:root[data-theme="oled-black"] textarea {
-  background-color: #050505 !important;
-  border-color: #333333 !important;
-  color: #ffffff !important;
-}
-
-:root[data-theme="oled-black"] select option {
-  background-color: #0a0a0a !important;
-  color: #ffffff !important;
-}
-
-:root[data-theme="oled-black"] .text-slate-400,
-:root[data-theme="oled-black"] .text-slate-500 {
-  color: #a3a3a3 !important;
-}
-
-:root[data-theme="oled-black"] .text-slate-600 {
-  color: #737373 !important;
-}
 
 /* 사이버 다크 드롭다운 옵션 기본 스타일 */
 select option {

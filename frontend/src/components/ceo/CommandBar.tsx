@@ -180,6 +180,18 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                 ))}
               </select>
             </div>
+
+            {/* 완수 보고서 상단 퀵 버튼 */}
+            {latestResult && (
+              <button
+                type="button"
+                onClick={() => setShowResultModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 text-xs font-bold shadow-sm transition-all active:scale-95 shrink-0 ml-auto sm:ml-0"
+              >
+                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>🏆 완수 보고서 열람</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -210,33 +222,34 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4" />
-                  <span className={instruction.trim() ? 'text-white-force font-bold' : ''}>지시 발령</span>
+                  <Send className="w-4 h-4 text-white" />
+                  <span className="text-white-force font-bold">지시 발령</span>
                 </>
               )}
             </button>
           </div>
 
+          {/* 에러 메시지 알림 */}
           {errorMsg && (
-            <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-3 py-1.5 rounded-lg">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 rounded-xl text-xs animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* 사전 정의 프리셋 퀵 액션 */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pt-1 pb-0.5">
-            <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-[11px] shrink-0 font-medium">
-              <Sparkles className="w-3 h-3 text-sky-500" />
-              <span className="hidden xs:inline">추천:</span>
-            </div>
+          {/* 추천 지시 프리셋 칩 목록 */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mr-1 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-sky-600 dark:text-sky-400" />
+              추천 지시:
+            </span>
             {PRESET_COMMANDS.map((preset, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleSelectPreset(preset)}
                 disabled={isExecuting}
-                className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white border border-slate-300 dark:border-slate-700/60 text-[11px] transition-colors active:scale-95 disabled:opacity-50 whitespace-nowrap shrink-0 font-medium"
+                className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700/80 transition-all hover:border-sky-500 dark:hover:border-sky-500 active:scale-95 disabled:opacity-40"
               >
                 {preset}
               </button>
@@ -257,9 +270,10 @@ export const CommandBar: React.FC<CommandBarProps> = ({
               <button
                 type="button"
                 onClick={() => setShowResultModal(true)}
-                className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 ml-auto"
+                className="text-xs font-bold px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 shadow-sm flex items-center gap-1.5 ml-auto active:scale-95 transition-all"
               >
-                <span>🏆 최근 완수 보고서 열람</span>
+                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>🏆 최근 완수 보고서 열람 ({latestResult.command_id})</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             )}
@@ -459,9 +473,9 @@ export const CommandBar: React.FC<CommandBarProps> = ({
       {/* 🏆 CEO 업무 완수 종합 보고서 인터랙티브 모달 */}
       {showResultModal && latestResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden transition-colors">
+          <div className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl ring-1 ring-slate-200 dark:ring-slate-500/30 overflow-hidden transition-colors">
             {/* 모달 헤더 */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between bg-slate-50 dark:bg-slate-950/80">
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex items-start justify-between bg-slate-50 dark:bg-slate-950/80">
               <div className="flex-1 pr-3">
                 <div className="flex items-center flex-wrap gap-2 mb-1.5">
                   <span className="font-mono text-xs text-sky-600 dark:text-sky-400 font-bold bg-sky-100 dark:bg-sky-950/80 px-2 py-0.5 rounded border border-sky-300 dark:border-sky-800/60">
@@ -487,24 +501,24 @@ export const CommandBar: React.FC<CommandBarProps> = ({
             </div>
 
             {/* 🧭 결과물 확인 위치 3대 경로 가이드 배너 (CEO 질문 직접 해결) */}
-            <div className="px-5 py-3.5 bg-sky-50 dark:bg-sky-950/40 border-b border-sky-200 dark:border-sky-900/60 text-xs">
+            <div className="px-5 py-3.5 bg-sky-50 dark:bg-sky-950/40 border-b border-sky-200 dark:border-sky-800 text-xs">
               <div className="flex items-start gap-2.5">
                 <HelpCircle className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <strong className="text-sky-800 dark:text-sky-300 font-semibold block mb-1">
+                  <strong className="text-sky-900 dark:text-sky-300 font-bold block mb-1">
                     📌 결과물은 어디서 어떻게 확인하나요? (3대 열람 경로)
                   </strong>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-700 dark:text-slate-300 mt-1.5">
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-800/80">
-                      <strong className="text-purple-600 dark:text-purple-400 block mb-0.5">1. 특허·지식 원장 (4대 장부)</strong>
-                      <span>특허 조사 지시 시 <code className="font-mono text-purple-600 dark:text-purple-400">KNOWLEDGE_PATENT</code>에 FTO 리스크 및 회피 청구항 보고서 전문이 영구 보존됩니다.</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-800 dark:text-slate-200 mt-1.5">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-800">
+                      <strong className="text-purple-700 dark:text-purple-400 block mb-0.5 font-bold">1. 특허·지식 원장 (4대 장부)</strong>
+                      <span>특허 조사 지시 시 <code className="font-mono text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-1 rounded">KNOWLEDGE_PATENT</code>에 FTO 리스크 및 회피 청구항 보고서 전문이 영구 보존됩니다.</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-800/80">
-                      <strong className="text-indigo-600 dark:text-indigo-400 block mb-0.5">2. 5단계 칸반 보드</strong>
-                      <span>하단 산출물 카드나 [칸반 보드] 탭에서 <code className="font-mono text-indigo-600 dark:text-indigo-400">PatentSearchAgent</code> 카드를 클릭하면 4단계 심층 데이터가 열립니다.</span>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-800">
+                      <strong className="text-indigo-700 dark:text-indigo-400 block mb-0.5 font-bold">2. 5단계 칸반 보드</strong>
+                      <span>하단 산출물 카드나 [칸반 보드] 탭에서 <code className="font-mono text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950 px-1 rounded">PatentSearchAgent</code> 카드를 클릭하면 4단계 심층 데이터가 열립니다.</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-800/80">
-                      <strong className="text-emerald-600 dark:text-emerald-400 block mb-0.5">3. 본 완수 보고서 브리핑</strong>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-800">
+                      <strong className="text-emerald-700 dark:text-emerald-400 block mb-0.5 font-bold">3. 본 완수 보고서 브리핑</strong>
                       <span>COO의 전사 품질검수(Quality Gate) 승인 결과 및 5대 공정 산출물 요약을 즉시 확인합니다.</span>
                     </div>
                   </div>
@@ -515,7 +529,8 @@ export const CommandBar: React.FC<CommandBarProps> = ({
             {/* 모달 본문 정보 스크롤 영역 */}
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
               {/* 1. 총괄 요약 브리핑 */}
-              <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border border-slate-200 dark:border-slate-800">
+              <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border-2 border-slate-300 dark:border-slate-700">
+
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs sm:text-sm">
                     <Terminal className="w-4 h-4 text-sky-600 dark:text-sky-400" />

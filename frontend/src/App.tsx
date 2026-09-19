@@ -17,7 +17,7 @@ import { CommandBar } from './components/ceo/CommandBar';
 import { KanbanBoard } from './components/kanban/KanbanBoard';
 import { LedgerViewer } from './components/ledgers/LedgerViewer';
 import { OrgChart } from './components/org/OrgChart';
-import { getHealth, getTasks, postCommand, resetSystemData } from './api/client';
+import { getHealth, getTasks, postCommand, resetSystemData, getLatestCommand } from './api/client';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useTheme } from './hooks/useTheme';
 import type {
@@ -45,7 +45,15 @@ export default function App() {
   const [loadingTasks, setLoadingTasks] = useState<boolean>(false);
   const [isExecutingCommand, setIsExecutingCommand] = useState<boolean>(false);
   const [executionStage, setExecutionStage] = useState<number>(0);
-  const [latestCommandResult, setLatestCommandResult] = useState<CommandResponse | null>(null);
+  const [latestCommandResult, setLatestCommandResult] = useState<CommandResponse | null>(() => {
+    try {
+      const saved = localStorage.getItem('latest_ceo_command_result');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [selectedDeliverableTask, setSelectedDeliverableTask] = useState<TaskItem | null>(null);
   const [liveEvents, setLiveEvents] = useState<LiveEventLog[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
@@ -144,12 +152,32 @@ export default function App() {
   useEffect(() => {
     fetchHealth();
     fetchTasks();
+    getLatestCommand()
+      .then((res) => {
+        if (res) {
+          setLatestCommandResult(res);
+          try {
+            localStorage.setItem('latest_ceo_command_result', JSON.stringify(res));
+          } catch {}
+        }
+      })
+      .catch(() => {});
   }, [fetchHealth, fetchTasks]);
 
   // 전체 수동 새로고침
   const handleRefreshAll = () => {
     fetchHealth();
     fetchTasks();
+    getLatestCommand()
+      .then((res) => {
+        if (res) {
+          setLatestCommandResult(res);
+          try {
+            localStorage.setItem('latest_ceo_command_result', JSON.stringify(res));
+          } catch {}
+        }
+      })
+      .catch(() => {});
     setRefreshTrigger((c) => c + 1);
     addLiveLog('시스템 새로고침', '서버 상태 및 업무 원장 새로고침 완료', 'info');
   };
@@ -171,6 +199,9 @@ export default function App() {
       // 화면 상태 갱신
       handleRefreshAll();
       setLatestCommandResult(null);
+      try {
+        localStorage.removeItem('latest_ceo_command_result');
+      } catch {}
     } catch (err: any) {
       addLiveLog('초기화 실패', err.message || '초기화 중 오류 발생', 'warn');
       alert(`초기화 실패: ${err.message || '알 수 없는 오류'}`);
@@ -200,7 +231,11 @@ export default function App() {
       });
 
       setLatestCommandResult(response);
+      try {
+        localStorage.setItem('latest_ceo_command_result', JSON.stringify(response));
+      } catch {}
       setExecutionStage(6); // 6: 완료 및 COO 최종 승인
+
 
       addLiveLog(
         '명령 실행 완료',
