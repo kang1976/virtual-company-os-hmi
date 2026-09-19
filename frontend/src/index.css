@@ -133,9 +133,73 @@
 }
 
 /* 라이트 모드 텍스트 고대비 보정 */
-:root[data-theme="modern-light"] .text-white,
+:root[data-theme="modern-light"] h1,
+:root[data-theme="modern-light"] h2,
+:root[data-theme="modern-light"] h3,
+:root[data-theme="modern-light"] h4,
 :root[data-theme="modern-light"] .text-slate-100,
 :root[data-theme="modern-light"] .text-slate-200 {
+  color: #0f172a !important; /* slate-900 */
+}
+
+/* 제목이나 카드 본문 등 일반 컨테이너의 text-white만 어둡게 변환 */
+:root[data-theme="modern-light"] div:not([class*="bg-sky-"]):not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-purple-"]) > .text-white,
+:root[data-theme="modern-light"] p.text-white,
+:root[data-theme="modern-light"] h1.text-white,
+:root[data-theme="modern-light"] h2.text-white,
+:root[data-theme="modern-light"] h3.text-white,
+:root[data-theme="modern-light"] h4.text-white,
+:root[data-theme="modern-light"] span.text-white:not([class*="btn"]):not([class*="badge"]) {
+  color: #0f172a !important;
+}
+
+/* 원색 배경 버튼 및 배지의 흰색 글씨는 라이트 모드에서도 100% 흰색 유지 */
+:root[data-theme="modern-light"] button[class*="bg-sky-600"],
+:root[data-theme="modern-light"] button[class*="bg-sky-500"],
+:root[data-theme="modern-light"] button[class*="bg-indigo-600"],
+:root[data-theme="modern-light"] button[class*="bg-emerald-600"],
+:root[data-theme="modern-light"] button[class*="bg-rose-600"],
+:root[data-theme="modern-light"] button[class*="bg-purple-600"],
+:root[data-theme="modern-light"] .btn-primary,
+:root[data-theme="modern-light"] .text-white-force {
+  color: #ffffff !important;
+}
+
+:root[data-theme="modern-light"] button[class*="bg-sky-600"] svg,
+:root[data-theme="modern-light"] button[class*="bg-indigo-600"] svg,
+:root[data-theme="modern-light"] button[class*="bg-emerald-600"] svg,
+:root[data-theme="modern-light"] button[class*="bg-rose-600"] svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 비활성화 버튼(disabled) 라이트 모드 고대비 스타일링 */
+:root[data-theme="modern-light"] button:disabled,
+:root[data-theme="modern-light"] button[disabled] {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #94a3b8 !important; /* slate-400 */
+  border-color: #cbd5e1 !important; /* slate-300 */
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+:root[data-theme="modern-light"] button:disabled svg,
+:root[data-theme="modern-light"] button[disabled] svg {
+  color: #94a3b8 !important;
+  stroke: #94a3b8 !important;
+}
+
+/* 추천 프리셋 칩 버튼 라이트 모드 보정 */
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80,
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800 {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #334155 !important; /* slate-700 */
+  border-color: #cbd5e1 !important; /* slate-300 */
+}
+
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800\/80:hover,
+:root[data-theme="modern-light"] .rounded-full.bg-slate-800:hover {
+  background-color: #e2e8f0 !important; /* slate-200 */
   color: #0f172a !important; /* slate-900 */
 }
 
@@ -156,6 +220,11 @@
   background-color: #ffffff !important;
   color: #0f172a !important;
   border-color: #cbd5e1 !important;
+}
+
+:root[data-theme="modern-light"] select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 :root[data-theme="modern-light"] input::placeholder,
@@ -209,5 +278,25 @@
   background-color: #050505 !important;
   border-color: #333333 !important;
   color: #ffffff !important;
+}
+
+:root[data-theme="oled-black"] select option {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="oled-black"] .text-slate-400,
+:root[data-theme="oled-black"] .text-slate-500 {
+  color: #a3a3a3 !important;
+}
+
+:root[data-theme="oled-black"] .text-slate-600 {
+  color: #737373 !important;
+}
+
+/* 사이버 다크 드롭다운 옵션 기본 스타일 */
+select option {
+  background-color: #0f172a;
+  color: #f8fafc;
 }
 
