@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_CEO_CHAT_ID: str = ""
 
+    # ── 비용 통제 헌법 (대표님 원칙: 월 구독료 0원 + API 비용 0원 유지) ──
+    ZERO_COST_ENFORCED: bool = True
+    PAID_FEATURES_ALLOWED: bool = False  # 유료 모델/서비스 사용 시 반드시 대표님 사전 승인 필요
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 def ensure_directories(settings: Settings):

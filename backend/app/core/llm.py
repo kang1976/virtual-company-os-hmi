@@ -13,17 +13,35 @@ class LLMClient:
         self.settings = get_settings()
         self.gemini_key = self.settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
 
-    async def generate_json(self, prompt: str, system_prompt: str, schema: Type[BaseModel]) -> Dict[str, Any]:
-        """Gemini 2.5 Flash / Pro 모델을 통해 구조화된 JSON을 비동기로 생성합니다.
+    async def generate_json(
+        self,
+        prompt: str,
+        system_prompt: str,
+        schema: Type[BaseModel],
+        model: str = "gemini-2.5-flash"
+    ) -> Dict[str, Any]:
+        """구조화된 JSON을 비동기로 생성합니다.
         
-        API 키가 없거나 API 호출에 실패할 경우 견고한 한국어 데모/Mock 생성기로 자동 전환합니다.
+        대표님(CEO) 비용 통제 헌법 준수:
+        - 월 구독료 0원 + API 비용 0원 유지 원칙.
+        - 유료 모델(Pro/GPT-4o 등)은 대표님의 명시적 승인(PAID_FEATURES_ALLOWED=True) 없이는 절대 호출되지 않으며,
+          자동으로 무료 티어 또는 0원 데모 엔진으로 안전하게 전환됩니다.
         """
+        # ── 0원 비용 가드레일 (Zero-Cost Guardrail) ──
+        is_paid_model = any(p in model.lower() for p in ["pro", "gpt-4", "claude-3-opus", "claude-3-7-sonnet", "o1", "o3"])
+        if is_paid_model and not self.settings.PAID_FEATURES_ALLOWED:
+            logger.info(
+                f"[ZeroCostGuard] 유료 모델({model}) 호출이 차단되었습니다. "
+                f"대표님 승인 없는 유료 과금 원천 차단 정책에 따라 0원 무료 모드로 전환합니다."
+            )
+            model = "gemini-2.5-flash"
+
         if self.gemini_key:
             try:
                 from google import genai
                 client = genai.Client(api_key=self.gemini_key)
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=model,
                     contents=prompt,
                     config={
                         "system_instruction": system_prompt,
@@ -34,9 +52,9 @@ class LLMClient:
                 if response.text:
                     return json.loads(response.text)
             except Exception as e:
-                logger.warning(f"[LLMClient] API 호출 실패: {e}. 데모 생성기로 안전하게 전환합니다.")
+                logger.warning(f"[LLMClient] API 호출 실패: {e}. 0원 데모 생성기로 안전하게 전환합니다.")
 
-        # API 키가 없거나 실패 시 견고한 한국어 데모 생성기 동작
+        # API 키가 없거나 실패 시 0원 한국어 데모 생성기 동작
         return self._generate_mock(prompt, schema)
 
     def _generate_mock(self, prompt: str, schema: Type[BaseModel]) -> Dict[str, Any]:
