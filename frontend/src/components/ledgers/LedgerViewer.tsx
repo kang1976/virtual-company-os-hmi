@@ -17,6 +17,7 @@ import {
   Users,
   ShieldCheck,
   FileCode,
+  Megaphone,
 } from 'lucide-react';
 import { getLedgerTree, getLedgerFile } from '../../api/client';
 import type { LedgerTree } from '../../types';
@@ -60,6 +61,12 @@ const FOLDER_CONFIG: Record<
     desc: '선행특허 조사, 청구항 분석, 회피설계 권고',
     icon: ShieldCheck,
     color: 'text-purple-400',
+  },
+  MARKETING_DOCS: {
+    name: '상품 카탈로그 및 매뉴얼 원장',
+    desc: 'B2B 공식 카탈로그, 기술 브로슈어, 사용자 운용 매뉴얼',
+    icon: Megaphone,
+    color: 'text-amber-500',
   },
 };
 

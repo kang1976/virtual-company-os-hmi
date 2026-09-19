@@ -107,11 +107,18 @@ async def test_complete_company_operation():
     assert "QAAgent" in md_content
     assert "SecOpsAuditAgent" in md_content
     assert "SeniorQAAgent" in md_content
+    assert "ProductMarketingAgent" in md_content
 
     json_tasks = json.loads(task_ledger_json.read_text(encoding="utf-8"))
-    assert len(json_tasks) == 7
+    assert len(json_tasks) == 8
 
-    # 4-1. 회의록 원장(MEETING_LOG) COO 최종 감사 확인
+    # 4-1. 마케팅 원장(MARKETING_DOCS) 카탈로그 및 매뉴얼 파일 생성 확인
+    cat_file = settings.LEDGER_DIR / "MARKETING_DOCS" / f"{prj_id}-catalog.md"
+    man_file = settings.LEDGER_DIR / "MARKETING_DOCS" / f"{prj_id}-manual.md"
+    assert cat_file.exists()
+    assert man_file.exists()
+
+    # 4-2. 회의록 원장(MEETING_LOG) COO 최종 감사 확인
     meeting_files = list((settings.LEDGER_DIR / "MEETING_LOG").glob("*.md"))
     assert len(meeting_files) > 0
 
@@ -143,7 +150,7 @@ async def test_complete_company_operation():
         # 태스크 조회
         tasks_stmt = select(TaskModel).where(TaskModel.project_id == prj_id)
         tasks_objs = (await session.execute(tasks_stmt)).scalars().all()
-        assert len(tasks_objs) == 7
+        assert len(tasks_objs) == 8
         task_assignees = {t.assignee for t in tasks_objs}
         assert "PatentSearchAgent" in task_assignees
         assert "FrontendAgent" in task_assignees
@@ -152,6 +159,7 @@ async def test_complete_company_operation():
         assert "QAAgent" in task_assignees
         assert "SecOpsAuditAgent" in task_assignees
         assert "SeniorQAAgent" in task_assignees
+        assert "ProductMarketingAgent" in task_assignees
         break
 
 

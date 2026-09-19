@@ -21,7 +21,7 @@ async def test_full_command_orchestration():
     assert result["status"] == "SUCCESS"
     assert "project_id" in result
     assert "command_id" in result
-    assert len(result["completed_tasks"]) == 7
+    assert len(result["completed_tasks"]) == 8
     assignees = [t["assignee"] for t in result["completed_tasks"]]
     assert "PatentSearchAgent" in assignees
     assert "FrontendAgent" in assignees
@@ -30,6 +30,7 @@ async def test_full_command_orchestration():
     assert "QAAgent" in assignees
     assert "SecOpsAuditAgent" in assignees
     assert "SeniorQAAgent" in assignees
+    assert "ProductMarketingAgent" in assignees
     assert "coo_audit" in result
     assert result["coo_audit"]["approved"] is True
 

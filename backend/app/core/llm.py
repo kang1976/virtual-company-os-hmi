@@ -131,6 +131,93 @@ class LLMClient:
                 mock_data[name] = "정보보호 컴플라이언스 100% 충족. 제로 트러스트 보안 인가 기준 통과."
             elif name == "security_clearance":
                 mock_data[name] = "CLEARED (최종 보안 2차 인가 완료)"
+            elif name == "catalog_title":
+                mock_data[name] = "산업용 AI 자율운영 PLC 통합 관제 솔루션 B2B 공식 카탈로그"
+            elif name == "target_market":
+                mock_data[name] = "글로벌 스마트팩토리, 2차전지/반도체 공정 라인, 산업용 PLC 자동화 설비 운영사"
+            elif name == "usp_highlights":
+                mock_data[name] = [
+                    "Omron FINS/Ethernet 및 제로트러스트 100% 보안 무결성 보장",
+                    "특허 침해 리스크(FTO) 0% 독자 비동기 이벤트 큐 아키텍처 탑재",
+                    "스마트폰 360px 모바일 완벽 대응 반응형 실시간 HMI 관제 콘솔",
+                    "1차·2차 다층 독립 QA 및 50건 엣지케이스 극한 신뢰성 인증",
+                    "4대 장부(지시·업무·특허·회의) 이중 영속화 기반 완벽한 감사 추적성"
+                ]
+            elif name == "technical_specifications":
+                mock_data[name] = {
+                    "프로토콜": "Omron FINS over UDP/IP, Ethernet/IP, WebSocket 실시간 브로드캐스팅",
+                    "지원 플랫폼": "Windows 10/11 x64, Linux, 모바일 웹 브라우저 (iOS/Android)",
+                    "응답 지연시간": "평균 18ms (100 RPS 동시 부하 시 118ms 이내)",
+                    "보안 표준": "OWASP ASVS Level 3, TLS 1.3 암호화 전송, 제로트러스트 인가"
+                }
+            elif name == "roi_and_benefits":
+                mock_data[name] = (
+                    "- 설비 다운타임 68% 감소: 실시간 이상 징후 감지 및 밀리초 단위 즉시 알림\n"
+                    "- 현장 유지보수 비용 연간 42% 절감: 모바일 원격 관제로 현장 출동 최소화\n"
+                    "- 특허 침해 분쟁 원천 차단: 글로벌 FTO 조사 기반 독자 지식재산권 확보"
+                )
+            elif name == "brochure_markdown":
+                mock_data[name] = (
+                    "# 🏭 차세대 산업용 AI PLC 통합 관제 솔루션\n\n"
+                    "## 1. 혁신적 제품 개요\n"
+                    "본 솔루션은 첨단 멀티에이전트 가상기업 OS 기술을 기반으로 개발된 B2B 전용 산업 제어 및 실시간 모니터링 시스템입니다. "
+                    "설비 현장과 최고경영진을 실시간으로 잇는 독보적인 관제 경험을 제공합니다.\n\n"
+                    "## 2. 핵심 차별화 요소 (USP)\n"
+                    "- **초고속 FINS 통신**: 18ms 미만의 초저지연 데이터 수집 및 시각화\n"
+                    "- **완벽한 보안 무결성**: 제로트러스트 모델 적용으로 산업제어망 패킷 위변조 원천 방어\n"
+                    "- **모바일 관제 최적화**: 공장 어디서나 스마트폰으로 설비 가동 상태 원클릭 모니터링\n\n"
+                    "## 3. 도입 문의 및 기술 지원\n"
+                    "- 문의: 솔루션사업본부 / 사업전략실\n"
+                )
+            elif name == "manual_title":
+                mock_data[name] = "산업용 AI PLC 통합 관제 시스템 — 사용자 및 엔지니어 종합 운용 매뉴얼"
+            elif name == "system_requirements":
+                mock_data[name] = (
+                    "- OS: Windows 10/11 64-bit, Ubuntu 22.04 LTS 이상\n"
+                    "- CPU: Quad-Core 2.5GHz 이상 / RAM: 8GB 이상\n"
+                    "- 네트워크: 100Mbps Ethernet 이상 (PLC 제어망 분리 권장)\n"
+                    "- 브라우저: Chrome 100+, Edge 최신버전 (모바일 브라우저 완벽 호환)"
+                )
+            elif name == "quick_start_guide":
+                mock_data[name] = (
+                    "1. [서버 구동]: `uvicorn backend.app.main:app --port 8000` 실행\n"
+                    "2. [클라이언트 접속]: 브라우저에서 `http://localhost:5173` 접속\n"
+                    "3. [PLC 연동 확인]: 상단 실시간 WS 인디케이터 초록불 확인 후 지시 하달"
+                )
+            elif name == "ui_operation_guide":
+                mock_data[name] = (
+                    "- **전체 관제실 (Overview)**: 상단 핵심 KPI 4종(누적태스크, 마감수, 진행수, FTO통과율) 및 실시간 이벤트 티커 모니터링\n"
+                    "- **5단계 칸반 (Kanban)**: IDLE -> WORKING -> SUBMITTED -> REVIEW -> VERIFIED 5단계 공정 추적 및 카드 클릭 시 4단계 심층 내역 열람\n"
+                    "- **4대 장부 (Ledgers)**: 지시·업무·회의·특허·마케팅 원장을 마크다운/JSON으로 즉시 열람 및 원클릭 복사\n"
+                    "- **가상 조직도 (Org)**: 10대 전문 에이전트 실시간 가동 상태 및 상세 직무 점검"
+                )
+            elif name == "plc_connection_guide":
+                mock_data[name] = (
+                    "1. 대상 PLC(Omron CJ/CS/NJ/NX 시리즈)의 FINS 노드 번호 및 IP 대역 확인 (기본: 192.168.250.1)\n"
+                    "2. UDP 포트 9600 개방 및 방화벽 인바운드 규칙 등록\n"
+                    "3. 데이터 메모리(DM/CIO) 읽기/쓰기 권한 및 헤더 시퀀스 동기화 설정"
+                )
+            elif name == "troubleshooting_faq":
+                mock_data[name] = (
+                    "- **Q1. WebSocket 연결이 '연결중'에서 멈춥니다.**\n"
+                    "  -> 백엔드 8000 포트 프로세스가 정상 구동 중인지 점검하십시오.\n"
+                    "- **Q2. 라이트/다크 테마 전환 시 화면이 깜빡입니다.**\n"
+                    "  -> GPU 가속 설정 및 브라우저 캐시를 새로고침(Ctrl+F5)하십시오.\n"
+                    "- **Q3. PLC 데이터 패킷 손실이 발생합니다.**\n"
+                    "  -> 산업용 제어망 스위치 허브의 패킷 큐와 듀플렉스(Full-Duplex) 설정을 확인하십시오."
+                )
+            elif name == "manual_markdown":
+                mock_data[name] = (
+                    "# 📘 사용자 및 엔지니어 종합 운용 매뉴얼\n\n"
+                    "## 1. 시스템 시작하기\n"
+                    "본 시스템은 복잡한 설정 없이 브라우저 환경에서 즉시 실행 가능한 엔터프라이즈 관제 플랫폼입니다.\n\n"
+                    "## 2. 주요 기능 조작법\n"
+                    "- **명령 하달**: 상단 자연어 지시 입력창을 통해 원하는 작업을 자유롭게 명령\n"
+                    "- **결과 보고서**: 작업 완료 시 팝업되는 'CEO 종합 보고서'를 통해 각 부서 산출물 확인\n"
+                    "- **장부 열람**: '4대 장부' 탭에서 법적 효력을 갖는 영구 파일 원장 확인\n"
+                )
+            elif name == "marketing_summary":
+                mock_data[name] = "B2B 제품 카탈로그와 사용자 매뉴얼 제작이 완료되어 즉시 영업 수주 및 현장 설치 배포가 가능한 완성도를 확보했습니다."
 
             else:
                 annotation = field_info.annotation
@@ -140,6 +227,8 @@ class LLMClient:
                     mock_data[name] = 100
                 elif annotation in (list, List) or getattr(annotation, "__origin__", None) in (list, List):
                     mock_data[name] = []
+                elif hasattr(annotation, "model_fields"):
+                    mock_data[name] = self._generate_mock(prompt, annotation)
                 else:
                     mock_data[name] = f"실행 완료: {prompt[:30]}"
         return mock_data

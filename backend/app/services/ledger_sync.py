@@ -174,3 +174,97 @@ class LedgerSyncService:
             async with aiofiles.open(json_path, mode="w", encoding="utf-8") as f:
                 await f.write(json.dumps(meeting, ensure_ascii=False, indent=2))
 
+    async def sync_marketing_doc(
+        self, project_id: str, catalog: Dict[str, Any], manual: Dict[str, Any]
+    ):
+        async with self.lock:
+            doc_dir = self.settings.LEDGER_DIR / "MARKETING_DOCS"
+            doc_dir.mkdir(parents=True, exist_ok=True)
+
+            # 1. 카탈로그 마크다운 & JSON
+            cat_md_path = doc_dir / f"{project_id}-catalog.md"
+            cat_json_path = doc_dir / f"{project_id}-catalog.json"
+
+            usp_lines = "\n".join(f"- {u}" for u in catalog.get("usp_highlights", []))
+            specs = catalog.get("technical_specifications", {})
+            if isinstance(specs, dict):
+                spec_lines = "\n".join(f"- **{k}**: {v}" for k, v in specs.items())
+            else:
+                spec_lines = str(specs)
+
+            cat_content = f"""# 📄 B2B 제품 카탈로그 — {catalog.get('catalog_title', project_id)}
+
+- **프로젝트 ID**: {project_id}
+- **제품명**: {catalog.get('catalog_title', '')}
+- **타깃 시장**: {catalog.get('target_market', '')}
+
+---
+
+## 1. 핵심 차별화 요소 (USP)
+{usp_lines}
+
+---
+
+## 2. 주요 기술 규격 및 통신 사양
+{spec_lines}
+
+---
+
+## 3. 정량적 도입 효과 및 ROI
+{catalog.get('roi_and_benefits', '')}
+
+---
+
+## 4. 고객 배포용 브로슈어 본문
+{catalog.get('brochure_markdown', '')}
+"""
+            async with aiofiles.open(cat_md_path, mode="w", encoding="utf-8") as f:
+                await f.write(cat_content)
+            async with aiofiles.open(cat_json_path, mode="w", encoding="utf-8") as f:
+                await f.write(json.dumps(catalog, ensure_ascii=False, indent=2))
+
+            # 2. 운용 매뉴얼 마크다운 & JSON
+            man_md_path = doc_dir / f"{project_id}-manual.md"
+            man_json_path = doc_dir / f"{project_id}-manual.json"
+
+            man_content = f"""# 📘 사용자 및 엔지니어 운용 매뉴얼 — {manual.get('manual_title', project_id)}
+
+- **프로젝트 ID**: {project_id}
+- **문서명**: {manual.get('manual_title', '')}
+
+---
+
+## 1. 시스템 요구사양
+{manual.get('system_requirements', '')}
+
+---
+
+## 2. 빠른 시작 (Quick Start)
+{manual.get('quick_start_guide', '')}
+
+---
+
+## 3. 화면별 UI 조작 가이드
+{manual.get('ui_operation_guide', '')}
+
+---
+
+## 4. 산업용 PLC 통신 연동 가이드
+{manual.get('plc_connection_guide', '')}
+
+---
+
+## 5. 긴급 장애 조치 및 FAQ (Troubleshooting)
+{manual.get('troubleshooting_faq', '')}
+
+---
+
+## 6. 운용 지침 전문
+{manual.get('manual_markdown', '')}
+"""
+            async with aiofiles.open(man_md_path, mode="w", encoding="utf-8") as f:
+                await f.write(man_content)
+            async with aiofiles.open(man_json_path, mode="w", encoding="utf-8") as f:
+                await f.write(json.dumps(manual, ensure_ascii=False, indent=2))
+
+

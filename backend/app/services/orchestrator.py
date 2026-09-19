@@ -9,6 +9,7 @@ from backend.app.agents.dev.backend import BackendDevAgent
 from backend.app.agents.dev.frontend import FrontendDevAgent
 from backend.app.agents.security import SecurityAgent, SecOpsAuditAgent
 from backend.app.agents.qa import QAAgent, SeniorQAAgent
+from backend.app.agents.marketing import ProductMarketingAgent
 
 
 class CompanyOrchestrator:
@@ -21,6 +22,7 @@ class CompanyOrchestrator:
         self.qa = QAAgent()
         self.secops = SecOpsAuditAgent()
         self.senior_qa = SeniorQAAgent()
+        self.marketing = ProductMarketingAgent()
         self.sync = LedgerSyncService()
         self.broadcast = broadcast_fn or (lambda event, data: None)
 
@@ -392,7 +394,64 @@ class CompanyOrchestrator:
         completed_tasks.append(t7)
         self.broadcast("TASK_UPDATED", t7)
 
-        # 4h. 8단계: COO 최종 종합 품질 감사 (COO Final Quality Gate)
+        # 4h. 8단계: B2B 상품화 및 카탈로그·운용 매뉴얼 제작 (ProductMarketingAgent)
+        mkt_pkg = await self.marketing.produce_commercial_package(
+            product_name=decomp.get("project_title", instruction[:30]),
+            deliverables_summary=(
+                f"프론트엔드: {front_deliverable[:120]}\n"
+                f"백엔드 아키텍처: {back_deliverable[:120]}\n"
+                f"1차 보안점수: {sec_res.get('security_score', 96)}점 / 제로트러스트: {secops_res.get('zero_trust_score', 99)}점\n"
+                f"2차 수석품질판정: {senior_qa_res.get('final_qa_verdict', 'REVERIFIED_PASS')}"
+            ),
+        )
+        catalog = mkt_pkg.get("catalog", {})
+        manual = mkt_pkg.get("manual", {})
+        await self.sync.sync_marketing_doc(prj_id, catalog, manual)
+
+        t8 = {
+            "id": f"{prj_id}-T008",
+            "title": "B2B 제품 카탈로그 및 사용자 운용 매뉴얼 제작",
+            "assignee": "ProductMarketingAgent",
+            "status": "VERIFIED",
+            "priority": "P1",
+            "coo_prompt": f"개발 및 2차 품질 검증이 완료된 '{instruction}' 산출물에 대해 B2B 고객사 배포용 제품 카탈로그(USP/스펙/ROI)와 현장 엔지니어용 사용자 매뉴얼(퀵스타트/UI가이드/PLC연동/FAQ)을 완성하라.",
+            "detailed_directive": (
+                "[COO 긴급 기술 지시 - 상품화 및 테크니컬 라이팅]\n"
+                "1. 대상 제품: 검증 완료된 엔지니어링 및 관제 시스템 산출물.\n"
+                "2. 필수 산출물:\n"
+                "   - B2B 제품 카탈로그: 5대 핵심 USP, 주요 기술 사양표, ROI 및 정량적 비용 절감 효과\n"
+                "   - 사용자 운용 매뉴얼: 시스템 요구사양, 퀵스타트 설치 가이드, 화면별 UI 조작법, PLC FINS 통신 연동법, 장애 트러블슈팅 FAQ\n"
+                "3. 저장 및 등재: MARKETING_DOCS 원장에 마크다운 및 JSON 영구 동기화"
+            ),
+            "execution_plan": (
+                "1. [기술 산출물 분석] (00:00~00:08): 프론트/백엔드 아키텍처 및 품질 인증 지표 분석\n"
+                "2. [카탈로그 기획 및 작성] (00:08~00:20): B2B 고객 소구점(USP) 및 도입 효과(ROI) 기술\n"
+                "3. [사용자 매뉴얼 집필] (00:20~00:35): 퀵스타트, UI 조작법, FINS 연동, 트러블슈팅 작성\n"
+                "4. [마케팅 원장 동기화] (00:35~00:40): MARKETING_DOCS 원장 등재 및 COO 최종 승인 제출"
+            ),
+            "action_log": (
+                "- 00:07: 검증 완료된 시스템 산출물(FastAPI, React, FINS, 제로트러스트) 분석 완료\n"
+                "- 00:18: B2B 공식 제품 카탈로그(USP 5선, 기술규격, 기대효과) 브로슈어 마크다운 완성\n"
+                "- 00:32: 사용자 및 엔지니어 운용 매뉴얼(퀵스타트, 화면별 가이드, FINS 포트 설정) 집필 완료\n"
+                "- 00:39: MARKETING_DOCS 원장에 catalog.md 및 manual.md 동기화 완료"
+            ),
+            "verification_checklist": (
+                "- [x] B2B 제품 카탈로그 공식 문서 작성 완료\n"
+                "- [x] 핵심 차별화 요소(USP) 및 정량적 ROI 기술 완료\n"
+                "- [x] 사용자 및 엔지니어 종합 운용 매뉴얼 작성 완료\n"
+                "- [x] PLC FINS 통신 설정 및 긴급 트러블슈팅 가이드 수록\n"
+                "- [x] MARKETING_DOCS 원장 이중 영속화 완료"
+            ),
+            "deliverable": (
+                f"카탈로그: {catalog.get('catalog_title', 'B2B 제품 카탈로그')}\n"
+                f"매뉴얼: {manual.get('manual_title', '종합 운용 매뉴얼')}\n"
+                f"총평: {mkt_pkg.get('marketing_summary', '상품화 패키지 완료')}"
+            ),
+        }
+        completed_tasks.append(t8)
+        self.broadcast("TASK_UPDATED", t8)
+
+        # 4i. 9단계: COO 최종 종합 품질 감사 (COO Final Quality Gate)
         deliverables_summary = {
             "PatentSearchAgent (T001)": f"FTO 위험도: {pat_dict.get('fto_risk')}, 소견: {pat_findings[:80]}",
             "FrontendAgent (T002)": f"컴포넌트: {front_res.get('component_name', 'UI')}, 산출물: {front_deliverable[:80]}",
@@ -401,6 +460,7 @@ class CompanyOrchestrator:
             "QAAgent (T005)": f"1차 품질결과: {'합격' if qa_passed else '불합격'}, 피드백: {qa_res.get('feedback', '완료')[:80]}",
             "SecOpsAuditAgent (T006)": f"2차 보안인가: {secops_res.get('security_clearance', 'CLEARED')}, 제로트러스트: {secops_res.get('zero_trust_score', 99)}점",
             "SeniorQAAgent (T007)": f"2차 수석품질판정: {senior_qa_res.get('final_qa_verdict', 'REVERIFIED_PASS')}, 재검증점수: {senior_qa_res.get('reverification_score', 98)}점",
+            "ProductMarketingAgent (T008)": f"카탈로그: {catalog.get('catalog_title', '카탈로그')[:40]}, 매뉴얼: {manual.get('manual_title', '매뉴얼')[:40]}",
         }
         coo_audit = await self.coo.verify_final_quality(instruction, deliverables_summary)
         coo_approved = coo_audit.get("approved", True) and sec_passed and qa_passed and secops_passed and senior_qa_passed
@@ -421,9 +481,9 @@ class CompanyOrchestrator:
             "project_id": prj_id,
             "chairperson": "COOAgent",
             "approved": coo_approved,
-            "summary": coo_audit.get("executive_summary", "전사 산출물 2차 다층 재검증 및 최종 감사 완료"),
+            "summary": coo_audit.get("executive_summary", "전사 산출물 2차 다층 재검증 및 상품화 완료 최종 감사"),
             "checked_items": coo_audit.get("checked_items", []),
-            "directive": coo_audit.get("directive_feedback", "품질 및 보안 다층 기준 완벽 충족 승인"),
+            "directive": coo_audit.get("directive_feedback", "품질, 보안, 상품화 기준 완벽 충족 승인"),
         }
         await self.sync.sync_meeting_log(meet_dict)
 
@@ -454,7 +514,7 @@ class CompanyOrchestrator:
             "project_id": prj_id,
             "command_id": cmd_id,
             "completed_tasks": completed_tasks,
-            "summary": decomp.get("summary", "7대 전문 부서 2차 다층 검증 완료 및 원장 마감"),
+            "summary": decomp.get("summary", "8대 전문 부서 2차 다층 검증 및 상품화(카탈로그·매뉴얼) 완료"),
             "coo_audit": coo_audit,
         }
 

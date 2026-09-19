@@ -13,6 +13,7 @@ import {
   Lock,
   Palette,
   Eye,
+  Megaphone,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -241,6 +242,27 @@ const AGENT_NODES: OrgAgentNode[] = [
     accentBg: 'bg-pink-950/40',
     icon: Eye,
   },
+  {
+    id: 'MARKETING',
+    name: 'ProductMarketingAgent',
+    koreanName: '상품화·기술문서 마케터',
+    role: 'B2B 제품 카탈로그 및 사용자 운용 매뉴얼 제작',
+    team: '사업전략·마케팅실 (Product & Marketing)',
+    isHuman: false,
+    model: 'Gemini 2.5 Pro',
+    description: '개발 및 다층 품질 검증이 완료된 기술 산출물을 분석하여 B2B 고객사 배포용 제품 카탈로그(USP/스펙/ROI)와 현장 운용 매뉴얼(퀵스타트/UI가이드/PLC연동/FAQ)을 집필하고 상품화를 완성합니다.',
+    responsibilities: [
+      'B2B 산업용 제품 공식 카탈로그 및 브로슈어 작성',
+      '핵심 가치 제안(USP 5선) 및 정량적 도입 효과(ROI) 수립',
+      '사용자 및 엔지니어 종합 운용 매뉴얼 집필',
+      'PLC FINS 통신 설정 가이드 및 트러블슈팅 FAQ 작성',
+      'MARKETING_DOCS 원장 이중(Markdown/JSON) 동기화',
+    ],
+    color: 'text-amber-500',
+    borderColor: 'border-amber-500/50',
+    accentBg: 'bg-amber-950/40',
+    icon: Megaphone,
+  },
 ];
 
 export const OrgChart: React.FC<OrgChartProps> = ({
@@ -295,6 +317,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         if (executionStage === 6) return { status: '시각/접근성 감리 중...', color: 'bg-pink-400', isPulse: true };
         if (executionStage > 6) return { status: '시각 인가(VISUAL_PASS)', color: 'bg-emerald-500', isPulse: false };
       }
+      if (agentId === 'MARKETING') {
+        if (executionStage === 6) return { status: '카탈로그/매뉴얼 제작 중...', color: 'bg-amber-400', isPulse: true };
+        if (executionStage > 6) return { status: '상품화 완료', color: 'bg-emerald-500', isPulse: false };
+      }
     }
 
     // 실제 tasks 기록 기반 상태 확인
@@ -308,6 +334,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
       if (agentId === 'SECOPS' && (a.includes('secops') || a.includes('감리'))) return true;
       if (agentId === 'SENIOR_QA' && (a.includes('senior') || a.includes('재검증'))) return true;
       if (agentId === 'VISUAL_QA' && (a.includes('visual') || a.includes('접근성') || a.includes('디자인감리') || a.includes('시각'))) return true;
+      if (agentId === 'MARKETING' && (a.includes('marketing') || a.includes('카탈로그') || a.includes('매뉴얼') || a.includes('상품화'))) return true;
       if (agentId === 'COO' && a.includes('coo')) return true;
       return false;
     });
@@ -342,10 +369,10 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </div>
           <div>
             <h2 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2">
-              가상 회사 조직도 및 3대 품질·보안·시각 감리 체계
+              가상 회사 조직도 및 3대 감리·상품화 마케팅 체계
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
-              인간 CEO 지시 → COO 총괄 분해 → 1차 전문 실무(특허·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA) → 시각·접근성 감리(Visual QA)
+              인간 CEO 지시 → COO 총괄 분해 → 1차 실무(특허·UI·백엔드) → 1차 검증(보안·QA) → 2차 수석 재검증(보안감리·수석QA) → 시각감리(Visual QA) → 상품화·기술문서(카탈로그·매뉴얼)
             </p>
           </div>
         </div>
@@ -353,7 +380,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         <div className="flex items-center gap-2 text-xs w-full sm:w-auto justify-end">
           <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-800 flex items-center gap-1.5 text-[11px] font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            자율 에이전트 9개체 가동 중 (1차 + 2차 재검증 + 시각감리관)
+            자율 에이전트 10개체 가동 중 (실무개발 + 3대 감리 + 상품화 마케팅)
           </span>
         </div>
       </div>

@@ -469,7 +469,7 @@ export default function App() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                     <Users className="w-4 h-4" />
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">가상 조직 에이전트 (9개체)</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">가상 조직 에이전트 (10개체)</h3>
                   </div>
                   <button
                     onClick={() => setActiveTab('org')}
@@ -480,7 +480,7 @@ export default function App() {
                   </button>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
-                  자율 에이전트 실시간 가동 상태 (1차 + 2차 재검증 + 시각감리)
+                  자율 에이전트 실시간 가동 상태 (실무 + 3대 감리 + 상품화 마케팅)
                 </p>
 
                 <div className="space-y-1.5 flex-1 overflow-y-auto max-h-56 scrollbar-thin pr-0.5">
@@ -494,6 +494,7 @@ export default function App() {
                     { name: 'SecOpsAuditAgent', role: '2차 수석 보안감리 (제로트러스트)', status: '정상 가동', color: 'text-red-700 dark:text-red-400' },
                     { name: 'SeniorQAAgent', role: '2차 수석 품질 재검증 (50건 엣지)', status: '정상 가동', color: 'text-teal-700 dark:text-teal-400' },
                     { name: 'VisualQAAgent', role: '시각·접근성 감리 (WCAG 4.5:1)', status: '정상 가동', color: 'text-pink-700 dark:text-pink-400' },
+                    { name: 'ProductMarketingAgent', role: '상품화 카탈로그 및 운용 매뉴얼', status: '정상 가동', color: 'text-amber-700 dark:text-amber-400' },
                   ].map((agent) => (
                     <div
                       key={agent.name}

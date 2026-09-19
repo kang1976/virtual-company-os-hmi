@@ -130,3 +130,55 @@ async def test_ledger_sync_concurrent_writes():
         md_file.unlink(missing_ok=True)
         json_file.unlink(missing_ok=True)
 
+
+@pytest.mark.asyncio
+async def test_ledger_sync_marketing_doc():
+    service = LedgerSyncService()
+    settings = get_settings()
+
+    project_id = "PRJ-TEST-MKT"
+    catalog = {
+        "catalog_title": "테스트 B2B 제품 카탈로그",
+        "target_market": "스마트팩토리 제어 설비",
+        "usp_highlights": ["USP 1", "USP 2"],
+        "technical_specifications": {"OS": "Windows 11", "Protocol": "FINS"},
+        "roi_and_benefits": "비용 40% 절감",
+        "brochure_markdown": "# 테스트 브로슈어 본문",
+    }
+    manual = {
+        "manual_title": "테스트 사용자 운용 매뉴얼",
+        "system_requirements": "RAM 8GB 이상",
+        "quick_start_guide": "1. 설치 2. 실행",
+        "ui_operation_guide": "UI 버튼 클릭",
+        "plc_connection_guide": "IP 192.168.250.1 연동",
+        "troubleshooting_faq": "FAQ 내용",
+        "manual_markdown": "# 테스트 매뉴얼 본문",
+    }
+
+    await service.sync_marketing_doc(project_id, catalog, manual)
+
+    cat_md = settings.LEDGER_DIR / "MARKETING_DOCS" / f"{project_id}-catalog.md"
+    cat_json = settings.LEDGER_DIR / "MARKETING_DOCS" / f"{project_id}-catalog.json"
+    man_md = settings.LEDGER_DIR / "MARKETING_DOCS" / f"{project_id}-manual.md"
+    man_json = settings.LEDGER_DIR / "MARKETING_DOCS" / f"{project_id}-manual.json"
+
+    assert cat_md.exists()
+    assert cat_json.exists()
+    assert man_md.exists()
+    assert man_json.exists()
+
+    cat_content = cat_md.read_text(encoding="utf-8")
+    assert "테스트 B2B 제품 카탈로그" in cat_content
+    assert "USP 1" in cat_content
+
+    man_content = man_md.read_text(encoding="utf-8")
+    assert "테스트 사용자 운용 매뉴얼" in man_content
+    assert "RAM 8GB 이상" in man_content
+
+    # cleanup
+    cat_md.unlink(missing_ok=True)
+    cat_json.unlink(missing_ok=True)
+    man_md.unlink(missing_ok=True)
+    man_json.unlink(missing_ok=True)
+
+
