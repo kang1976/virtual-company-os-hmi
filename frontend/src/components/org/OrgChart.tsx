@@ -20,6 +20,9 @@ import {
   Sliders,
   ShieldCheck,
   Compass,
+  Network,
+  LayoutGrid,
+  ArrowDown,
 } from 'lucide-react';
 import type { TaskItem } from '../../types';
 
@@ -468,6 +471,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
 }) => {
   const [selectedAgent, setSelectedAgent] = useState<OrgAgentNode | null>(ALL_AGENT_NODES[1]); // COO 기본
   const [activeDivision, setActiveDivision] = useState<DivisionType>('all');
+  const [viewMode, setViewMode] = useState<'tree' | 'grid'>('tree');
 
   const filteredAgents = ALL_AGENT_NODES.filter((a) => {
     if (activeDivision === 'all') return true;
@@ -532,6 +536,84 @@ export const OrgChart: React.FC<OrgChartProps> = ({
     { id: 'management', label: '🏛️ 경영·운영·특허', count: ALL_AGENT_NODES.filter((a) => a.division === 'management').length },
   ];
 
+  // ── 계층형 트리 노드 매핑 ──
+  const ceoNode = ALL_AGENT_NODES.find((a) => a.id === 'CEO')!;
+  const cooNode = ALL_AGENT_NODES.find((a) => a.id === 'COO')!;
+  const patentNode = ALL_AGENT_NODES.find((a) => a.id === 'PATENT')!;
+
+  // 기술개발본부 (9명)
+  const architectNode = ALL_AGENT_NODES.find((a) => a.id === 'ARCHITECT')!;
+  const engDevNodes = ALL_AGENT_NODES.filter((a) =>
+    ['DEV', 'FRONTEND', 'MOBILE_BUILDER', 'EMBEDDED_FIRMWARE', 'DB_OPTIMIZER'].includes(a.id)
+  );
+  const engOpsNodes = ALL_AGENT_NODES.filter((a) =>
+    ['DEVOPS', 'CODE_REVIEWER', 'MINIMAL_CHANGE'].includes(a.id)
+  );
+
+  // 디자인센터 (3명)
+  const chiefDesignNode = ALL_AGENT_NODES.find((a) => a.id === 'CHIEF_DESIGN')!;
+  const designSubNodes = ALL_AGENT_NODES.filter((a) =>
+    ['UI_FINISH_GATE', 'UX_ARCHITECT'].includes(a.id)
+  );
+
+  // 보안·품질본부 (4명)
+  const secSeniorNodes = ALL_AGENT_NODES.filter((a) =>
+    ['SECOPS', 'SENIOR_QA'].includes(a.id)
+  );
+  const secPrimaryNodes = ALL_AGENT_NODES.filter((a) =>
+    ['SECURITY', 'QA'].includes(a.id)
+  );
+
+  // 사업·마케팅실 (1명)
+  const marketingNode = ALL_AGENT_NODES.find((a) => a.id === 'MARKETING')!;
+
+  const renderAgentCard = (agent: OrgAgentNode, isLeader = false) => {
+    const status = getAgentStatus(agent.id);
+    const isSelected = selectedAgent?.id === agent.id;
+    const IconComponent = agent.icon;
+
+    return (
+      <div
+        key={agent.id}
+        onClick={() => setSelectedAgent(agent)}
+        className={`p-2.5 sm:p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between select-none ${
+          isSelected
+            ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/60 shadow-md scale-[1.02]'
+            : isLeader
+            ? 'border-indigo-300 dark:border-indigo-800 bg-white dark:bg-slate-900 shadow-sm hover:border-indigo-400'
+            : 'border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 hover:border-slate-400 dark:hover:border-slate-700'
+        }`}
+      >
+        <div className="flex items-start gap-2.5">
+          <div className={`p-1.5 rounded-lg ${agent.accentBg} ${agent.color} shrink-0 border ${agent.borderColor}`}>
+            <IconComponent className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-1">
+              <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">
+                {agent.name}
+              </span>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0 font-mono">
+                {agent.model.replace('Gemini ', '')}
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate font-medium">
+              {agent.koreanName}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[9px]">
+          <span className="text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{agent.team}</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {status.status}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 헤더 안내 바 */}
@@ -558,79 +640,246 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         </div>
       </div>
 
-      {/* 부서 필터 탭 바 */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {divisions.map((div) => {
-          const isActive = activeDivision === div.id;
-          return (
-            <button
-              key={div.id}
-              onClick={() => setActiveDivision(div.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 border ${
-                isActive
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <span>{div.label}</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isActive ? 'bg-indigo-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
-                {div.count}
-              </span>
-            </button>
-          );
-        })}
+      {/* 뷰 모드 및 부서 필터 탭 바 */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* 뷰 모드 토글 (기본: 계층형 트리) */}
+        <div className="flex items-center bg-slate-100 dark:bg-slate-900/90 p-1 rounded-xl border border-slate-300 dark:border-slate-800 shadow-inner">
+          <button
+            onClick={() => setViewMode('tree')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              viewMode === 'tree'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Network className="w-3.5 h-3.5" />
+            <span>🌳 계층형 조직도 뷰 (상하 지휘체계)</span>
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              viewMode === 'grid'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>▦ 전체 명부 뷰 (Cards)</span>
+          </button>
+        </div>
+
+        {/* 그리드 모드일 때만 부서 필터 표시 */}
+        {viewMode === 'grid' && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none w-full sm:w-auto">
+            {divisions.map((div) => {
+              const isActive = activeDivision === div.id;
+              return (
+                <button
+                  key={div.id}
+                  onClick={() => setActiveDivision(div.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 border ${
+                    isActive
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <span>{div.label}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      isActive
+                        ? 'bg-indigo-800 text-white'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    {div.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* 조직도 계층 뷰어 & 상세 모달/사이드 패널 그리드 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* 좌측 2열: 에이전트 카드 그리드 */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden backdrop-blur-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {filteredAgents.map((agent) => {
-              const status = getAgentStatus(agent.id);
-              const isSelected = selectedAgent?.id === agent.id;
-              const IconComponent = agent.icon;
+        {/* 좌측 2열: 계층형 트리 뷰 or 그리드 뷰 */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 border-2 border-slate-300 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden backdrop-blur-sm">
+          {viewMode === 'tree' ? (
+            <div className="space-y-6">
+              {/* Level 1: 인간 CEO (최고 의사결정권자) */}
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800/80 mb-2 shadow-sm">
+                  👑 LEVEL 1: 최고 의사결정권자 (Human-In-The-Loop)
+                </span>
+                <div className="w-full max-w-sm">
+                  {renderAgentCard(ceoNode, true)}
+                </div>
 
-              return (
-                <div
-                  key={agent.id}
-                  onClick={() => setSelectedAgent(agent)}
-                  className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-md scale-[1.02]'
-                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:border-slate-400 dark:hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${agent.accentBg} ${agent.color} shrink-0 border ${agent.borderColor}`}>
-                      <IconComponent className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
-                          {agent.name}
-                        </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0 font-mono">
-                          {agent.model.replace('Gemini ', '')}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate font-medium mt-0.5">
-                        {agent.koreanName}
-                      </span>
-                    </div>
-                  </div>
+                {/* 지휘선 (CEO -> COO) */}
+                <div className="flex flex-col items-center my-2">
+                  <div className="w-0.5 h-3 bg-indigo-400 dark:bg-indigo-600" />
+                  <span className="text-[9px] font-black px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                    <ArrowDown className="w-2.5 h-2.5" />
+                    단독 경영 지시 하달 (P0 비즈니스 목표)
+                  </span>
+                  <div className="w-0.5 h-3 bg-indigo-400 dark:bg-indigo-600" />
+                </div>
+              </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
-                    <span className="text-slate-500 dark:text-slate-400 truncate">{agent.team}</span>
-                    <span className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      {status.status}
+              {/* Level 2: COOAgent (총괄 운영본부) */}
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800/80 mb-2 shadow-sm">
+                  ⚙️ LEVEL 2: 총괄 운영 오케스트레이터 (Operations)
+                </span>
+                <div className="w-full max-w-sm">
+                  {renderAgentCard(cooNode, true)}
+                </div>
+
+                {/* 전사 5대 본부 분기 지휘선 */}
+                <div className="w-full flex flex-col items-center mt-3 mb-1">
+                  <div className="w-0.5 h-3 bg-indigo-400 dark:bg-indigo-600" />
+                  <span className="text-[9px] font-black px-2.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800/80 shadow-sm flex items-center gap-1">
+                    <ArrowDown className="w-2.5 h-2.5" />
+                    WBS 태스크 분해 ➔ 전사 5대 전문 본부 및 실로 업무 디스패치
+                  </span>
+                  <div className="w-0.5 h-3 bg-indigo-400 dark:bg-indigo-600" />
+                  <div className="w-11/12 border-t-2 border-indigo-300 dark:border-indigo-700/80 my-1" />
+                </div>
+              </div>
+
+              {/* Level 3: 5대 전문 본부 컬럼 그리드 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 items-start">
+                {/* 1. IP·특허법무실 */}
+                <div className="bg-slate-50/70 dark:bg-slate-950/60 p-2.5 rounded-xl border border-purple-200 dark:border-purple-900/40 space-y-2">
+                  <div className="flex items-center justify-between border-b border-purple-200 dark:border-purple-900/60 pb-1.5">
+                    <span className="font-extrabold text-[11px] text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                      🏛️ IP·특허법무실
+                    </span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 font-bold">
+                      1명
                     </span>
                   </div>
+                  <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight">
+                    선행기술 3개국 DB 전수조사 및 독자 회피설계 게이트키퍼
+                  </p>
+                  <div>
+                    {renderAgentCard(patentNode, true)}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* 2. 기술개발본부 */}
+                <div className="bg-slate-50/70 dark:bg-slate-950/60 p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 space-y-2">
+                  <div className="flex items-center justify-between border-b border-blue-200 dark:border-blue-900/60 pb-1.5">
+                    <span className="font-extrabold text-[11px] text-blue-700 dark:text-blue-300 flex items-center gap-1">
+                      💻 기술개발본부
+                    </span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 font-bold">
+                      9명
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 block">
+                      👑 기술 총괄 (아키텍트)
+                    </span>
+                    {renderAgentCard(architectNode, true)}
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">
+                      ↳ 풀스택·산업제어 개발실 (5명)
+                    </span>
+                    <div className="space-y-1.5">
+                      {engDevNodes.map((a) => renderAgentCard(a))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">
+                      ↳ DevOps·코드리뷰팀 (3명)
+                    </span>
+                    <div className="space-y-1.5">
+                      {engOpsNodes.map((a) => renderAgentCard(a))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. 디자인센터 */}
+                <div className="bg-slate-50/70 dark:bg-slate-950/60 p-2.5 rounded-xl border border-pink-200 dark:border-pink-900/40 space-y-2">
+                  <div className="flex items-center justify-between border-b border-pink-200 dark:border-pink-900/60 pb-1.5">
+                    <span className="font-extrabold text-[11px] text-pink-700 dark:text-pink-300 flex items-center gap-1">
+                      🎨 디자인센터
+                    </span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-pink-100 dark:bg-pink-950 text-pink-600 font-bold">
+                      3명
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-pink-600 dark:text-pink-400 block">
+                      👑 크리에이티브 총괄
+                    </span>
+                    {renderAgentCard(chiefDesignNode, true)}
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">
+                      ↳ UI/UX 감리·설계팀 (2명)
+                    </span>
+                    <div className="space-y-1.5">
+                      {designSubNodes.map((a) => renderAgentCard(a))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. 보안·품질본부 */}
+                <div className="bg-slate-50/70 dark:bg-slate-950/60 p-2.5 rounded-xl border border-teal-200 dark:border-teal-900/40 space-y-2">
+                  <div className="flex items-center justify-between border-b border-teal-200 dark:border-teal-900/60 pb-1.5">
+                    <span className="font-extrabold text-[11px] text-teal-700 dark:text-teal-300 flex items-center gap-1">
+                      🛡️ 보안·품질본부
+                    </span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-teal-100 dark:bg-teal-950 text-teal-600 font-bold">
+                      4명
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-teal-600 dark:text-teal-400 block">
+                      👑 2차 수석 감리·재검증 (2명)
+                    </span>
+                    <div className="space-y-1.5">
+                      {secSeniorNodes.map((a) => renderAgentCard(a, true))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">
+                      ↳ 1차 심사·검수 실무진 (2명)
+                    </span>
+                    <div className="space-y-1.5">
+                      {secPrimaryNodes.map((a) => renderAgentCard(a))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. 사업·마케팅실 */}
+                <div className="bg-slate-50/70 dark:bg-slate-950/60 p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/40 space-y-2">
+                  <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-900/60 pb-1.5">
+                    <span className="font-extrabold text-[11px] text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                      📢 사업·마케팅실
+                    </span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-600 font-bold">
+                      1명
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight">
+                    상용화 패키징, 사용자 매뉴얼 및 카탈로그 릴리즈
+                  </p>
+                  <div>
+                    {renderAgentCard(marketingNode, true)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* 기존 그리드 뷰 */
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {filteredAgents.map((agent) => renderAgentCard(agent))}
+            </div>
+          )}
         </div>
 
         {/* 우측 1열: 선택된 에이전트 상세 프로필 */}
