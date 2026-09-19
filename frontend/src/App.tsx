@@ -19,6 +19,7 @@ import { LedgerViewer } from './components/ledgers/LedgerViewer';
 import { OrgChart } from './components/org/OrgChart';
 import { ProcessGraph } from './components/dashboard/ProcessGraph';
 import { LagBottleneckRadar } from './components/dashboard/LagBottleneckRadar';
+import { ExecutiveStatsChart } from './components/dashboard/ExecutiveStatsChart';
 import { getHealth, getTasks, postCommand, resetSystemData, getLatestCommand } from './api/client';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useTheme } from './hooks/useTheme';
@@ -306,7 +307,19 @@ export default function App() {
               }}
             />
 
-            {/* 2. [신설] CEO 실시간 오케스트레이션 공정 그래프 (Process Flow Graph) */}
+            {/* 2. [신설] CEO 전사 운영 통계 & 에이전트 랙 복합 관제 (도넛 2종 + 누적막대/꺾은선 콤보 차트) */}
+            <ExecutiveStatsChart
+              tasks={tasks}
+              isExecuting={isExecutingCommand}
+              executionStage={executionStage}
+              onNavigateTab={(tab: any) => setActiveTab(tab)}
+              onSelectDeliverable={(task) => {
+                setSelectedDeliverableTask(task);
+                setActiveTab('kanban');
+              }}
+            />
+
+            {/* 3. [신설] CEO 실시간 오케스트레이션 공정 그래프 (Process Flow Graph) */}
             <ProcessGraph
               isExecuting={isExecutingCommand}
               executionStage={executionStage}
