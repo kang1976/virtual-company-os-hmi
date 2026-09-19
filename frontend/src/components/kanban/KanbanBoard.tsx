@@ -56,10 +56,10 @@ const COLUMNS: ColumnConfig[] = [
     label: '대기',
     subLabel: 'IDLE',
     match: (s) => s === 'IDLE',
-    headerBg: 'bg-slate-900/80',
-    borderColor: 'border-slate-800',
-    badgeBg: 'bg-slate-800',
-    badgeText: 'text-slate-400',
+    headerBg: 'bg-slate-100 dark:bg-slate-900/80',
+    borderColor: 'border-slate-300 dark:border-slate-800',
+    badgeBg: 'bg-slate-200 dark:bg-slate-800',
+    badgeText: 'text-slate-700 dark:text-slate-300',
     icon: Clock,
   },
   {
@@ -67,10 +67,10 @@ const COLUMNS: ColumnConfig[] = [
     label: '진행 중',
     subLabel: 'WORKING',
     match: (s) => s === 'WORKING',
-    headerBg: 'bg-sky-950/40',
-    borderColor: 'border-sky-800/60',
-    badgeBg: 'bg-sky-950',
-    badgeText: 'text-sky-400',
+    headerBg: 'bg-sky-50 dark:bg-sky-950/40',
+    borderColor: 'border-sky-200 dark:border-sky-800/60',
+    badgeBg: 'bg-sky-100 dark:bg-sky-950',
+    badgeText: 'text-sky-700 dark:text-sky-400',
     icon: PlayCircle,
   },
   {
@@ -78,10 +78,10 @@ const COLUMNS: ColumnConfig[] = [
     label: '제출됨',
     subLabel: 'SUBMITTED',
     match: (s) => s === 'SUBMITTED',
-    headerBg: 'bg-indigo-950/40',
-    borderColor: 'border-indigo-800/60',
-    badgeBg: 'bg-indigo-950',
-    badgeText: 'text-indigo-400',
+    headerBg: 'bg-indigo-50 dark:bg-indigo-950/40',
+    borderColor: 'border-indigo-200 dark:border-indigo-800/60',
+    badgeBg: 'bg-indigo-100 dark:bg-indigo-950',
+    badgeText: 'text-indigo-700 dark:text-indigo-400',
     icon: FileCheck,
   },
   {
@@ -89,10 +89,10 @@ const COLUMNS: ColumnConfig[] = [
     label: '심사/검증 중',
     subLabel: 'REVIEW',
     match: (s) => s === 'REVIEW',
-    headerBg: 'bg-amber-950/40',
-    borderColor: 'border-amber-800/60',
-    badgeBg: 'bg-amber-950',
-    badgeText: 'text-amber-400',
+    headerBg: 'bg-amber-50 dark:bg-amber-950/40',
+    borderColor: 'border-amber-200 dark:border-amber-800/60',
+    badgeBg: 'bg-amber-100 dark:bg-amber-950',
+    badgeText: 'text-amber-700 dark:text-amber-400',
     icon: AlertTriangle,
   },
   {
@@ -100,10 +100,10 @@ const COLUMNS: ColumnConfig[] = [
     label: '완료/종결',
     subLabel: 'VERIFIED / CLOSED',
     match: (s) => s === 'VERIFIED' || s === 'CLOSED',
-    headerBg: 'bg-emerald-950/40',
-    borderColor: 'border-emerald-800/60',
-    badgeBg: 'bg-emerald-950',
-    badgeText: 'text-emerald-400',
+    headerBg: 'bg-emerald-50 dark:bg-emerald-950/40',
+    borderColor: 'border-emerald-200 dark:border-emerald-800/60',
+    badgeBg: 'bg-emerald-100 dark:bg-emerald-950',
+    badgeText: 'text-emerald-700 dark:text-emerald-400',
     icon: CheckCircle2,
   },
   {
@@ -111,20 +111,20 @@ const COLUMNS: ColumnConfig[] = [
     label: '차단/반려',
     subLabel: 'BLOCKED',
     match: (s) => s === 'BLOCKED',
-    headerBg: 'bg-rose-950/40',
-    borderColor: 'border-rose-800/60',
-    badgeBg: 'bg-rose-950',
-    badgeText: 'text-rose-400',
+    headerBg: 'bg-rose-50 dark:bg-rose-950/40',
+    borderColor: 'border-rose-200 dark:border-rose-800/60',
+    badgeBg: 'bg-rose-100 dark:bg-rose-950',
+    badgeText: 'text-rose-700 dark:text-rose-400',
     icon: AlertCircle,
   },
 ];
 
 const PRIORITY_STYLES: Record<string, { badge: string; text: string }> = {
-  P0: { badge: 'bg-rose-950/80 border-rose-600/70 text-rose-400', text: 'P0 긴급' },
-  P1: { badge: 'bg-amber-950/80 border-amber-600/70 text-amber-400', text: 'P1 높음' },
-  P2: { badge: 'bg-sky-950/80 border-sky-600/70 text-sky-400', text: 'P2 보통' },
-  P3: { badge: 'bg-emerald-950/80 border-emerald-600/70 text-emerald-400', text: 'P3 낮음' },
-  P4: { badge: 'bg-slate-900 border-slate-700 text-slate-400', text: 'P4 예비' },
+  P0: { badge: 'bg-rose-100 dark:bg-rose-950/80 border-rose-300 dark:border-rose-600/70 text-rose-700 dark:text-rose-400', text: 'P0 긴급' },
+  P1: { badge: 'bg-amber-100 dark:bg-amber-950/80 border-amber-300 dark:border-amber-600/70 text-amber-700 dark:text-amber-400', text: 'P1 높음' },
+  P2: { badge: 'bg-sky-100 dark:bg-sky-950/80 border-sky-300 dark:border-sky-600/70 text-sky-700 dark:text-sky-400', text: 'P2 보통' },
+  P3: { badge: 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-600/70 text-emerald-700 dark:text-emerald-400', text: 'P3 낮음' },
+  P4: { badge: 'bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-400', text: 'P4 예비' },
 };
 
 function getAssigneeMeta(assignee: string) {
@@ -133,7 +133,7 @@ function getAssigneeMeta(assignee: string) {
     return {
       name: 'PatentSearchAgent',
       role: '특허 Gatekeeper',
-      badge: 'bg-purple-950/60 border-purple-800/60 text-purple-300',
+      badge: 'bg-purple-100 dark:bg-purple-950/60 border-purple-300 dark:border-purple-800/60 text-purple-800 dark:text-purple-300',
       icon: ShieldAlert,
     };
   }
@@ -141,7 +141,7 @@ function getAssigneeMeta(assignee: string) {
     return {
       name: 'FrontendDevAgent',
       role: '프론트엔드 UI/UX',
-      badge: 'bg-cyan-950/60 border-cyan-800/60 text-cyan-300',
+      badge: 'bg-cyan-100 dark:bg-cyan-950/60 border-cyan-300 dark:border-cyan-800/60 text-cyan-800 dark:text-cyan-300',
       icon: Palette,
     };
   }
@@ -149,7 +149,7 @@ function getAssigneeMeta(assignee: string) {
     return {
       name: 'BackendDevAgent',
       role: '백엔드 회피개발',
-      badge: 'bg-sky-950/60 border-sky-800/60 text-sky-300',
+      badge: 'bg-sky-100 dark:bg-sky-950/60 border-sky-300 dark:border-sky-800/60 text-sky-800 dark:text-sky-300',
       icon: Code2,
     };
   }
@@ -157,7 +157,7 @@ function getAssigneeMeta(assignee: string) {
     return {
       name: 'SecurityAgent',
       role: '정보보안 심사',
-      badge: 'bg-rose-950/60 border-rose-800/60 text-rose-300',
+      badge: 'bg-rose-100 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800/60 text-rose-800 dark:text-rose-300',
       icon: Lock,
     };
   }
@@ -165,7 +165,7 @@ function getAssigneeMeta(assignee: string) {
     return {
       name: 'QAAgent',
       role: '독립 품질검수',
-      badge: 'bg-emerald-950/60 border-emerald-800/60 text-emerald-300',
+      badge: 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300',
       icon: Award,
     };
   }
@@ -173,14 +173,14 @@ function getAssigneeMeta(assignee: string) {
     return {
       name: 'COOAgent',
       role: '총괄 운영',
-      badge: 'bg-amber-950/60 border-amber-800/60 text-amber-300',
+      badge: 'bg-amber-100 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800/60 text-amber-800 dark:text-amber-300',
       icon: Layers,
     };
   }
   return {
     name: assignee || '미배정',
     role: '자율 에이전트',
-    badge: 'bg-slate-800 border-slate-700 text-slate-300',
+    badge: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300',
     icon: User,
   };
 }
@@ -242,19 +242,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   return (
     <div className="space-y-4">
       {/* 헤더 및 컨트롤 필터 바 */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-300 dark:border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-sm">
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+          <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
             <Kanban className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-bold text-white text-base flex items-center gap-2">
+            <h2 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
               5단계 검증 태스크 칸반 보드
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
                 총 {tasks.length}건
               </span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               특허 Gatekeeper 검증 및 독립 QA 품질 승인을 통과한 업무만 최종 종결(CLOSED)됩니다.
             </p>
           </div>
@@ -264,18 +264,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
           {/* 검색 입력 */}
           <div className="relative flex-1 sm:w-60 md:w-56">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="업무명, 태스크 ID, 담당자 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 shadow-sm"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -283,37 +283,37 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           </div>
 
           {/* 우선순위 필터 */}
-          <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-xs">
-            <Filter className="w-3 h-3 text-slate-500" />
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-800 text-xs shadow-sm">
+            <Filter className="w-3 h-3 text-slate-400 dark:text-slate-500" />
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="bg-transparent text-slate-300 focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer text-xs"
             >
-              <option value="ALL" className="bg-slate-900 text-slate-200">
+              <option value="ALL" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
                 우선순위 전체
               </option>
-              <option value="P0" className="bg-slate-900 text-slate-200">P0 긴급</option>
-              <option value="P1" className="bg-slate-900 text-slate-200">P1 높음</option>
-              <option value="P2" className="bg-slate-900 text-slate-200">P2 보통</option>
-              <option value="P3" className="bg-slate-900 text-slate-200">P3 낮음</option>
-              <option value="P4" className="bg-slate-900 text-slate-200">P4 예비</option>
+              <option value="P0" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">P0 긴급</option>
+              <option value="P1" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">P1 높음</option>
+              <option value="P2" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">P2 보통</option>
+              <option value="P3" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">P3 낮음</option>
+              <option value="P4" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">P4 예비</option>
             </select>
           </div>
 
           {/* 담당 에이전트 필터 */}
           {uniqueAssignees.length > 0 && (
-            <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-xs">
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-800 text-xs shadow-sm">
               <select
                 value={assigneeFilter}
                 onChange={(e) => setAssigneeFilter(e.target.value)}
-                className="bg-transparent text-slate-300 focus:outline-none cursor-pointer text-xs"
+                className="bg-transparent text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer text-xs"
               >
-                <option value="ALL" className="bg-slate-900 text-slate-200">
+                <option value="ALL" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
                   담당자 전체
                 </option>
                 {uniqueAssignees.map((a) => (
-                  <option key={a} value={a} className="bg-slate-900 text-slate-200">
+                  <option key={a} value={a} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
                     {a}
                   </option>
                 ))}
@@ -326,10 +326,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <button
               onClick={onRefresh}
               disabled={isLoading}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 shadow-sm transition-colors disabled:opacity-50"
               title="태스크 목록 새로고침"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-indigo-400' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-indigo-600 dark:text-indigo-400' : ''}`} />
             </button>
           )}
         </div>
@@ -342,7 +342,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
             mobileColumn === 'ALL'
               ? 'bg-indigo-600 text-white shadow-sm'
-              : 'bg-slate-900 text-slate-400 border border-slate-800'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
           }`}
         >
           전체 보기 ({filteredTasks.length})
@@ -357,7 +357,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                 isActive
                   ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-900 text-slate-400 border border-slate-800'
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
               }`}
             >
               <span>{col.label}</span>
@@ -434,45 +434,45 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         </div>
 
                         {/* 4단계 라이프사이클 인디케이터 (지시 -> 계획 -> 구현 -> 검증) */}
-                        <div className="flex items-center justify-between my-2 py-1 px-1.5 rounded bg-slate-900/80 border border-slate-800 text-[9px]">
+                        <div className="flex items-center justify-between my-2 py-1 px-1.5 rounded bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-[9px]">
                           <span
                             className={`px-1 py-0.5 rounded font-mono ${
                               task.detailed_directive || task.coo_prompt
-                                ? 'text-sky-300 bg-sky-950/70 border border-sky-800/60 font-semibold'
-                                : 'text-slate-600'
+                                ? 'text-sky-800 dark:text-sky-300 bg-sky-100 dark:bg-sky-950/70 border border-sky-300 dark:border-sky-800/60 font-semibold'
+                                : 'text-slate-400 dark:text-slate-600'
                             }`}
                             title="Stage 1: 상세 기술 지시"
                           >
                             📋지시
                           </span>
-                          <span className="text-slate-700">›</span>
+                          <span className="text-slate-400 dark:text-slate-700">›</span>
                           <span
                             className={`px-1 py-0.5 rounded font-mono ${
                               task.execution_plan
-                                ? 'text-indigo-300 bg-indigo-950/70 border border-indigo-800/60 font-semibold'
-                                : 'text-slate-600'
+                                ? 'text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-300 dark:border-indigo-800/60 font-semibold'
+                                : 'text-slate-400 dark:text-slate-600'
                             }`}
                             title="Stage 2: 에이전트 실행 계획"
                           >
                             📐계획
                           </span>
-                          <span className="text-slate-700">›</span>
+                          <span className="text-slate-400 dark:text-slate-700">›</span>
                           <span
                             className={`px-1 py-0.5 rounded font-mono ${
                               task.action_log || task.deliverable
-                                ? 'text-amber-300 bg-amber-950/70 border border-amber-800/60 font-semibold'
-                                : 'text-slate-600'
+                                ? 'text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800/60 font-semibold'
+                                : 'text-slate-400 dark:text-slate-600'
                             }`}
                             title="Stage 3: 실제 구현 및 변경"
                           >
                             🛠️구현
                           </span>
-                          <span className="text-slate-700">›</span>
+                          <span className="text-slate-400 dark:text-slate-700">›</span>
                           <span
                             className={`px-1 py-0.5 rounded font-mono ${
                               task.verification_checklist
-                                ? 'text-emerald-300 bg-emerald-950/70 border border-emerald-800/60 font-semibold'
-                                : 'text-slate-600'
+                                ? 'text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/60 font-semibold'
+                                : 'text-slate-400 dark:text-slate-600'
                             }`}
                             title="Stage 4: 완료 검증 체크리스트"
                           >
@@ -481,7 +481,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         </div>
 
                         {/* 카드 하단: 담당자 배지 & 산출물 뱃지 */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[10px]">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800/80 text-[10px]">
                           <div
                             className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${assigneeMeta.badge} truncate max-w-[130px]`}
                             title={`${assigneeMeta.name} (${assigneeMeta.role})`}
@@ -491,7 +491,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                           </div>
 
                           {task.deliverable ? (
-                            <span className="text-[9px] font-medium text-emerald-400 bg-emerald-950/60 px-1 py-0.5 rounded border border-emerald-800/60">
+                            <span className="text-[9px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-1 py-0.5 rounded border border-emerald-300 dark:border-emerald-800/60">
                               산출물
                             </span>
                           ) : (

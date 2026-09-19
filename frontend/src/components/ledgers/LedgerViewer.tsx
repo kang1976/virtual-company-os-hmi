@@ -73,6 +73,20 @@ const FOLDER_CONFIG: Record<
 /**
  * 간이 마크다운 렌더러 (Markdown 뷰어 스타일링)
  */
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={idx} className="font-extrabold text-slate-900 dark:text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
 function renderMarkdownContent(content: string) {
   if (!content) return null;
 
@@ -88,7 +102,7 @@ function renderMarkdownContent(content: string) {
     if (line.trim().startsWith('```')) {
       if (inCodeBlock) {
         elements.push(
-          <div key={`code-${i}`} className="my-3 rounded-lg bg-slate-950 p-3.5 font-mono text-xs text-sky-300 border border-slate-800 overflow-x-auto">
+          <div key={`code-${i}`} className="my-3 rounded-lg bg-slate-100 dark:bg-slate-950 p-3.5 font-mono text-xs text-slate-800 dark:text-sky-300 border border-slate-200 dark:border-slate-800 overflow-x-auto">
             <pre>{codeBlockBuffer.join('\n')}</pre>
           </div>
         );
@@ -114,7 +128,7 @@ function renderMarkdownContent(content: string) {
     // 제목 1 (#)
     if (line.startsWith('# ')) {
       elements.push(
-        <h1 key={`h1-${i}`} className="text-lg font-bold text-white mt-4 mb-2 pb-1.5 border-b border-slate-800 flex items-center gap-2">
+        <h1 key={`h1-${i}`} className="text-lg font-bold text-slate-900 dark:text-white mt-4 mb-2 pb-1.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
           <span className="w-1.5 h-4 bg-sky-500 rounded-full inline-block" />
           {line.replace(/^#\s+/, '')}
         </h1>
@@ -125,7 +139,7 @@ function renderMarkdownContent(content: string) {
     // 제목 2 (##)
     if (line.startsWith('## ')) {
       elements.push(
-        <h2 key={`h2-${i}`} className="text-base font-semibold text-slate-100 mt-3 mb-1.5 flex items-center gap-2">
+        <h2 key={`h2-${i}`} className="text-base font-semibold text-slate-800 dark:text-slate-100 mt-3 mb-1.5 flex items-center gap-2">
           <span className="w-1.5 h-3 bg-indigo-500 rounded-full inline-block" />
           {line.replace(/^##\s+/, '')}
         </h2>
@@ -136,7 +150,7 @@ function renderMarkdownContent(content: string) {
     // 제목 3 (###)
     if (line.startsWith('### ')) {
       elements.push(
-        <h3 key={`h3-${i}`} className="text-sm font-semibold text-sky-400 mt-2.5 mb-1">
+        <h3 key={`h3-${i}`} className="text-sm font-semibold text-indigo-600 dark:text-sky-400 mt-2.5 mb-1">
           {line.replace(/^###\s+/, '')}
         </h3>
       );
@@ -145,15 +159,15 @@ function renderMarkdownContent(content: string) {
 
     // 구분선 (---)
     if (line.trim() === '---' || line.trim() === '***') {
-      elements.push(<hr key={`hr-${i}`} className="my-4 border-slate-800" />);
+      elements.push(<hr key={`hr-${i}`} className="my-4 border-slate-200 dark:border-slate-800" />);
       continue;
     }
 
     // 인용문 (> )
     if (line.startsWith('> ')) {
       elements.push(
-        <blockquote key={`quote-${i}`} className="my-2 pl-3 py-1 border-l-2 border-indigo-500 bg-indigo-950/20 rounded-r text-slate-300 text-xs italic">
-          {line.replace(/^>\s+/, '')}
+        <blockquote key={`quote-${i}`} className="my-2 pl-3 py-1 border-l-2 border-indigo-500 bg-indigo-50/70 dark:bg-indigo-950/20 rounded-r text-slate-700 dark:text-slate-300 text-xs italic">
+          {renderInline(line.replace(/^>\s+/, ''))}
         </blockquote>
       );
       continue;
@@ -164,14 +178,16 @@ function renderMarkdownContent(content: string) {
       const isChecked = /^-\s*\[[xX]\]/.test(line);
       const text = line.replace(/^-\s*\[([ xX])\]\s*/, '');
       elements.push(
-        <div key={`check-${i}`} className="flex items-center gap-2 text-xs py-0.5 text-slate-300">
+        <div key={`check-${i}`} className="flex items-center gap-2 text-xs py-0.5 text-slate-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={isChecked}
             readOnly
-            className="rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-0 cursor-default"
+            className="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-sky-500 focus:ring-0 cursor-default"
           />
-          <span className={isChecked ? 'line-through text-slate-500' : ''}>{text}</span>
+          <span className={isChecked ? 'line-through text-slate-400 dark:text-slate-500' : ''}>
+            {renderInline(text)}
+          </span>
         </div>
       );
       continue;
@@ -180,8 +196,8 @@ function renderMarkdownContent(content: string) {
     // 불릿 리스트 (- , * )
     if (/^[-*]\s+/.test(line)) {
       elements.push(
-        <li key={`li-${i}`} className="ml-4 list-disc text-xs text-slate-300 py-0.5 leading-relaxed">
-          {line.replace(/^[-*]\s+/, '')}
+        <li key={`li-${i}`} className="ml-4 list-disc text-xs text-slate-700 dark:text-slate-300 py-0.5 leading-relaxed">
+          {renderInline(line.replace(/^[-*]\s+/, ''))}
         </li>
       );
       continue;
@@ -190,7 +206,7 @@ function renderMarkdownContent(content: string) {
     // 테이블 행 (| ... |)
     if (line.startsWith('|') && line.endsWith('|')) {
       elements.push(
-        <div key={`table-${i}`} className="font-mono text-xs text-slate-300 py-0.5 overflow-x-auto">
+        <div key={`table-${i}`} className="font-mono text-xs text-slate-700 dark:text-slate-300 py-0.5 overflow-x-auto">
           {line}
         </div>
       );
@@ -199,8 +215,8 @@ function renderMarkdownContent(content: string) {
 
     // 일반 문단
     elements.push(
-      <p key={`p-${i}`} className="text-xs text-slate-300 leading-relaxed py-0.5">
-        {line}
+      <p key={`p-${i}`} className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed py-0.5">
+        {renderInline(line)}
       </p>
     );
   }
@@ -370,23 +386,23 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
           <button
             onClick={fetchTree}
             disabled={loadingTree}
-            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors disabled:opacity-50"
+            className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-800 shadow-sm transition-colors disabled:opacity-50"
             title="원장 트리 새로고침"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loadingTree ? 'animate-spin text-emerald-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loadingTree ? 'animate-spin text-emerald-500 dark:text-emerald-400' : ''}`} />
           </button>
         </div>
 
         {/* 파일 검색 바 */}
-        <div className="px-3 pt-3 pb-2 border-b border-slate-800/80">
+        <div className="px-3 pt-3 pb-2 border-b border-slate-200 dark:border-slate-800/80">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="원장 파일 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-2.5 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg pl-8 pr-2.5 py-1 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-sm"
             />
           </div>
         </div>
@@ -409,13 +425,13 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                   {/* 폴더 헤더 행 */}
                   <div
                     onClick={() => toggleFolder(folderKey)}
-                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-900 text-slate-300 hover:text-white cursor-pointer transition-colors group"
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-2 truncate">
                       {isOpen ? (
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 shrink-0" />
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
                       ) : (
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 shrink-0" />
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
                       )}
                       {isOpen ? (
                         <FolderOpen className={`w-4 h-4 ${cfg.color} shrink-0`} />
@@ -426,14 +442,14 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                         {cfg.name}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                       {fileCount}
                     </span>
                   </div>
 
                   {/* 하위 파일 목록 */}
                   {isOpen && (
-                    <div className="ml-5 pl-2 border-l border-slate-800 space-y-0.5">
+                    <div className="ml-5 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                       {files && files.length > 0 ? (
                         files.map((file: string) => {
                           const isSelected = selectedFolder === folderKey && selectedFile === file;
@@ -447,18 +463,18 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
                               }}
                               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-all ${
                                 isSelected
-                                  ? 'bg-emerald-950/60 text-emerald-300 font-medium border border-emerald-800/60 shadow-sm'
-                                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                                  ? 'bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-800/60 shadow-sm'
+                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-900/60'
                               }`}
                               title={file}
                             >
-                              <FileText className={`w-3.5 h-3.5 ${isSelected ? 'text-emerald-400' : 'text-slate-500'} shrink-0`} />
+                              <FileText className={`w-3.5 h-3.5 ${isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'} shrink-0`} />
                               <span className="truncate font-mono text-[11px]">{file}</span>
                             </div>
                           );
                         })
                       ) : (
-                        <div className="px-2 py-1 text-[11px] text-slate-600 italic">
+                        <div className="px-2 py-1 text-[11px] text-slate-400 dark:text-slate-600 italic">
                           기록된 파일 없음
                         </div>
                       )}
@@ -475,9 +491,9 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
         </div>
 
         {/* 하단 동기화 상태 풋노트 */}
-        <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between bg-slate-100/70 dark:bg-transparent">
           <span>이중 원장 (DB + Markdown)</span>
-          <span className="text-emerald-400 flex items-center gap-1">
+          <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             실시간 동기화
           </span>
@@ -486,36 +502,36 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
 
       {/* 우측 패널: 마크다운 뷰어 */}
       <div
-        className={`flex-1 flex-col bg-slate-900/50 ${
+        className={`flex-1 flex-col bg-slate-100/70 dark:bg-slate-900/50 ${
           mobileTab === 'content' ? 'flex' : 'hidden md:flex'
         }`}
       >
         {/* 파일 뷰어 상단 헤더 */}
-        <div className="p-3 sm:p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60">
+        <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/90 dark:bg-slate-950/60 backdrop-blur-sm shadow-sm">
           <div className="flex items-center gap-2.5">
             {/* 모바일 전용 목록으로 돌아가기 버튼 */}
             <button
               onClick={() => setMobileTab('tree')}
-              className="md:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs shrink-0"
+              className="md:hidden p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 text-xs shrink-0 shadow-sm"
               title="원장 목록으로 돌아가기"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shrink-0">
+            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shrink-0">
               <FileCode className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-bold text-white text-sm font-mono truncate max-w-[200px] sm:max-w-md">
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm font-mono truncate max-w-[200px] sm:max-w-md">
                   {selectedFile || '원장 파일을 선택하세요'}
                 </h3>
                 {selectedFolder && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                     {selectedFolder}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono mt-0.5">
+              <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                 <span>포맷: Markdown (.md)</span>
                 <span>·</span>
                 <span>글자 수: {fileContent.length.toLocaleString()}자</span>
@@ -529,13 +545,13 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
               <button
                 onClick={handleCopy}
                 disabled={!fileContent}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs border border-slate-300 dark:border-slate-700 shadow-sm transition-colors disabled:opacity-50 font-medium"
                 title="원장 본문 클립보드 복사"
               >
                 {copied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-400 font-medium">복사됨!</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">복사됨!</span>
                   </>
                 ) : (
                   <>
@@ -548,37 +564,37 @@ export const LedgerViewer: React.FC<LedgerViewerProps> = ({
               <button
                 onClick={() => selectedFolder && selectedFile && fetchFile(selectedFolder, selectedFile)}
                 disabled={loadingFile}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 shadow-sm transition-colors disabled:opacity-50"
                 title="현재 파일 새로고침"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingFile ? 'animate-spin text-emerald-400' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingFile ? 'animate-spin text-emerald-600 dark:text-emerald-400' : ''}`} />
               </button>
             </div>
           )}
         </div>
 
         {/* 파일 본문 뷰어 */}
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin">
           {loadingFile ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2">
-              <RefreshCw className="w-6 h-6 animate-spin text-emerald-400" />
+              <RefreshCw className="w-6 h-6 animate-spin text-emerald-500 dark:text-emerald-400" />
               <span>원장 내용을 불러오는 중입니다...</span>
             </div>
           ) : fileError ? (
-            <div className="h-full flex flex-col items-center justify-center text-rose-400 text-xs gap-2 p-6 text-center">
+            <div className="h-full flex flex-col items-center justify-center text-rose-500 dark:text-rose-400 text-xs gap-2 p-6 text-center">
               <span>{fileError}</span>
             </div>
           ) : selectedFile ? (
-            <div className="max-w-4xl mx-auto bg-slate-950/70 p-6 rounded-xl border border-slate-800/80 shadow-inner">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-slate-950/70 p-6 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-md dark:shadow-inner text-slate-900 dark:text-slate-100">
               {renderMarkdownContent(fileContent)}
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-3 p-6 text-center">
-              <BookOpen className="w-10 h-10 text-slate-700" />
-              <p className="text-slate-400 font-medium">
+              <BookOpen className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+              <p className="text-slate-600 dark:text-slate-400 font-medium">
                 왼쪽 탐색기에서 열람할 원장 파일을 선택하세요.
               </p>
-              <p className="text-slate-600 max-w-sm">
+              <p className="text-slate-400 dark:text-slate-600 max-w-sm">
                 지시 원장, 업무 원장, 회의록, 특허 원장 등 4대 장부의 실시간 기록을 마크다운 형식으로 즉시 확인할 수 있습니다.
               </p>
             </div>
