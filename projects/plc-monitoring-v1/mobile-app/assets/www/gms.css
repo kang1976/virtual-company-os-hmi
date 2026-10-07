@@ -188,17 +188,9 @@
    쪽이 이겨 hidden이 무시되는 문제가 있었다(속성 편집 팝업이 안 닫히는 버그의 원인).
    !important로 hidden이 항상 이기게 한다. */
 [hidden] { display: none !important; }
-html, body {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
+html, body { height: 100%; }
 body {
-  margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden !important;
+  margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
   background: var(--bg); color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px;
 }
@@ -246,16 +238,7 @@ input[type=number] { width: 90px; font-family: var(--mono); }
 
 main { flex: 1 1 auto; display: flex; min-height: 0; }
 
-.diagram-panel {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--bg-alt);
-  position: relative;
-}
+.diagram-panel { flex: 1 1 auto; min-width: 0; overflow: auto; background: var(--bg-alt); position: relative; }
 
 /* ── 맵 에디터 (편집 모드) ── */
 .map-edit-toggle { position: absolute; top: 8px; right: 8px; z-index: 20; font-size: 12px; padding: 4px 10px; opacity: 0.85; }
@@ -492,7 +475,7 @@ g.editor-selected .body, g.editor-selected .gms-pt-box, g.editor-selected .heate
 }
 .seq-chip .seq-chip-remove:hover { color: var(--error); }
 
-#gmsSvg { display: block; flex: 1 1 0; min-height: 0; width: 100%; height: 100%; }
+#gmsSvg { display: block; width: 100%; height: 100%; }
 .gms-pipe { fill: none; stroke: var(--muted); stroke-width: 5; stroke-linecap: round; }
 .gms-label { fill: var(--text); font-size: 15px; font-family: -apple-system, sans-serif; }
 .gms-tag { fill: var(--text); font-size: 12px; font-family: var(--mono); font-weight: 700; }
@@ -620,41 +603,318 @@ g.editor-selected .body, g.editor-selected .gms-pt-box, g.editor-selected .heate
   color: var(--primary-text);
 }
 
-/* ── 상단 상태 바: Equipment Info + BAR CODE/IP ADDR + Cylinder Step Status ──
-   세로 높이는 equipStatusSplitter로, Equipment Info/BAR CODE 사이 폭은 equipMidSplitter로
-   각각 드래그 조절 가능(다른 스플리터들과 동일 패턴, localStorage에 저장). */
-.equip-status-bar { display: flex; border-bottom: 1px solid var(--panel-border); background: var(--panel); flex: 0 0 auto; min-height: 65px; overflow: hidden; }
-.panel-box { padding: 4px 10px; border-right: 1px solid var(--panel-border); overflow-y: auto; }
-/* 오른쪽에 드래그 스플리터(v-splitter)가 바로 붙어 있어서 스플리터 자체 구분선과
-   겹치지 않도록 panel-box의 기본 border-right를 지운다. */
-.equip-info-box { flex: 0 0 240px; min-width: 180px; border-right: none; }
-.equip-io-box { flex: 0 0 190px; min-width: 140px; border-right: none; }
-.cyl-step-box { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 4px 10px 4px; }
-.cyl-step-status-group { display: flex; flex-direction: column; gap: 2px; }
-.box-title { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.03em; }
-.info-grid { display: flex; flex-direction: column; gap: 2px; }
-.info-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
-.info-row .k { color: var(--muted); }
-.info-row .v { font-family: var(--mono); font-weight: 700; }
-.step-row { display: flex; align-items: center; gap: 6px; margin-bottom: 0; flex-wrap: nowrap; }
-.step-side { font-size: 11px; font-weight: 700; color: var(--muted); width: 44px; flex: 0 0 44px; }
-.step-badges { display: flex; gap: 3px; flex-wrap: nowrap; }
-.step-badge { font-size: 10px; padding: 2px 5px; border-radius: 3px; background: var(--input-bg); border: 1px solid var(--panel-border); font-family: var(--mono); color: var(--muted); white-space: nowrap; flex-shrink: 0; }
-/* 지나온 스텝은 실제 공정 램프처럼 적색으로 켜진 채 유지된다(현재 스텝만 켜는 게 아니라
-   IDLE부터 현재까지 전부 active) - 아래 .step-badge-lg(큰 사각형)와 같은 색 규칙. */
-.step-badge.active { background: #d32f2f; border-color: #d32f2f; color: #ffffff; font-weight: 700; }
+/* ══════════════════════════════════════════════════════════════
+   GMS 화면 최대화 v3: 자동숨김 상단바 + 3단 커튼 + 패널 접기
+   ══════════════════════════════════════════════════════════════ */
+header { display: none !important; }
 
-.step-etc-row { margin-top: 1px; }
-.etc-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.etc-btns .etc-btn { font-size: 11px; padding: 2px 8px; }
+/* ── ① 자동 숨김 핸들 바 ── */
+.equip-bar-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 18px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--panel-border);
+  cursor: pointer;
+  user-select: none;
+  flex: 0 0 auto;
+  width: 100%;
+  z-index: 10;
+  transition: background 0.15s;
+}
+.equip-bar-handle:hover { background: var(--accent-dim); }
+.equip-bar-handle-dots { font-size: 14px; color: var(--muted); line-height: 1; }
+.equip-bar-handle-label { font-size: 10px; color: var(--muted); font-family: var(--mono); }
 
-/* ── 우측 패널 탭 전환(CONFIG/OPTION/ALARM/SHUT-DOWN) + ROOM(장비 선택으로 이동) ──
-   Cylinder Step Status 박스 우측 하단에 1열로 배치한다. 상단 바 높이를 줄일 때도 바닥을 따라다닌다. */
-.tab-switch-bar { display: flex; gap: 2px; flex-wrap: nowrap; align-items: center; align-self: flex-end; margin-top: auto; padding-top: 4px; flex-shrink: 0; }
-.tab-switch-btn { font-size: 11px; padding: 3px 8px; text-decoration: none; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; }
-.tab-switch-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--primary-text); font-weight: 700; }
-.tab-switch-btn.shutdown-tab { margin-left: 6px; background: var(--danger-bg); border-color: var(--error); color: var(--danger-text); font-weight: 700; }
+/* ── ② 상단 바 v2 컨테이너 (접힘 가능) ── */
+.equip-status-bar-v2 {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--panel);
+  flex: 0 0 auto;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  /* 자동 숨김 트랜지션 */
+  max-height: 200px;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+/* 접힌 상태 */
+.equip-status-bar-v2.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* ── ③ 3단 커튼 래퍼: 가로 flex ── */
+.curtain-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── ④ 커튼 패널 래퍼 (토글 버튼 + 슬라이드 패널) ── */
+.curtain-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 0 0 auto;
+  border-right: 1px solid var(--panel-border);
+}
+
+/* ── ⑤ 커튼 토글 버튼 (좁은 세로 버튼) ── */
+.curtain-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 28px;
+  min-width: 28px;
+  padding: 4px 0;
+  background: var(--bg-alt);
+  border: none;
+  border-right: 1px solid var(--panel-border);
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.2;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.curtain-toggle-btn:hover { background: var(--accent-dim); color: var(--accent); }
+.curtain-toggle-btn.open { background: var(--accent-dim); color: var(--accent); }
+.curtain-toggle-btn.open .curtain-arrow { transform: rotate(90deg); }
+.curtain-arrow {
+  font-size: 10px;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.curtain-label { font-size: 9px; font-family: var(--mono); text-align: center; }
+
+/* ── ⑥ 슬라이드 패널 (접힘/펼침 트랜지션) ── */
+.curtain-panel {
+  overflow: hidden;
+  width: 0;
+  max-width: 0;
+  transition: width 0.3s ease, max-width 0.3s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+.curtain-panel.open {
+  width: 200px;
+  max-width: 200px;
+  opacity: 1;
+}
+.curtain-panel-inner {
+  width: 200px;
+  padding: 6px 10px;
+  background: var(--bg-alt);
+}
+.curtain-box-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: var(--mono);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+/* ── ⑦ 화면 확대 유틸 버튼 (전체화면 + 패널접기) ── */
+.screen-util-btns {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.screen-util-btn {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: var(--input-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.screen-util-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+.screen-util-btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); font-weight: 700; }
+
+/* ── ⑧ op-panel 접힘 상태 ── */
+#rightSplitter.panel-collapsed { display: none !important; }
+#opPanel.panel-collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+.accordion-box { flex: 1; min-width: 0; }
+
+.cyl-step-box-full {
+  width: 100%;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-sizing: border-box;
+}
+
+.cyl-step-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.box-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.box-title-main {
+  font-size: 11px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.05em;
+  font-family: var(--mono);
+}
+
+.info-accordion-toggle-btn {
+  font-size: 10px;
+  padding: 1px 7px;
+  background: var(--input-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--primary-text);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.info-accordion-toggle-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.step-row-v2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.step-side-v2 {
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  min-width: 44px;
+  flex-shrink: 0;
+  font-family: var(--mono);
+}
+
+.step-badges-v2 {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex: 1;
+}
+
+.step-b-and-etc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.etc-btns-v2 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.etc-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+.step-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--input-bg);
+  border: 1px solid var(--panel-border);
+  font-family: var(--mono);
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.step-badge.active {
+  background: #d32f2f !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.etc-btns .etc-btn, .etc-btns-v2 .etc-btn {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+/* ── 우측 패널 탭 전환 버튼 바 ── */
+.tab-switch-bar {
+  display: flex;
+  gap: 2px;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.tab-switch-btn {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.tab-switch-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--primary-text);
+  font-weight: 700;
+}
+.tab-switch-btn.shutdown-tab {
+  margin-left: 4px;
+  background: var(--danger-bg);
+  border-color: var(--error);
+  color: var(--danger-text);
+  font-weight: 700;
+}
 .tab-switch-btn.room-link { color: var(--muted); }
+.tab-switch-btn.room-link:hover { color: var(--text); border-color: var(--accent); }
 .tab-switch-btn.room-link:hover { color: var(--text); border-color: var(--accent); }
 
 .tab-panel { padding: 10px 14px; overflow-y: auto; height: 100%; }
@@ -1068,163 +1328,3 @@ tr.alarm-cleared .grade-badge { opacity: 0.55; }
 :root[data-theme='dark'] .gsp-readout-unit,
 :root[data-theme='cyber'] .gsp-readout-unit { color: #94a3b8; }
 
-/* ── 최상단 이동 EQ INFO & BAR CODE 2열 분할 헤더 (CEO 지시 사항) ── */
-header.mobile-top-info-header {
-  flex: 0 0 auto !important;
-  padding: 4px 8px !important;
-  background: var(--bg, #f8fafc) !important;
-  border-bottom: 1px solid var(--panel-border, #e2e8f0) !important;
-  display: block !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
-}
-
-.diagram-info-bar {
-  display: grid !important;
-  grid-template-columns: 1.1fr 1.3fr 1.6fr 1.1fr !important;
-  grid-template-rows: auto auto !important;
-  gap: 3px 14px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 5px 12px !important;
-  background: var(--panel, #ffffff) !important;
-  border: 1px solid var(--panel-border, #cbd5e1) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-  overflow: hidden !important;
-}
-
-.diagram-info-bar .info-cell {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 6px !important;
-  white-space: nowrap !important;
-  line-height: 1.25 !important;
-  min-width: 0 !important;
-}
-
-.diagram-info-bar .info-cell .k {
-  color: #475569 !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-}
-
-:root[data-theme='dark'] .diagram-info-bar .info-cell .k,
-:root[data-theme='cyber'] .diagram-info-bar .info-cell .k {
-  color: #94a3b8 !important;
-}
-
-.diagram-info-bar .info-cell .v {
-  color: #0f172a !important;
-  font-family: var(--mono, monospace) !important;
-  font-weight: 800 !important;
-  font-size: 11.5px !important;
-  text-align: right !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-:root[data-theme='dark'] .diagram-info-bar .info-cell .v,
-:root[data-theme='cyber'] .diagram-info-bar .info-cell .v {
-  color: #f8fafc !important;
-}
-
-.diagram-info-bar .info-cell .v.barcode-val {
-  letter-spacing: 0.5px !important;
-}
-
-.diagram-info-bar .info-cell .v.ip-val {
-  letter-spacing: 0.3px !important;
-}
-
-/* ── P&ID 배관도 단독 전면 뷰 모드 (.pid-full-view) ── */
-body.pid-full-view .op-panel,
-body.pid-full-view #rightSplitter {
-  display: none !important;
-}
-body.pid-full-view .diagram-panel {
-  flex: 1 1 100% !important;
-  max-width: 100% !important;
-}
-
-/* ── 모바일 / 좁은 화면 최적화 ── */
-@media (max-width: 900px) {
-  header.mobile-top-info-header {
-    padding: 3px 6px !important;
-  }
-  .ui-zoom,
-  .fullscreen-btn,
-  .map-edit-toggle {
-    display: none !important;
-  }
-  .diagram-info-bar {
-    grid-template-columns: 1fr 1.2fr 1.5fr 1fr !important;
-    gap: 2px 10px !important;
-    padding: 4px 8px !important;
-  }
-  .diagram-info-bar .info-cell .k {
-    font-size: 10px !important;
-  }
-  .diagram-info-bar .info-cell .v {
-    font-size: 10.5px !important;
-  }
-}
-
-/* ── 마스터 P&ID 반투명 글래스 HUD 센서 & 공압 돔 LED 밸브 ── */
-.gms-pt-box {
-  fill: rgba(15, 23, 42, 0.88) !important;
-  stroke: #00f0ff !important;
-  stroke-width: 1.5px !important;
-  rx: 4px !important;
-  ry: 4px !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important;
-}
-
-.gms-pt.alert .gms-pt-box {
-  stroke: #ef4444 !important;
-  fill: rgba(74, 35, 35, 0.9) !important;
-}
-
-.gms-pt-value {
-  fill: #00f0ff !important;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
-  font-size: 10.5px !important;
-  font-weight: bold !important;
-  text-anchor: middle !important;
-}
-
-.gms-pt.alert .gms-pt-value {
-  fill: #ff6b6b !important;
-}
-
-.gms-pt-label {
-  fill: #94a3b8 !important;
-  font-size: 10px !important;
-  font-weight: bold !important;
-}
-
-/* 밸브 상태 - 공압 액추에이터 돔 LED 시각화 */
-.valve-group {
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.valve-group:hover {
-  transform: scale(1.1);
-}
-
-.valve-symbol.valve-open {
-  fill: #10b981 !important;
-  stroke: #34d399 !important;
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.8)) !important;
-}
-
-.valve-symbol.valve-closed {
-  fill: #334155 !important;
-  stroke: #64748b !important;
-}

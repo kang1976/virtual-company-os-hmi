@@ -226,7 +226,7 @@
   .toast.show { opacity: 1; }
   .toast.err { background: var(--error); color: #fff; }
 </style>
-  <link rel="stylesheet" href="theme-3d.css" />
+  <link rel="stylesheet" href="/theme-3d.css" />
 </head>
 <body>
 
@@ -289,19 +289,9 @@
       <label class="key">기본 PLC 종류</label>
       <select id="defaultSeries"><option value="CJ">CJ</option><option value="NX">NX</option></select>
       <label class="key" style="flex-basis:auto;">FINS 프로토콜</label>
-      <select id="finsProtocol">
-        <option value="USB">USB</option>
-        <option value="UDP">UDP</option>
-        <option value="TCP">TCP</option>
-        <option value="VIRTUAL_SIM">가상 시뮬레이터 (VIRTUAL_SIM)</option>
-      </select>
+      <select id="finsProtocol"><option value="USB">USB</option><option value="UDP">UDP</option><option value="TCP">TCP</option></select>
       <label class="key" style="flex-basis:auto;">FINS 노드</label>
       <input type="text" id="finsNode" style="width:90px;" placeholder="자동" />
-    </div>
-    <div class="row">
-      <label class="key">가상 시뮬레이션 / ngrok 원격 터널</label>
-      <button type="button" id="startNgrokBtn" class="primary" style="font-size:13px;padding:4px 10px;">🌐 ngrok 원격 터널 실행</button>
-      <span class="hint" id="ngrokStatusHint">실물 PLC 없이 100% 가상 시뮬레이션 및 외부 스마트폰/태블릿 원격 접속을 지원합니다.</span>
     </div>
     <div class="row">
       <label class="key">기본 IP</label>

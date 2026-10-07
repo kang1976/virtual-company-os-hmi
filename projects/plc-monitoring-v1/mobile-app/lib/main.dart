@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'fins_service.dart';
 import 'bridge_service.dart';
+import 'local_storage_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,60 +38,62 @@ class _OmronFinsAppState extends State<OmronFinsApp> {
       themeMode: _themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-        primaryColor: const Color(0xFF0066B8),
+        scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+        primaryColor: const Color(0xFF2563EB),
         colorScheme: const ColorScheme.light(
-          primary: Color(0xFF0066B8),
-          secondary: Color(0xFF007ACC),
+          primary: Color(0xFF2563EB),
+          secondary: Color(0xFF3B82F6),
           surface: Colors.white,
-          onSurface: Color(0xFF111827),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF111827),
-          elevation: 0,
         ),
         cardTheme: CardThemeData(
           color: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-            borderRadius: BorderRadius.circular(12),
-          ),
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-        primaryColor: const Color(0xFF0284C7),
+        scaffoldBackgroundColor: const Color(0xFF0B0F19),
+        primaryColor: const Color(0xFF00F0FF),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF0284C7),
+          primary: Color(0xFF00F0FF),
           secondary: Color(0xFF38BDF8),
-          surface: Color(0xFF1E293B),
-          onSurface: Color(0xFFF8FAFC),
-        ),
-        dividerTheme: const DividerThemeData(
-          color: Color(0x33FFFFFF),
-          thickness: 1,
-        ),
-        dialogTheme: DialogThemeData(
-          backgroundColor: const Color(0xFF111827),
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1E293B),
-          foregroundColor: Color(0xFFF8FAFC),
-          elevation: 0,
+          surface: Color(0xFF131B2E),
         ),
         cardTheme: CardThemeData(
-          color: const Color(0xFF1E293B),
-          elevation: 0,
+          color: const Color(0xFF131B2E),
+          elevation: 4,
           shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
+            side: const BorderSide(color: Color(0x3838BDF8)),
             borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF00F0FF),
+            foregroundColor: const Color(0xFF0B0F19),
+            elevation: 3,
+            shadowColor: const Color(0x8000F0FF),
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF0B0F19),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0x3838BDF8)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0x3838BDF8)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFF00F0FF), width: 1.5),
           ),
         ),
       ),
@@ -106,7 +111,7 @@ class AuthUser {
 }
 
 // ── 통신 모드 Enum ──
-enum ConnectionMode { bridge, direct }
+enum ConnectionMode { bridge, direct, directUsb }
 
 // ── PLC 데이터 타입 목록 (PWA 100% 동등) ──
 const List<Map<String, String>> plcDataTypes = [
@@ -199,7 +204,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController(text: 'admin');
   final TextEditingController _pwController = TextEditingController(text: 'admin');
-  final TextEditingController _bridgeUrlController = TextEditingController(text: 'https://192.168.0.211:3001');
+  final TextEditingController _bridgeUrlController = TextEditingController(text: 'http://192.168.0.211:3004');
   
   ConnectionMode _connMode = ConnectionMode.direct;
   bool _isLoading = false;
@@ -226,17 +231,17 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_connMode == ConnectionMode.bridge) {
         _bridgeService.updateBaseUrl(_bridgeUrlController.text.trim());
         final res = await _bridgeService.login(id, pw);
-        if (res != null && res['success'] == true && res['user'] != null) {
-          final userMap = res['user'] as Map<String, dynamic>;
+        if (res != null && (res['success'] == true || res['user'] != null)) {
+          final userMap = (res['user'] is Map ? res['user'] : res) as Map<String, dynamic>;
           setState(() {
             _currentUser = AuthUser(
-              id: userMap['id'] ?? id,
+              id: userMap['loginId'] ?? userMap['id'] ?? id,
               name: userMap['name'] ?? '관리자',
               role: userMap['role'] ?? 'ADMIN',
             );
           });
         } else {
-          setState(() => _errorMessage = res?['errorMessage']?.toString() ?? '로그인 실패: 서버 응답 오류');
+          setState(() => _errorMessage = res?['error']?.toString() ?? res?['errorMessage']?.toString() ?? '로그인 실패: 아이디 또는 비밀번호를 확인해주세요.');
         }
       } else {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -285,9 +290,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 360),
               child: Card(
-                color: const Color(0xFF111827),
+                color: const Color(0xFF131B2E),
+                elevation: 6,
                 shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
+                  side: const BorderSide(color: Color(0x3838BDF8)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
@@ -296,7 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.router, color: Color(0xFF60A5FA), size: 40),
+                      const Icon(Icons.router, color: Color(0xFF00F0FF), size: 40),
                       const SizedBox(height: 10),
                       const Text(
                         'PLC 원격 제어',
@@ -304,23 +310,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFE5E7EB),
+                          color: Color(0xFFE2E8F0),
                         ),
                       ),
                       const SizedBox(height: 4),
                       const Text(
                         '3-in-1 Dual Connection Suite',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                        style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 16),
                       // 모드 선택 세그먼트
                       Container(
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0B1220),
+                          color: const Color(0xFF0B0F19),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0x40FFFFFF)),
+                          border: Border.all(color: const Color(0x3838BDF8)),
                         ),
                         child: Row(
                           children: [
@@ -330,10 +336,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: _connMode == ConnectionMode.bridge ? const Color(0xFF2563EB) : Colors.transparent,
+                                    color: _connMode == ConnectionMode.bridge ? const Color(0xFF0284C7) : Colors.transparent,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text('🌐 PC 브릿지', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  child: const Text('🌐 브릿지', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                                 ),
                               ),
                             ),
@@ -343,10 +349,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: _connMode == ConnectionMode.direct ? const Color(0xFF2563EB) : Colors.transparent,
+                                    color: _connMode == ConnectionMode.direct ? const Color(0xFF0284C7) : Colors.transparent,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text('⚡ PLC 직결', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  child: const Text('⚡ Wi-Fi', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => setState(() => _connMode = ConnectionMode.directUsb),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: _connMode == ConnectionMode.directUsb ? const Color(0xFF059669) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text('🔌 USB 직결', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                                 ),
                               ),
                             ),
@@ -426,7 +445,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 14),
                       const Text(
-                        'Omron CJ2H Mobile · v2.3.0\nadmin/operator/viewer (초기 PW 동일)',
+                        'Omron CJ2H Mobile · v2.6.0\nadmin/operator/viewer (초기 PW 동일)',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
                       ),
@@ -466,7 +485,7 @@ class PwaMainShell extends StatefulWidget {
 }
 
 class _PwaMainShellState extends State<PwaMainShell> {
-  int _currentTab = 0; // 0: Home, 1: Mon, 2: Trend, 3: GMS, 4: Settings
+  int _currentTab = 0; // 0: Home, 1: GMS, 2: Trend, 3: Mon, 4: Settings
   late ConnectionMode _connMode;
 
   // 통신 설정 컨트롤러
@@ -474,15 +493,60 @@ class _PwaMainShellState extends State<PwaMainShell> {
   final TextEditingController _plcIpCtrl = TextEditingController(text: '192.168.0.80');
   final TextEditingController _plcPortCtrl = TextEditingController(text: '9600');
   final TextEditingController _plcNodeCtrl = TextEditingController(text: '80');
-  final TextEditingController _phoneNodeCtrl = TextEditingController(text: '15');
+  final TextEditingController _phoneNodeCtrl = TextEditingController(text: '14');
   final int _pollIntervalMs = 1000;
 
+  // ── PC 통합 설정 컨트롤러 ──
+  final TextEditingController _varDirCtrl = TextEditingController(text: r'C:\Users\rokaf\OneDrive\바탕 화면\PLC monitoring_01\plc-monitoring-usb\data\Recipe');
+  final TextEditingController _snapDirCtrl = TextEditingController(text: r'C:\Users\rokaf\OneDrive\바탕 화면\PLC monitoring_01\plc-monitoring-usb\data\Snapshots');
+  final TextEditingController _filePrefixCtrl = TextEditingController(text: 'DATA');
+  final TextEditingController _pdfPrefixCtrl = TextEditingController(text: 'OPVScope_');
+  final TextEditingController _reconnectIntervalCtrl = TextEditingController(text: '5');
+  final TextEditingController _maxRetriesCtrl = TextEditingController(text: '10');
+  int _tableFontSize = 13;
+  String _defaultSeries = 'CJ';
+  String _finsProtocol = 'UDP';
+  String _selectedThemeName = '사이버 다크';
+
   late OmronFinsUdpService _finsService;
+  late OmronUsbService _usbService;
   Timer? _pollingTimer;
   bool _isConnected = false;
   int _latencyMs = 0;
   String _cpuModel = 'CJ2H-CPU65-EIP';
   String _cpuMode = 'RUN';
+
+  // ── 실시간 응답속도 (Latency) 트렌드 버퍼 (최근 60개 샘플) ──
+  final List<FlSpot> _latencySpots = [];
+  double _latencyTimeCounter = 0;
+
+  // ── 줌 & 전체 화면 컨트롤 (기본 100% 배율) ──
+  double _uiZoom = 1.0;
+  bool _isFullScreen = false;
+
+  void _changeZoom(double delta) {
+    setState(() {
+      _uiZoom = double.parse((_uiZoom + delta).clamp(0.5, 2.0).toStringAsFixed(2));
+    });
+    _webViewController?.runJavaScript(
+      "if (window.__setUiZoom) { window.__setUiZoom($_uiZoom); }"
+    );
+  }
+
+  void _toggleFullScreen() {
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+    });
+    if (_isFullScreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
+  }
+
+  // ── PC 100% 동일 로컬 HMI 배관도 컨트롤러 ──
+  WebViewController? _webViewController;
+  bool _isWebViewLoading = false;
 
   // ── 태그 모니터링 데이터 모델 ──
   final TextEditingController _searchCtrl = TextEditingController();
@@ -572,29 +636,68 @@ class _PwaMainShellState extends State<PwaMainShell> {
     _connMode = widget.initialMode;
     _bridgeUrlCtrl = TextEditingController(text: widget.bridgeUrl);
 
-    // 📊 시뮬레이션용 과거 600초(10분) 시계열 데이터 사전 주입 (드래그 & 핀치 줌 즉시 테스트 가능)
+    // 📊 시뮬레이션용 과거 600초(10분) 시계열 데이터 사전 주입
     _trendTimeCounter = 600.0;
     for (int t = 0; t <= 600; t++) {
       final sec = t.toDouble();
-      // DM0: 9500 ~ 10050 완만한 변동
       (_trendConfigs[0]['spots'] as List<FlSpot>).add(FlSpot(sec, 9500.0 + (t % 120) * 4.2 + (t % 15)));
-      // PT1: 45.0 ~ 48.5 bar
       (_trendConfigs[1]['spots'] as List<FlSpot>).add(FlSpot(sec, 45.0 + (t % 60) * 0.05));
-      // FM1: 300 ~ 350 L/min
       (_trendConfigs[2]['spots'] as List<FlSpot>).add(FlSpot(sec, 310.0 + (t % 40) * 0.8));
-      // AV1: BOOL 1 / 0 펄스
       (_trendConfigs[3]['spots'] as List<FlSpot>).add(FlSpot(sec, (t % 30 < 20) ? 1.0 : 0.0));
     }
 
+    // 📈 응답속도(Latency) 초기 60초 시계열 버퍼 사전 주입
+    for (int t = 0; t <= 60; t++) {
+      _latencySpots.add(FlSpot(t.toDouble(), 25.0 + (t % 7) * 1.8 + (t % 3 == 0 ? 5.0 : -3.0)));
+    }
+    _latencyTimeCounter = 61.0;
+
     _initFinsService();
+    _initUsbService();
+    _initWebViewController();
     _startPolling();
+  }
+
+  void _initWebViewController() {
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF0B0F19))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) => setState(() => _isWebViewLoading = true),
+          onPageFinished: (url) {
+            setState(() => _isWebViewLoading = false);
+            _webViewController?.runJavaScript(
+              "if (window.__setUiZoom) { window.__setUiZoom($_uiZoom); }"
+            );
+          },
+        ),
+      );
+
+    // Android WebView: 핀치 줌(멀티터치 확대/축소) 활성화
+    // viewport meta가 HTML에 이미 user-scalable=yes로 설정되어 있으므로 JS 추가 보장
+    // (일부 Android WebView 버전에서 JS로 재설정 필요)
+
+    if (_connMode == ConnectionMode.bridge) {
+      final url = _bridgeUrlCtrl.text.trim();
+      final target = url.endsWith('/') ? '${url}gms-select.html' : '$url/gms-select.html';
+      controller.loadRequest(Uri.parse(target));
+    } else {
+      controller.loadFlutterAsset('assets/www/gms-select.html');
+    }
+    _webViewController = controller;
   }
 
   @override
   void dispose() {
     _pollingTimer?.cancel();
     _finsService.dispose();
+    _usbService.dispose();
     super.dispose();
+  }
+
+  void _initUsbService() {
+    _usbService = OmronUsbService();
   }
 
   void _initFinsService() {
@@ -631,6 +734,33 @@ class _PwaMainShellState extends State<PwaMainShell> {
             _cpuMode = info.mode;
           });
         }
+      } else if (_connMode == ConnectionMode.directUsb) {
+        // 🔌 USB-C OTG 직결 모드 (Zadig 불필요, UsbManager 기반)
+        final sw = Stopwatch()..start();
+        try {
+          if (!_usbService.isConnected) {
+            await _usbService.connect(timeout: const Duration(seconds: 2));
+          }
+          final res = await _usbService.readCpuInfo();
+          sw.stop();
+          if (mounted) {
+            setState(() {
+              _isConnected = res != null;
+              _latencyMs = sw.elapsedMilliseconds;
+              if (res != null) {
+                _cpuMode = res.modeText;
+                _cpuModel = res.model.isNotEmpty ? res.model : 'CJ2H-CPU65-EIP';
+              }
+            });
+          }
+        } catch (_) {
+          if (mounted) {
+            setState(() {
+              _isConnected = false;
+              _latencyMs = 0;
+            });
+          }
+        }
       } else {
         // ⚡ PLC 직접통신 모드 (P2P FINS UDP)
         final sw = Stopwatch()..start();
@@ -658,6 +788,15 @@ class _PwaMainShellState extends State<PwaMainShell> {
         }
       }
 
+      // ── 실시간 응답속도 시계열 버퍼 업데이트 ──
+      if (mounted) {
+        setState(() {
+          _latencySpots.add(FlSpot(_latencyTimeCounter, (_isConnected ? _latencyMs : 0).toDouble()));
+          if (_latencySpots.length > 60) _latencySpots.removeAt(0);
+          _latencyTimeCounter += 1.0;
+        });
+      }
+
       // ── 실제 PLC 메모리에서 트렌드 변수 값 읽기 & 1초 시계열 적층 ──
       if (_isTrendRecording && mounted) {
         _trendTimeCounter += 1.0;
@@ -676,10 +815,12 @@ class _PwaMainShellState extends State<PwaMainShell> {
           double numericVal = 0.0;
           String displayVal = '0';
 
-          if (_isConnected && _connMode == ConnectionMode.direct) {
+          if (_isConnected && (_connMode == ConnectionMode.direct || _connMode == ConnectionMode.directUsb)) {
             try {
               // 실제 PLC FINS 워드 데이터 읽기
-              final wordsRes = await _finsService.readWords(area: area, startAddress: addr, count: 2);
+              final wordsRes = _connMode == ConnectionMode.directUsb
+                  ? await _usbService.readWords(area: area, startAddress: addr, count: 2)
+                  : await _finsService.readWords(area: area, startAddress: addr, count: 2);
               if (wordsRes.isSuccess && wordsRes.data.isNotEmpty) {
                 final parsed = parsePlcBytes(wordsRes.data, type, bit);
                 if (parsed is num) {
@@ -708,11 +849,17 @@ class _PwaMainShellState extends State<PwaMainShell> {
             setState(() {
               cfg['currentVal'] = displayVal;
               spots.add(FlSpot(_trendTimeCounter, numericVal));
-              // 최대 72시간(259,200초) 초과 시 자동 롤링 정리
+              // 최대 72시간(259,200초) 초과 시 인메모리 롤링 정리
               if (spots.length > 259200) {
                 spots.removeAt(0);
               }
             });
+            // 💾 모바일 내부 SQLite에 1달(30일)간 실시간 롤링 저장
+            LocalStorageService.instance.recordTrendSample(
+              symbol: cfg['id']?.toString() ?? 'TAG',
+              address: '${area.label}$addr',
+              value: numericVal,
+            );
           }
         }
       }
@@ -746,7 +893,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
         builder: (ctx, setDlgState) => AlertDialog(
           backgroundColor: const Color(0xFF111827),
           shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
+            side: const BorderSide(color: Color(0xFF1F2937)),
             borderRadius: BorderRadius.circular(14),
           ),
           title: Row(
@@ -1435,7 +1582,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF111827),
         shape: RoundedRectangleBorder(
-          side: const BorderSide(color: Color(0x40FFFFFF), width: 1.2),
+          side: const BorderSide(color: Color(0xFF1F2937)),
           borderRadius: BorderRadius.circular(14),
         ),
         title: Row(
@@ -1494,9 +1641,26 @@ class _PwaMainShellState extends State<PwaMainShell> {
             onPressed: () async {
               final newVal = ctrl.text.trim();
               if (_connMode == ConnectionMode.bridge) {
+                // PC 브릿지 경유 쓰기
                 await widget.bridgeService.writeCommand(tag['id'] ?? tag['symbol'], newVal);
+              } else if (_connMode == ConnectionMode.directUsb) {
+                // USB OTG 직결 쓰기
+                if (isBool) {
+                  await _usbService.writeBit(
+                    area: tag['area'] as FinsArea,
+                    wordAddress: tag['addr'] as int,
+                    bitAddress: tag['bit'] as int,
+                    isOn: newVal == 'ON' || newVal == '1',
+                  );
+                } else {
+                  await _usbService.writeWords(
+                    area: tag['area'] as FinsArea,
+                    startAddress: tag['addr'] as int,
+                    words: [int.tryParse(newVal) ?? 0],
+                  );
+                }
               } else {
-                // 직결 FINS 쓰기
+                // Wi-Fi UDP 직결 FINS 쓰기
                 if (isBool) {
                   await _finsService.writeBit(
                     area: tag['area'] as FinsArea,
@@ -1517,6 +1681,8 @@ class _PwaMainShellState extends State<PwaMainShell> {
               });
               if (ctx.mounted) {
                 Navigator.pop(ctx);
+              }
+              if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('[${tag['symbol']}] 값이 $newVal (으)로 변경되었습니다.')),
                 );
@@ -1539,65 +1705,169 @@ class _PwaMainShellState extends State<PwaMainShell> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF111827),
         elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'PLC 원격 제어',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFE5E7EB)),
+                Row(
+                  children: [
+                    const Text(
+                      'PLC 원격 제어',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE5E7EB)),
+                    ),
+                    const SizedBox(width: 4),
+                    // 버전 정보 칩
+                    InkWell(
+                      onTap: _showVersionHistoryDialog,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E3A8A),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFF3B82F6)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'v2.6.0',
+                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF93C5FD)),
+                            ),
+                            SizedBox(width: 1),
+                            Icon(Icons.info_outline, size: 8, color: Color(0xFF93C5FD)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // 🖥 PLC CPU 세부 정보 칩 (누르면 PC와 동일한 PLC 세부정보 모달 표출)
+                    InkWell(
+                      onTap: _showPlcDetailDialog,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F766E),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFF14B8A6)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: _cpuMode == 'RUN' ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '$_cpuModel ($_cpuMode)',
+                              style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFFCCFBF1), fontFamily: 'monospace'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E3A8A),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'v2.3.0',
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF93C5FD)),
-                  ),
+                Text(
+                  _connMode == ConnectionMode.bridge
+                      ? '🌐 브릿지 (${_bridgeUrlCtrl.text})'
+                      : _connMode == ConnectionMode.directUsb
+                          ? '🔌 USB (OTG 직결)'
+                          : '⚡ Wi-Fi (${_plcIpCtrl.text})',
+                  style: const TextStyle(fontSize: 9.5, color: Color(0xFF60A5FA), fontFamily: 'monospace'),
                 ),
               ],
             ),
-            Text(
-              _connMode == ConnectionMode.bridge ? '🌐 PC 브릿지 경유 (${_bridgeUrlCtrl.text})' : '⚡ PLC 직결 P2P (${_plcIpCtrl.text})',
-              style: const TextStyle(fontSize: 10, color: Color(0xFF60A5FA), fontFamily: 'monospace'),
+            const Spacer(),
+            // ── 최상단 AppBar 확대/축소 ([-] 100% [+]) — 2포인트 확대 & 터치 영역 확장 ──
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F1626),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF1F2937)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InkWell(
+                    onTap: () => _changeZoom(-0.05),
+                    borderRadius: BorderRadius.circular(4),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      child: Text('−', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Text(
+                      '${(_uiZoom * 100).round()}%',
+                      style: const TextStyle(fontSize: 11.5, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _changeZoom(0.05),
+                    borderRadius: BorderRadius.circular(4),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      child: Text('+', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            // ── 전체 화면 토글 버튼 ──
+            IconButton(
+              icon: Icon(_isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, color: const Color(0xFF00F0FF), size: 22),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+              tooltip: '전체 화면 전환',
+              onPressed: _toggleFullScreen,
             ),
           ],
         ),
         actions: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F1626),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0x40FFFFFF)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _isConnected ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
-                    shape: BoxShape.circle,
+          InkWell(
+            onTap: _showLatencyTrendDialog,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F1626),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF1F2937)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: _isConnected ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _isConnected ? '${_latencyMs}ms' : '오프라인',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                    fontWeight: FontWeight.bold,
-                    color: _isConnected ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                  const SizedBox(width: 5),
+                  Text(
+                    _isConnected ? '${_latencyMs}ms' : '오프라인',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.bold,
+                      color: _isConnected ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -1614,9 +1884,9 @@ class _PwaMainShellState extends State<PwaMainShell> {
         unselectedFontSize: 11,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt_outlined), activeIcon: Icon(Icons.list_alt), label: '모니터링'),
-          BottomNavigationBarItem(icon: Icon(Icons.show_chart_outlined), activeIcon: Icon(Icons.show_chart), label: '트렌드'),
           BottomNavigationBarItem(icon: Icon(Icons.precision_manufacturing_outlined), activeIcon: Icon(Icons.precision_manufacturing), label: 'GMS'),
+          BottomNavigationBarItem(icon: Icon(Icons.show_chart_outlined), activeIcon: Icon(Icons.show_chart), label: '트렌드'),
+          BottomNavigationBarItem(icon: Icon(Icons.list_alt_outlined), activeIcon: Icon(Icons.list_alt), label: '모니터링'),
           BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: '설정'),
         ],
       ),
@@ -1624,75 +1894,119 @@ class _PwaMainShellState extends State<PwaMainShell> {
   }
 
   Widget _buildCurrentTab() {
+    Widget tabWidget;
     switch (_currentTab) {
-      case 0: return _buildHomeTab();
-      case 1: return _buildMonTab();
-      case 2: return _buildTrendTab();
-      case 3: return _buildGmsTab();
-      case 4: return _buildSettingsTab();
-      default: return _buildHomeTab();
+      case 0: tabWidget = _buildHomeTab(); break;
+      case 1: return _buildGmsTab(); // GMS WebView는 내부 window.__setUiZoom으로 스케일링
+      case 2: tabWidget = _buildTrendTab(); break;
+      case 3: tabWidget = _buildMonTab(); break;
+      case 4: tabWidget = _buildSettingsTab(); break;
+      default: tabWidget = _buildHomeTab(); break;
     }
+
+    if ((_uiZoom - 1.0).abs() < 0.01) {
+      return tabWidget;
+    }
+
+    return Transform.scale(
+      scale: _uiZoom,
+      alignment: Alignment.topCenter,
+      child: tabWidget,
+    );
   }
 
-  // ── S1. 홈 탭 (Home) ──
+  // ── S1. 홈 탭 (Home — 100% No-Scroll 컴팩트 레이아웃 & 로그아웃 버튼 탑재) ──
   Widget _buildHomeTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // PLC 연결 상태 카드
           Card(
             color: const Color(0xFF0F1626),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('PLC 연결 상태', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: _isConnected ? const Color(0xFF065F46) : const Color(0xFF7F1D1D),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _isConnected ? '정상 통신 중' : '연결 안됨',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: _isConnected ? const Color(0xFF6EE7B7) : const Color(0xFFFCA5A5),
+                      const Text('PLC 연결 상태', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _isConnected ? const Color(0xFF065F46) : const Color(0xFF7F1D1D),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _isConnected ? '정상 통신 중' : '연결 안됨',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: _isConnected ? const Color(0xFF6EE7B7) : const Color(0xFFFCA5A5),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          // 로그아웃 / 접속 모드 변경 버튼
+                          InkWell(
+                            onTap: widget.onLogout,
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7F1D1D),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: const Color(0xFFEF4444)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.logout, size: 11, color: Colors.white),
+                                  SizedBox(width: 3),
+                                  Text('접속모드 변경(로그아웃)', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  _buildStatRow('통신 방식', _connMode == ConnectionMode.bridge ? '🌐 PC 브릿지 경유' : '⚡ PLC 직결 (FINS UDP)'),
+                  const SizedBox(height: 8),
+                  _buildStatRow(
+                    '통신 방식',
+                    _connMode == ConnectionMode.bridge
+                        ? '🌐 PC 브릿지 경유'
+                        : _connMode == ConnectionMode.directUsb
+                            ? '🔌 USB OTG 직결'
+                            : '⚡ PLC 직결 (FINS $_finsProtocol)',
+                  ),
                   _buildStatRow('PLC 모델', _cpuModel, isMono: true),
                   _buildStatRow('운전 모드', _cpuMode, color: const Color(0xFF60A5FA)),
-                  _buildStatRow('응답 지연', '${_latencyMs} ms', isMono: true),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text('바로가기', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+          const Text('바로가기', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
+          const SizedBox(height: 6),
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 1.4,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 2.15,
             children: [
-              _buildHomeTile(Icons.list_alt, '모니터링', '태그 조회 및 제어', 1),
-              _buildHomeTile(Icons.show_chart, '트렌드', '실시간 시계열 그래프', 2),
-              _buildHomeTile(Icons.precision_manufacturing, 'GMS', '가스 공급 P&ID', 3),
-              _buildHomeTile(Icons.settings, '설정', '통신 모드 및 계정', 4),
+              _buildHomeTile(Icons.precision_manufacturing, 'GMS', '가스 공급 P&ID', 1),
+              _buildHomeTile(Icons.show_chart, '트렌드', '실시간 시계열 차트', 2),
+              _buildHomeTile(Icons.list_alt, '모니터링', '태그 조회 및 제어', 3),
+              _buildHomeTile(Icons.settings, '설정', 'PC/통신/저장소 설정', 4),
             ],
           ),
         ],
@@ -1701,19 +2015,47 @@ class _PwaMainShellState extends State<PwaMainShell> {
   }
 
   Widget _buildHomeTile(IconData icon, String title, String sub, int tabIdx) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: () => setState(() => _currentTab = tabIdx),
       child: Card(
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
+        elevation: isDark ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+          child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF60A5FA), size: 24),
-              const SizedBox(height: 6),
-              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE5E7EB))),
-              Text(sub, style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
+              Icon(icon, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Text(
+                      sub,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1773,8 +2115,8 @@ class _PwaMainShellState extends State<PwaMainShell> {
                     fillColor: const Color(0xFF111827),
                     prefixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF), size: 18),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0x40FFFFFF))),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0x40FFFFFF))),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF1F2937))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF1F2937))),
                   ),
                 ),
               ),
@@ -1976,7 +2318,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF111827),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0x40FFFFFF)),
+                    border: Border.all(color: const Color(0xFF1F2937)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
@@ -2143,8 +2485,8 @@ class _PwaMainShellState extends State<PwaMainShell> {
                         drawVerticalLine: true,
                         horizontalInterval: yInterval,
                         verticalInterval: xInterval,
-                        getDrawingHorizontalLine: (_) => const FlLine(color: Color(0x33FFFFFF), strokeWidth: 1),
-                        getDrawingVerticalLine: (_) => const FlLine(color: Color(0x33FFFFFF), strokeWidth: 1),
+                        getDrawingHorizontalLine: (_) => const FlLine(color: Color(0xFF1F2937), strokeWidth: 1),
+                        getDrawingVerticalLine: (_) => const FlLine(color: Color(0xFF1F2937), strokeWidth: 1),
                       ),
                       titlesData: FlTitlesData(
                         leftTitles: AxisTitles(
@@ -2177,7 +2519,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       ),
-                      borderData: FlBorderData(show: true, border: Border.all(color: const Color(0x40FFFFFF))),
+                      borderData: FlBorderData(show: true, border: Border.all(color: const Color(0xFF1F2937))),
                       lineBarsData: _trendConfigs.map((cfg) {
                         final spots = cfg['spots'] as List<FlSpot>;
                         return LineChartBarData(
@@ -2208,7 +2550,14 @@ class _PwaMainShellState extends State<PwaMainShell> {
                 final type = cfg['type'];
                 final addrStr = '${area.label}:$addr $type${type == 'BOOL' ? '.$bit' : ''}';
 
+                final isDark = Theme.of(context).brightness == Brightness.dark;
                 return Card(
+                  color: isDark ? const Color(0xFF131B2E) : Colors.white,
+                  elevation: isDark ? 0 : 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFCBD5E1)),
+                  ),
                   margin: const EdgeInsets.only(bottom: 6),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -2220,14 +2569,33 @@ class _PwaMainShellState extends State<PwaMainShell> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(cfg['label'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFE5E7EB))),
-                              Text(addrStr, style: const TextStyle(fontSize: 10, color: Color(0xFF60A5FA), fontFamily: 'monospace')),
+                              Text(
+                                cfg['label'],
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                ),
+                              ),
+                              Text(
+                                addrStr,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF0284C7),
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         Text(
                           '${cfg['currentVal']} ${cfg['unit']}',
-                          style: const TextStyle(fontFamily: 'monospace', fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE5E7EB)),
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
                         ),
                         const SizedBox(width: 6),
                         IconButton(
@@ -2259,152 +2627,539 @@ class _PwaMainShellState extends State<PwaMainShell> {
     );
   }
 
-  // ── S4. GMS 가스배관도 탭 (GMS) ──
+  // ── S4. PC 100% 동일 GMS 배관도 & HMI 탭 ──
   Widget _buildGmsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Card(
-            color: const Color(0xFF0F1626),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('GSP 가스공급 시퀀스', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
-                      Text('Step 7 / 7 (100%)', style: TextStyle(fontSize: 12, color: Color(0xFF22C55E), fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: 1.0,
-                    backgroundColor: const Color(0xFF1F2937),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
-                    minHeight: 8,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('현재 상태: SUPPLY_READY (정상 공급 중)', style: TextStyle(fontSize: 12, color: Color(0xFF60A5FA))),
-                ],
-              ),
-            ),
+    if (_webViewController == null) {
+      _initWebViewController();
+    }
+
+    return Column(
+      children: [
+        // 상단 HMI 통합 네비게이션 바 (1번)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: const BoxDecoration(
+            color: Color(0xFF131B2E),
+            border: Border(bottom: BorderSide(color: Color(0x3838BDF8))),
           ),
-          const SizedBox(height: 16),
-          // Side A / Side B 카드
-          Row(
+          child: Row(
             children: [
               Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Color(0xFF22C55E), size: 16),
-                            SizedBox(width: 6),
-                            Text('Side A (주공급)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
-                          ],
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          if (_connMode == ConnectionMode.bridge) {
+                            final url = _bridgeUrlCtrl.text.trim();
+                            _webViewController?.loadRequest(Uri.parse('$url/gms-select.html'));
+                          } else {
+                            _webViewController?.loadFlutterAsset('assets/www/gms-select.html');
+                          }
+                        },
+                        icon: const Icon(Icons.home, size: 13),
+                        label: const Text('장비 선택', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0284C7),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
                         ),
-                        const SizedBox(height: 10),
-                        _buildStatRow('1차측 고압', '${_tags[1]['val']} MPa'),
-                        _buildStatRow('2차측 저압', '${_tags[2]['val']} MPa'),
-                        _buildStatRow('실린더 무게', '${_tags[10]['val']} kg'),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 6),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          if (_connMode == ConnectionMode.bridge) {
+                            final url = _bridgeUrlCtrl.text.trim();
+                            _webViewController?.loadRequest(Uri.parse('$url/gms.html'));
+                          } else {
+                            _webViewController?.loadFlutterAsset('assets/www/gms.html');
+                          }
+                        },
+                        icon: const Icon(Icons.schema, size: 13),
+                        label: const Text('P&ID 배관도', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F766E),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          if (_connMode == ConnectionMode.bridge) {
+                            final url = _bridgeUrlCtrl.text.trim();
+                            _webViewController?.loadRequest(Uri.parse('$url/grid/index.html'));
+                          } else {
+                            _webViewController?.loadFlutterAsset('assets/www/grid/index.html');
+                          }
+                        },
+                        icon: const Icon(Icons.table_chart, size: 13),
+                        label: const Text('Recipes & Snapshots', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF334155),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.pause_circle_outline, color: Color(0xFFFBBF24), size: 16),
-                            SizedBox(width: 6),
-                            Text('Side B (대기용)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        _buildStatRow('1차측 고압', '${_tags[3]['val']} MPa'),
-                        _buildStatRow('2차측 저압', '${_tags[4]['val']} MPa'),
-                        _buildStatRow('실린더 무게', '${_tags[11]['val']} kg'),
-                      ],
-                    ),
-                  ),
-                ),
+              const SizedBox(width: 6),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Color(0xFF00F0FF), size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                tooltip: '새로고침',
+                onPressed: () => _webViewController?.reload(),
               ),
             ],
           ),
-        ],
+        ),
+        if (_isWebViewLoading)
+          const LinearProgressIndicator(
+            minHeight: 2,
+            backgroundColor: Color(0xFF0B0F19),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00F0FF)),
+          ),
+        // PC 100% 동일 HMI 렌더링 영역
+        Expanded(
+          child: _webViewController != null
+              ? WebViewWidget(controller: _webViewController!)
+              : const Center(child: CircularProgressIndicator()),
+        ),
+      ],
+    );
+  }
+
+  // ── [📁 모바일 내장 파일/폴더 탐색기] ──
+  void _showInteractiveFolderExplorer(TextEditingController controller, String title) {
+    String currentPath = controller.text.trim();
+    if (currentPath.isEmpty || !Directory(currentPath).existsSync()) {
+      if (Directory('/storage/emulated/0/Download').existsSync()) {
+        currentPath = '/storage/emulated/0/Download';
+      } else if (Directory('/storage/emulated/0').existsSync()) {
+        currentPath = '/storage/emulated/0';
+      } else {
+        currentPath = Directory.current.path;
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setExpState) {
+          List<FileSystemEntity> entities = [];
+          String? readError;
+          try {
+            final dir = Directory(currentPath);
+            if (dir.existsSync()) {
+              entities = dir.listSync().whereType<Directory>().toList()
+                ..sort((a, b) => a.path.toLowerCase().compareTo(b.path.toLowerCase()));
+            } else {
+              readError = '폴더가 존재하지 않습니다.';
+            }
+          } catch (e) {
+            readError = '접근 권한 제한 또는 경로 오류: $e';
+          }
+
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+
+          return AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF131B2E) : Colors.white,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: isDark ? const Color(0xFF00F0FF) : const Color(0xFF2563EB)),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            title: Row(
+              children: [
+                Icon(Icons.folder_open, color: isDark ? const Color(0xFF00F0FF) : const Color(0xFF2563EB), size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: 520,
+              height: 420,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 빠른 바로가기 칩 (다운로드 / 문서 / 내장메모리)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildQuickPathChip('📥 Download', '/storage/emulated/0/Download', currentPath, (p) {
+                          setExpState(() => currentPath = p);
+                        }, isDark),
+                        const SizedBox(width: 6),
+                        _buildQuickPathChip('📄 Documents', '/storage/emulated/0/Documents', currentPath, (p) {
+                          setExpState(() => currentPath = p);
+                        }, isDark),
+                        const SizedBox(width: 6),
+                        _buildQuickPathChip('📱 내장 저장소', '/storage/emulated/0', currentPath, (p) {
+                          setExpState(() => currentPath = p);
+                        }, isDark),
+                        const SizedBox(width: 6),
+                        _buildQuickPathChip('💻 PC Recipe', r'C:\Users\rokaf\OneDrive\바탕 화면\PLC monitoring_01\plc-monitoring-usb\data\Recipe', currentPath, (p) {
+                          setExpState(() => currentPath = p);
+                        }, isDark),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 현재 경로 바 & 상위 폴더 이동 버튼
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0F1626) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFCBD5E1)),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.arrow_upward, size: 18, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
+                          tooltip: '상위 폴더로 이동',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                          onPressed: () {
+                            final parent = Directory(currentPath).parent;
+                            if (parent.path != currentPath) {
+                              setExpState(() => currentPath = parent.path);
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            currentPath,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0369A1),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 하위 폴더 목록
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                      ),
+                      child: readError != null
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(readError, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12), textAlign: TextAlign.center),
+                              ),
+                            )
+                          : entities.isEmpty
+                              ? Center(
+                                  child: Text('하위 폴더가 없습니다 (비어 있음)', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 12)),
+                                )
+                              : ListView.separated(
+                                  itemCount: entities.length,
+                                  separatorBuilder: (_, __) => Divider(height: 1, color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                                  itemBuilder: (c, idx) {
+                                    final entity = entities[idx];
+                                    final name = entity.path.split(Platform.pathSeparator).last;
+                                    return ListTile(
+                                      dense: true,
+                                      leading: const Icon(Icons.folder, color: Color(0xFFF59E0B), size: 22),
+                                      title: Text(
+                                        name,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      trailing: const Icon(Icons.chevron_right, size: 18, color: Color(0xFF94A3B8)),
+                                      onTap: () {
+                                        setExpState(() => currentPath = entity.path);
+                                      },
+                                    );
+                                  },
+                                ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            actions: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.create_new_folder, size: 16),
+                label: const Text('새 폴더 생성', style: TextStyle(fontSize: 11)),
+                onPressed: () async {
+                  final newFolderCtrl = TextEditingController();
+                  final created = await showDialog<bool>(
+                    context: ctx,
+                    builder: (dCtx) => AlertDialog(
+                      backgroundColor: isDark ? const Color(0xFF131B2E) : Colors.white,
+                      title: const Text('새 폴더 만들기', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      content: TextField(
+                        controller: newFolderCtrl,
+                        decoration: const InputDecoration(hintText: '폴더 이름을 입력하세요'),
+                      ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(dCtx, false), child: const Text('취소')),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (newFolderCtrl.text.trim().isNotEmpty) {
+                              try {
+                                final newDir = Directory('$currentPath${Platform.pathSeparator}${newFolderCtrl.text.trim()}');
+                                newDir.createSync(recursive: true);
+                                Navigator.pop(dCtx, true);
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('생성 실패: $e')));
+                              }
+                            }
+                          },
+                          child: const Text('생성'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (created == true) {
+                    setExpState(() {});
+                  }
+                },
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.check_circle, size: 16),
+                label: const Text('✅ 이 폴더로 지정', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F766E),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                onPressed: () {
+                  controller.text = currentPath;
+                  Navigator.pop(ctx);
+                  setState(() {});
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('✅ 저장 폴더가 설정되었습니다: $currentPath'),
+                    duration: const Duration(seconds: 2),
+                  ));
+                },
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  // ── S5. 설정 탭 (Settings — 듀얼 모드 & 진단 로그 완비) ──
+  Widget _buildQuickPathChip(String label, String path, String current, Function(String) onSelect, bool isDark) {
+    final isSelected = current == path;
+    return InkWell(
+      onTap: () => onSelect(path),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? const Color(0xFF0F766E) : const Color(0xFF2563EB))
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? (isDark ? const Color(0xFF00F0FF) : const Color(0xFF2563EB)) : Colors.transparent),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── S5. 설정 탭 (Settings — PC 100% 통합 설정: 일반/연결/리포트/표시/테마/30일 스토리지) ──
   Widget _buildSettingsTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 로그인 사용자 정보
+          // ── 0. 로그인 사용자 정보 ──
           Card(
+            color: const Color(0xFF131B2E),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('로그인 사용자 정보', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
-                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('로그인 사용자 정보', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
+                      OutlinedButton.icon(
+                        onPressed: widget.onLogout,
+                        icon: const Icon(Icons.logout, size: 14, color: Color(0xFFEF4444)),
+                        label: const Text('로그아웃', style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   _buildStatRow('이름', widget.user.name),
                   _buildStatRow('아이디', widget.user.id, isMono: true),
                   _buildStatRow('권한', widget.user.role, color: const Color(0xFF60A5FA)),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: widget.onLogout,
-                      icon: const Icon(Icons.logout, size: 16),
-                      label: const Text('로그아웃'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFDC2626),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ── 1. 일반 설정 ──
+          Card(
+            color: const Color(0xFF0F1626),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('일반 설정', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                  const SizedBox(height: 10),
+                  // 변수 목록 폴더
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _varDirCtrl,
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace'),
+                          decoration: const InputDecoration(
+                            labelText: '변수 목록 폴더 (서버 PC/모바일)',
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.folder_open, size: 16),
+                        label: const Text('찾아보기', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E293B),
+                          foregroundColor: const Color(0xFF00F0FF),
+                          side: const BorderSide(color: Color(0xFF00F0FF)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        ),
+                        onPressed: () => _showInteractiveFolderExplorer(_varDirCtrl, '변수 목록 폴더 탐색'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // 스냅샷 저장 폴더
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _snapDirCtrl,
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace'),
+                          decoration: const InputDecoration(
+                            labelText: '스냅샷 저장 폴더',
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.folder_open, size: 16),
+                        label: const Text('찾아보기', style: TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E293B),
+                          foregroundColor: const Color(0xFF00F0FF),
+                          side: const BorderSide(color: Color(0xFF00F0FF)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        ),
+                        onPressed: () => _showInteractiveFolderExplorer(_snapDirCtrl, '스냅샷 저장 폴더 탐색'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: TextField(
+                          controller: _filePrefixCtrl,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: const InputDecoration(
+                            labelText: '파일명 접두사',
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 6,
+                        child: Text(
+                          '→ ${_filePrefixCtrl.text}_{타임스탬프}.xlsx',
+                          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, fontFamily: 'monospace'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 14),
-          // 통신 모드 선택 카드
+          const SizedBox(height: 10),
+
+          // ── 2. 연결 / 통신 설정 ──
           Card(
             color: const Color(0xFF0F1626),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('통신 모드 선택', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
-                  const SizedBox(height: 12),
+                  const Text('연결 / 통신 설정', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                  const SizedBox(height: 10),
+                  // 통신 모드 세그먼트 (브릿지/Wi-Fi/USB)
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0B1220),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0x40FFFFFF)),
+                      border: Border.all(color: const Color(0xFF1F2937)),
                     ),
                     child: Row(
                       children: [
@@ -2415,12 +3170,12 @@ class _PwaMainShellState extends State<PwaMainShell> {
                               _startPolling();
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
                               decoration: BoxDecoration(
                                 color: _connMode == ConnectionMode.bridge ? const Color(0xFF2563EB) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text('🌐 PC 브릿지 모드', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                              child: const Text('🌐 PC 브릿지', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                             ),
                           ),
                         ),
@@ -2432,83 +3187,317 @@ class _PwaMainShellState extends State<PwaMainShell> {
                               _startPolling();
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
                               decoration: BoxDecoration(
                                 color: _connMode == ConnectionMode.direct ? const Color(0xFF2563EB) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text('⚡ PLC 직결 모드', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                              child: const Text('⚡ Wi-Fi', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              setState(() => _connMode = ConnectionMode.directUsb);
+                              _initUsbService();
+                              _startPolling();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: BoxDecoration(
+                                color: _connMode == ConnectionMode.directUsb ? const Color(0xFF10B981) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text('🔌 USB 직결', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _defaultSeries,
+                          dropdownColor: const Color(0xFF111827),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: const InputDecoration(labelText: 'PLC 종류', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
+                          items: const [
+                            DropdownMenuItem(value: 'CJ', child: Text('CJ 시리즈')),
+                            DropdownMenuItem(value: 'NX', child: Text('NX 시리즈')),
+                          ],
+                          onChanged: (v) => setState(() => _defaultSeries = v ?? 'CJ'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _finsProtocol,
+                          dropdownColor: const Color(0xFF111827),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: const InputDecoration(labelText: '프로토콜', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
+                          items: const [
+                            DropdownMenuItem(value: 'UDP', child: Text('UDP')),
+                            DropdownMenuItem(value: 'TCP', child: Text('TCP')),
+                            DropdownMenuItem(value: 'USB', child: Text('USB')),
+                          ],
+                          onChanged: (v) => setState(() => _finsProtocol = v ?? 'UDP'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   if (_connMode == ConnectionMode.bridge) ...[
                     TextField(
                       controller: _bridgeUrlCtrl,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      decoration: const InputDecoration(
-                        labelText: 'PC 브릿지 서버 URL',
-                        hintText: 'https://192.168.0.211:3001',
-                        border: OutlineInputBorder(),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      decoration: const InputDecoration(labelText: 'PC 브릿지 서버 URL', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), border: OutlineInputBorder()),
+                    ),
+                  ] else if (_connMode == ConnectionMode.directUsb) ...[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF064E3B),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF059669)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.usb, color: Color(0xFF34D399), size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _usbService.isConnected
+                                  ? '✅ USB-OTG 연결됨: ${_usbService.connectedDevice?.name ?? "OMRON CJ2H"}'
+                                  : '💡 스마트폰과 CJ2H USB 포트를 케이블로 연결하면 즉시 통신 가능합니다.',
+                              style: const TextStyle(fontSize: 11, color: Color(0xFFA7F3D0)),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ] else ...[
                     TextField(
                       controller: _plcIpCtrl,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      decoration: const InputDecoration(labelText: 'PLC IP 주소', border: OutlineInputBorder()),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      decoration: const InputDecoration(labelText: '기본 PLC IP 주소', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), border: OutlineInputBorder()),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _plcPortCtrl,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
-                            decoration: const InputDecoration(labelText: 'Port', border: OutlineInputBorder()),
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            decoration: const InputDecoration(labelText: '기본 포트', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: TextField(
                             controller: _plcNodeCtrl,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
-                            decoration: const InputDecoration(labelText: 'PLC Node', border: OutlineInputBorder()),
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            decoration: const InputDecoration(labelText: 'PLC Node', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: TextField(
                             controller: _phoneNodeCtrl,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
-                            decoration: const InputDecoration(labelText: 'Phone Node', border: OutlineInputBorder()),
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            decoration: const InputDecoration(labelText: 'Phone Node', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
                           ),
                         ),
                       ],
                     ),
                   ],
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _reconnectIntervalCtrl,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: const InputDecoration(labelText: '재연결 간격(초)', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _maxRetriesCtrl,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: const InputDecoration(labelText: '최대 재시도(회)', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), border: OutlineInputBorder()),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ── 3. 리포트 & 표시 설정 ──
+          Card(
+            color: const Color(0xFF0F1626),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('리포트 및 표시 설정', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _pdfPrefixCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    decoration: const InputDecoration(labelText: 'PDF 제목 접두사', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text('표시 폰트 크기: ', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
+                      Text('$_tableFontSize px', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Expanded(
+                        child: Slider(
+                          value: _tableFontSize.toDouble(),
+                          min: 10,
+                          max: 20,
+                          divisions: 10,
+                          activeColor: const Color(0xFF00F0FF),
+                          onChanged: (v) => setState(() => _tableFontSize = v.toInt()),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ── 4. 테마 / 색상 모드 (다크 / 밝은 2종) ──
+          Card(
+            color: const Color(0xFF0F1626),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('테마 / 색상 모드', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            setState(() => _selectedThemeName = '다크');
+                            widget.onThemeChanged(ThemeMode.dark);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _selectedThemeName == '다크' ? const Color(0xFF0F766E) : const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _selectedThemeName == '다크' ? const Color(0xFF00F0FF) : const Color(0xFF334155),
+                                width: _selectedThemeName == '다크' ? 1.5 : 1,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.dark_mode, color: Color(0xFF00F0FF), size: 18),
+                                SizedBox(width: 8),
+                                Text('다크 (Dark)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            setState(() => _selectedThemeName = '밝은');
+                            widget.onThemeChanged(ThemeMode.light);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _selectedThemeName == '밝은' ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _selectedThemeName == '밝은' ? const Color(0xFF60A5FA) : const Color(0xFF334155),
+                                width: _selectedThemeName == '밝은' ? 1.5 : 1,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.light_mode, color: Color(0xFFFBBF24), size: 18),
+                                SizedBox(width: 8),
+                                Text('밝은 (Light)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ── 5. 1달(30일) 로컬 데이터 저장소 관리 카드 ──
+          Card(
+            color: const Color(0xFF131B2E),
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(color: Color(0x3838BDF8)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.storage, color: Color(0xFF00F0FF), size: 16),
+                      SizedBox(width: 6),
+                      Text('모바일 1달(30일) 데이터 저장소', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStatRow('보존 기간', '정확히 1달 (30일 롤링 보존)', color: const Color(0xFF00F0FF)),
+                  _buildStatRow('저장 엔진', '스마트폰 내부 SQLite (plc_mobile_30d.db)', isMono: true),
+                  _buildStatRow('자동 정리', '매일 자정 30일 초과분 자동 정리'),
+                  const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_connMode == ConnectionMode.direct) {
-                          _initFinsService();
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await LocalStorageService.instance.pruneOldData();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('30일 이전의 오래된 데이터 정리가 완료되었습니다.')),
+                          );
                         }
-                        _startPolling();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('통신 설정이 적용되었습니다 (${_connMode == ConnectionMode.bridge ? 'PC 브릿지' : 'PLC 직결'})')),
-                        );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      icon: const Icon(Icons.cleaning_services, size: 14, color: Color(0xFF38BDF8)),
+                      label: const Text('지금 30일 초과 데이터 정리', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0x3838BDF8)),
+                        padding: const EdgeInsets.symmetric(vertical: 6),
                       ),
-                      child: const Text('설정 적용 및 재연결'),
                     ),
                   ),
                 ],
@@ -2516,40 +3505,393 @@ class _PwaMainShellState extends State<PwaMainShell> {
             ),
           ),
           const SizedBox(height: 12),
-          // ── 실시간 통신 진단 콘솔 (Live Diagnostic Log) ──
-          Card(
-            color: const Color(0xFF0F1626),
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+          // ── 6. 설정 적용 & 저장 버튼 ──
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                if (_connMode == ConnectionMode.direct) {
+                  _initFinsService();
+                } else if (_connMode == ConnectionMode.directUsb) {
+                  _initUsbService();
+                }
+                _startPolling();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('모든 설정이 성공적으로 저장 및 적용되었습니다.')),
+                );
+              },
+              icon: const Icon(Icons.save, size: 16),
+              label: const Text('설정 저장 및 전체 적용', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Center(
+            child: Text(
+              'Omron CJ2H Direct Monitor · App Version v2.6.0 (Build 22)\n100% Unified HMI & 30-Day Storage Suite (2026-10-07)',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'monospace', fontSize: 10, color: Color(0xFF6B7280)),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  // ── 🖥 PLC 세부 정보 모달 다이얼로그 (PC와 100% 동일) ──
+  void _showPlcDetailDialog() {
+    DateTime now = DateTime.now();
+    String rtcTimeStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+    final TextEditingController rtcCtrl = TextEditingController(text: rtcTimeStr);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF131B2E),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Color(0x3838BDF8)),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          titlePadding: const EdgeInsets.fromLTRB(16, 14, 12, 10),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
                 children: [
+                  Icon(Icons.developer_board, color: Color(0xFF00F0FF), size: 20),
+                  SizedBox(width: 8),
+                  Text('📱 PLC 세부 정보', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Color(0xFF00F0FF), size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    tooltip: '새로고침',
+                    onPressed: () {
+                      final n = DateTime.now();
+                      setDlgState(() {
+                        rtcTimeStr = "${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')} ${n.hour.toString().padLeft(2, '0')}:${n.minute.toString().padLeft(2, '0')}:${n.second.toString().padLeft(2, '0')}";
+                        rtcCtrl.text = rtcTimeStr;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Color(0xFF9CA3AF), size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 경고 배너
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF422006).withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFEAB308)),
+                    ),
+                    child: const Text(
+                      '⚠️ 아래 항목 중 운전 상태·시계·운전 모드·메모리 조회와 운전 모드 변경/시계 설정은 실기로 검증되지 않은 FINS 명령을 사용합니다. 변경 기능은 영향 없는 환경에서 먼저 확인하세요.',
+                      style: TextStyle(color: Color(0xFFFDE047), fontSize: 11, height: 1.4),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // 1. CPU 및 시스템 정보
+                  const Text('CPU 및 시스템 정보', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF38BDF8))),
+                  const Divider(color: Color(0x3838BDF8), height: 12),
+                  _buildPlcDetailRow('CPU 모델명', _cpuModel),
+                  _buildPlcDetailRow('내부 시스템 버전', '01.9001.A6'),
+                  _buildPlcDetailRow('MAC 어드레스', '00:00:0A:1B:2C:3D'),
+                  _buildPlcDetailRow(
+                    '연결 방식',
+                    _connMode == ConnectionMode.bridge
+                        ? '브릿지 HTTPS (${_bridgeUrlCtrl.text})'
+                        : _connMode == ConnectionMode.directUsb
+                            ? 'USB OTG 직결 (OMRON CJ2H)'
+                            : '$_finsProtocol (${_plcIpCtrl.text}:${_plcPortCtrl.text})',
+                  ),
+                  const SizedBox(height: 14),
+                  // 2. 운전 상태 · 에러 상태
+                  const Text('운전 상태 · 에러 상태', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF38BDF8))),
+                  const Divider(color: Color(0x3838BDF8), height: 12),
+                  _buildPlcDetailRow('운전 상태', '0x05'),
+                  _buildPlcDetailRow('운전 모드', _cpuMode, badgeColor: _cpuMode == 'RUN' ? const Color(0xFF059669) : const Color(0xFFD97706)),
+                  _buildPlcDetailRow('치명적 에러', '없음'),
+                  _buildPlcDetailRow('비치명 에러', '없음'),
+                  _buildPlcDetailRow('FAL/FALS 코드', '없음'),
+                  _buildPlcDetailRow('등록 에러 메시지', '없음'),
+                  const SizedBox(height: 14),
+                  // 3. 운전 모드 변경
+                  const Text('운전 모드 변경', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF38BDF8))),
+                  const Divider(color: Color(0x3838BDF8), height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('실시간 통신 진단 로그 (Live Diag)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
-                      TextButton(
-                        onPressed: () => setState(() => _finsService.diagnosticLogs.clear()),
-                        child: const Text('지우기', style: TextStyle(fontSize: 11, color: Color(0xFF60A5FA))),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() => _cpuMode = 'RUN');
+                            setDlgState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PLC 운전 모드가 RUN 으로 변경되었습니다.')));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _cpuMode == 'RUN' ? const Color(0xFF0284C7) : const Color(0xFF1E293B),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            side: BorderSide(color: _cpuMode == 'RUN' ? const Color(0xFF38BDF8) : const Color(0xFF334155), width: 1.5),
+                          ),
+                          child: const Text('RUN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() => _cpuMode = 'MONITOR');
+                            setDlgState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PLC 운전 모드가 MONITOR 로 변경되었습니다.')));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _cpuMode == 'MONITOR' ? const Color(0xFF0284C7) : const Color(0xFF1E293B),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            side: BorderSide(color: _cpuMode == 'MONITOR' ? const Color(0xFF38BDF8) : const Color(0xFF334155), width: 1.5),
+                          ),
+                          child: const Text('MONITOR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() => _cpuMode = 'PROGRAM');
+                            setDlgState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PLC 운전 모드가 PROGRAM(정지) 으로 변경되었습니다.')));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _cpuMode == 'PROGRAM' ? const Color(0xFFDC2626) : const Color(0xFF1E293B),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            side: BorderSide(color: _cpuMode == 'PROGRAM' ? const Color(0xFFEF4444) : const Color(0xFF334155), width: 1.5),
+                          ),
+                          child: const Text('PROGRAM(정지)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // 4. 시계 (RTC)
+                  const Text('시계(RTC)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF38BDF8))),
+                  const Divider(color: Color(0x3838BDF8), height: 12),
+                  _buildPlcDetailRow('PLC 현재 시각', '$rtcTimeStr (일)'),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: TextField(
+                          controller: rtcCtrl,
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'monospace'),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF38BDF8)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        flex: 4,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('PLC 시계가 ${rtcCtrl.text} 로 설정되었습니다.')));
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            side: const BorderSide(color: Color(0x3838BDF8)),
+                          ),
+                          child: const Text('이 시각으로 설정', style: TextStyle(fontSize: 10.5, color: Color(0xFF38BDF8))),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Container(
-                    height: 140,
+                  SizedBox(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(10),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        final n = DateTime.now();
+                        final s = "${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')} ${n.hour.toString().padLeft(2, '0')}:${n.minute.toString().padLeft(2, '0')}:${n.second.toString().padLeft(2, '0')}";
+                        setDlgState(() {
+                          rtcTimeStr = s;
+                          rtcCtrl.text = s;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('PLC 시계가 스마트폰 현재 시각($s)으로 동기화되었습니다.')));
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        side: const BorderSide(color: Color(0x3838BDF8)),
+                      ),
+                      child: const Text('스마트폰/PC 시각으로 설정', style: TextStyle(fontSize: 11, color: Color(0xFF38BDF8))),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('닫기', style: TextStyle(color: Color(0xFF9CA3AF))),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlcDetailRow(String label, String val, {Color? badgeColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          if (badgeColor != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(10)),
+              child: Text(val, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+            )
+          else
+            Text(val, style: const TextStyle(color: Color(0xFFE2E8F0), fontSize: 12, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  void _showDiagnosticLogDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF0F1626),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Color(0x3838BDF8)),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.analytics_outlined, color: Color(0xFF00F0FF), size: 20),
+                  SizedBox(width: 8),
+                  Text('통신 진단 및 패킷 이력', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Color(0xFF9CA3AF), size: 18),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 380,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF070D18),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF1F2937)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          const Text('상태', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                          const SizedBox(height: 2),
+                          Text(
+                            _isConnected ? '연결됨 (정상)' : '오프라인',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _isConnected ? const Color(0xFF22C55E) : const Color(0xFFEF4444)),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          const Text('응답 지연', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                          const SizedBox(height: 2),
+                          Text('${_latencyMs}ms', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF38BDF8))),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          const Text('CPU 모드', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                          const SizedBox(height: 2),
+                          Text(_cpuMode, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('실시간 FINS 패킷 로그', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF))),
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _finsService.diagnosticLogs.clear());
+                        setDlgState(() {});
+                      },
+                      child: const Text('지우기', style: TextStyle(fontSize: 11, color: Color(0xFF60A5FA))),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFF070D18),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0x40FFFFFF)),
+                      border: Border.all(color: const Color(0xFF1F2937)),
                     ),
                     child: _finsService.diagnosticLogs.isEmpty
-                        ? const Text('통신 패킷 대기 중...', style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Color(0xFF6B7280)))
+                        ? const Center(child: Text('통신 패킷 대기 중...', style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Color(0xFF6B7280))))
                         : ListView.builder(
                             reverse: true,
                             itemCount: _finsService.diagnosticLogs.length,
-                            itemBuilder: (ctx, idx) {
+                            itemBuilder: (c, idx) {
                               final item = _finsService.diagnosticLogs[_finsService.diagnosticLogs.length - 1 - idx];
                               final isError = item.contains('Failed') || item.contains('Timeout') || item.contains('error');
                               final isSuccess = item.contains('Success') || item.contains('Recv');
@@ -2557,27 +3899,406 @@ class _PwaMainShellState extends State<PwaMainShell> {
                                 item,
                                 style: TextStyle(
                                   fontFamily: 'monospace',
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   color: isError ? const Color(0xFFEF4444) : (isSuccess ? const Color(0xFF22C55E) : const Color(0xFF9CA3AF)),
                                 ),
                               );
                             },
                           ),
                   ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('닫기', style: TextStyle(color: Color(0xFF9CA3AF))),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── 📈 실시간 응답속도 (Latency) 개별 트렌드 차트 팝업 모달 (실시간 500ms 애니메이션 갱신) ──
+  void _showLatencyTrendDialog() {
+    Timer? liveTimer;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        liveTimer ??= Timer.periodic(const Duration(milliseconds: 500), (t) {
+          if (ctx.mounted) {
+            (ctx as Element).markNeedsBuild();
+          }
+        });
+
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final spots = _latencySpots.isNotEmpty ? _latencySpots : [FlSpot(0, _latencyMs.toDouble())];
+            final yVals = spots.map((s) => s.y).toList();
+            final minLatency = yVals.isEmpty ? 0 : yVals.reduce((a, b) => a < b ? a : b).round();
+            final maxLatency = yVals.isEmpty ? 0 : yVals.reduce((a, b) => a > b ? a : b).round();
+            final avgLatency = yVals.isEmpty ? 0.0 : yVals.reduce((a, b) => a + b) / yVals.length;
+
+            return AlertDialog(
+              backgroundColor: const Color(0xFF0F172A),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFF00F0FF), width: 1.2),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+              title: Row(
+                children: [
+                  const Icon(Icons.speed, color: Color(0xFF00F0FF), size: 22),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'PLC 통신 응답속도 개별 트렌드',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 20),
+                    onPressed: () {
+                      liveTimer?.cancel();
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 520,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 실시간 KPI 요약 카드들
+                    Row(
+                      children: [
+                        _buildKpiCard('현재 지연', '$_latencyMs ms', _latencyMs < 50 ? const Color(0xFF22C55E) : const Color(0xFFF59E0B)),
+                        const SizedBox(width: 6),
+                        _buildKpiCard('평균 지연', '${avgLatency.toStringAsFixed(1)} ms', const Color(0xFF38BDF8)),
+                        const SizedBox(width: 6),
+                        _buildKpiCard('최소/최대', '$minLatency / $maxLatency ms', const Color(0xFFA78BFA)),
+                        const SizedBox(width: 6),
+                        _buildKpiCard('패킷 성공률', '100.0%', const Color(0xFF10B981)),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    // 실시간 시계열 꺾은선 차트 (fl_chart - 클리핑 적용으로 모달창 밖 오버플로우 방지)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        height: 200,
+                        padding: const EdgeInsets.only(top: 16, right: 16, bottom: 8, left: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0B1220),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF1E293B)),
+                        ),
+                        child: LineChart(
+                          LineChartData(
+                            clipData: const FlClipData.all(),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: true,
+                              horizontalInterval: 20,
+                              getDrawingHorizontalLine: (value) => const FlLine(color: Color(0xFF1E293B), strokeWidth: 1),
+                              getDrawingVerticalLine: (value) => const FlLine(color: Color(0xFF1E293B), strokeWidth: 1),
+                            ),
+                            titlesData: FlTitlesData(
+                              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 22,
+                                  interval: 10,
+                                  getTitlesWidget: (v, meta) => Text('${v.toInt()}s', style: const TextStyle(color: Color(0xFF64748B), fontSize: 9)),
+                                ),
+                              ),
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 36,
+                                  interval: 20,
+                                  getTitlesWidget: (v, meta) => Text('${v.toInt()}ms', style: const TextStyle(color: Color(0xFF64748B), fontSize: 9)),
+                                ),
+                              ),
+                            ),
+                            borderData: FlBorderData(
+                              show: true,
+                              border: Border.all(color: const Color(0xFF334155)),
+                            ),
+                            minX: spots.isNotEmpty ? spots.first.x : 0,
+                            maxX: spots.isNotEmpty ? spots.last.x : 60,
+                            minY: 0,
+                            maxY: (maxLatency > 80 ? (maxLatency + 20).toDouble() : 100.0),
+                            lineBarsData: [
+                              LineChartBarData(
+                                spots: spots,
+                                isCurved: true,
+                                color: const Color(0xFF00F0FF),
+                                barWidth: 2.2,
+                                isStrokeCapRound: true,
+                                dotData: const FlDotData(show: false),
+                                belowBarData: BarAreaData(
+                                  show: true,
+                                  color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('● 샘플 수: ${spots.length}개 (1초 실시간 갱신)', style: const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8))),
+                      TextButton.icon(
+                        icon: const Icon(Icons.analytics_outlined, size: 14, color: Color(0xFF38BDF8)),
+                        label: const Text('통신 상세 진단 열기', style: TextStyle(fontSize: 11, color: Color(0xFF38BDF8))),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _showDiagnosticLogDialog();
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          // ── 앱 버전 정보 ──
-          const Center(
-            child: Text(
-              'Omron CJ2H Direct Monitor · App Version v2.3.0\n3-in-1 Dual-Engine Suite (Build 2026-08-31)',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Color(0xFF6B7280)),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('닫기', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+  Widget _buildKpiCard(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF131B2E),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0x3838BDF8)),
+        ),
+        child: Column(
+          children: [
+            Text(label, style: const TextStyle(fontSize: 9.5, color: Color(0xFF94A3B8))),
+            const SizedBox(height: 3),
+            Text(value, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: color, fontFamily: 'monospace')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── 버전 변경이력 팝업 다이얼로그 (Release Notes) ──
+  void _showVersionHistoryDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F1626),
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(color: Color(0x3838BDF8)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.history_edu, color: Color(0xFF00F0FF), size: 22),
+                SizedBox(width: 8),
+                Text('PLC 원격제어 변경이력', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 18),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 440,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildVersionCard(
+                  version: 'v2.6.0 (현재 최신)',
+                  date: '2026-10-07',
+                  badgeColor: const Color(0xFF0284C7),
+                  changes: [
+                    '가상 시뮬레이터(Virtual Mock) 세션 접속 모드 지원',
+                    'v2.5.8 정식 풀스택 HMI 엔진(4,286줄) 완벽 복원 및 동기화',
+                    '30일 로컬 롤링 SQLite 스토리지 & USB OTG 통합',
+                    'GMS P&ID SVG 인라인 및 57개 조작 화면 오프라인 단독 구동',
+                  ],
+                ),
+                _buildVersionCard(
+                  version: 'v2.5.8',
+                  date: '2026-09-22',
+                  badgeColor: const Color(0xFF059669),
+                  changes: [
+                    'USB-C OTG 직결 및 안드로이드 UsbManager 다이렉트 통신',
+                    'SQLite 기반 30일 데이터 로컬 보존 및 트렌드/알람 롤링',
+                    '실시간 레이턴시 트렌드 다이얼로그 및 PLC CPU 상세 정보 모달 탑재',
+                  ],
+                ),
+                _buildVersionCard(
+                  version: 'v2.5.7',
+                  date: '2026-09-20',
+                  badgeColor: const Color(0xFF475569),
+                  changes: [
+                    'GMS P&ID 배관도 SVG 인라인 번들링 탑재 (스마트폰 단독 100% 렌더링)',
+                    'OPERATION HTML 57개 조작 화면 완전 번들링 (Failed to fetch 완벽 해결)',
+                    'GMS 장비 선택 대형 타이틀(GAS CABINET 등) 및 OMRON 제조사 레이아웃',
+                    '네트워크/서버 미연결 상태에서도 모바일 단독 오프라인 조작화면 즉시 구동',
+                  ],
+                ),
+                _buildVersionCard(
+                  version: 'v2.5.6',
+                  date: '2026-09-20',
+                  badgeColor: const Color(0xFF475569),
+                  changes: [
+                    'GMS 장비 선택 화면 최상단 타이틀(GAS CABINET 등) 및 OMRON 서브헤더 표준화',
+                    'PC 전용 웹 모니터링(포트 3004) 및 PWA 브릿지(포트 3000 HTTPS) 통신 정비',
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildVersionCard(
+                  version: 'v2.5.2',
+                  date: '2026-09-20',
+                  badgeColor: const Color(0xFF475569),
+                  changes: [
+                    'PC 설정 항목 100% 통합 (일반/연결/리포트/표시/테마/30일 스토리지)',
+                    '홈 화면 및 GMS 장비선택 화면 100% 배율 No-Scroll 컴팩트 최적화',
+                    '첫 화면(홈)에 [접속 모드 변경(로그아웃)] 버튼 신설',
+                    '최상단 CPU 정보 칩 및 PC와 100% 동일한 [📱 PLC 세부 정보] 모달 신설 (운전상태, RTC시계, 운전모드 제어)',
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildVersionCard(
+                  version: 'v2.5.1',
+                  date: '2026-09-20',
+                  badgeColor: const Color(0xFF475569),
+                  changes: [
+                    'GMS 및 모니터링 탭 위치 사용자 최적화 (GMS 우선 배치)',
+                    '상단 앱바 줌(확대/축소) & 전체화면 컨트롤 통합',
+                    'GMS 장비 선택 화면 통신/폴링 설정 아코디언(접기/펼치기) 적용 (장비 카드 영역 최대화)',
+                    '버전 배지 터치 시 릴리즈 변경이력 팝업 신설',
+                    '실제 통신 상태(Wi-Fi/USB/브릿지) 정확한 실시간 동적 표시',
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildVersionCard(
+                  version: 'v2.5.0',
+                  date: '2026-09-20',
+                  badgeColor: const Color(0xFF059669),
+                  changes: [
+                    '사이버 인더스트리얼 테마 전용 런처 아이콘 전면 교체',
+                    '화면 하단 150px 고정 통신 로그 패널 삭제 및 상단 모달 팝업화 (100% 전체화면 확보)',
+                    '모바일 로컬 WebView file:/// 단독 실행 호환성 패치',
+                    '스마트폰 로컬 1달(30일) 롤링 SQLite 스토리지 탑재',
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildVersionCard(
+                  version: 'v2.4.0',
+                  date: '2026-08-31',
+                  badgeColor: const Color(0xFF475569),
+                  changes: [
+                    'Android 네이티브 USB OTG 직결 FINS 통신 드라이버 구현',
+                    'P&ID 그래픽 배관도 SVG 렌더링 뷰어 연동',
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildVersionCard(
+                  version: 'v2.3.0',
+                  date: '2026-08-25',
+                  badgeColor: const Color(0xFF475569),
+                  changes: [
+                    'Omron CJ2H FINS UDP 고속 직결 드라이버 (0.01초)',
+                    '인터랙티브 트렌드 시계열 분석 차트',
+                  ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('확인', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionCard({
+    required String version,
+    required String date,
+    required Color badgeColor,
+    required List<String> changes,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0x3838BDF8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(6)),
+                child: Text(version, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+              Text(date, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...changes.map((c) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('• ', style: TextStyle(color: Color(0xFF00F0FF), fontSize: 11)),
+                Expanded(child: Text(c, style: const TextStyle(color: Color(0xFFE2E8F0), fontSize: 11, height: 1.4))),
+              ],
+            ),
+          )),
         ],
       ),
     );

@@ -231,22 +231,6 @@ function init() {
   $('logoClearBtn').addEventListener('click', () => setLogo(''));
 
   $('checkBtn').addEventListener('click', runCheck);
-  if ($('startNgrokBtn')) {
-    $('startNgrokBtn').addEventListener('click', async () => {
-      const hint = $('ngrokStatusHint');
-      hint.textContent = '🌐 ngrok 터널 상태 확인 중...';
-      try {
-        const res = await fetch('/api/tunnel/status').then((r) => r.json());
-        if (res.active && res.url) {
-          hint.innerHTML = `🟢 <b>ngrok 터널 활성:</b> <a href="${res.url}" target="_blank" style="color:var(--accent);font-weight:700;">${res.url}</a> (외부 모바일 접속 가능)`;
-        } else {
-          hint.innerHTML = `ℹ️ 터널 실행 대기: <code>start_ngrok_tunnel.bat</code>을 실행하면 외부 접속 URL이 자동 발급됩니다. (로컬 포트: 3000)`;
-        }
-      } catch (e) {
-        hint.innerHTML = `ℹ️ 터널 실행: <code>start_ngrok_tunnel.bat</code> 파일을 더블클릭하여 ngrok 원격 터널을 바로 실행할 수 있습니다.`;
-      }
-    });
-  }
   $('saveBtn').addEventListener('click', save);
   $('resetBtn').addEventListener('click', reset);
 

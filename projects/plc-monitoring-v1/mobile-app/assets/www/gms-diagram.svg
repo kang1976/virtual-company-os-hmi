@@ -1,402 +1,197 @@
-<svg id="gmsSvg" viewBox="30 15 930 830" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+<svg id="gmsSvg" viewBox="36.2188 22 914.7813 817.2626" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
   <defs>
-    <!-- ── 3D & 글래스모피즘 그라디언트 및 필터 정의 ── -->
-    <linearGradient id="glassPipeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
-      <stop offset="30%" stop-color="#38bdf8" stop-opacity="0.15" />
-      <stop offset="70%" stop-color="#0f172a" stop-opacity="0.4" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.25" />
-    </linearGradient>
-
-    <linearGradient id="mainGasFlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.9" />
-      <stop offset="50%" stop-color="#38bdf8" stop-opacity="1" />
-      <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.9" />
-    </linearGradient>
-
-    <linearGradient id="n2FlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#10b981" stop-opacity="0.9" />
-      <stop offset="50%" stop-color="#34d399" stop-opacity="1" />
-      <stop offset="100%" stop-color="#10b981" stop-opacity="0.9" />
-    </linearGradient>
-
-    <linearGradient id="ventFlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.9" />
-      <stop offset="50%" stop-color="#fbbf24" stop-opacity="1" />
-      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9" />
-    </linearGradient>
-
-    <linearGradient id="emgFlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.9" />
-      <stop offset="50%" stop-color="#f87171" stop-opacity="1" />
-      <stop offset="100%" stop-color="#ef4444" stop-opacity="0.9" />
-    </linearGradient>
-
-    <linearGradient id="cylinderSteelGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#64748b" />
-      <stop offset="25%" stop-color="#cbd5e1" />
-      <stop offset="50%" stop-color="#f8fafc" />
-      <stop offset="75%" stop-color="#94a3b8" />
-      <stop offset="100%" stop-color="#475569" />
-    </linearGradient>
-
-    <linearGradient id="loadCellGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#94a3b8" />
-      <stop offset="30%" stop-color="#f1f5f9" />
-      <stop offset="70%" stop-color="#64748b" />
-      <stop offset="100%" stop-color="#334155" />
-    </linearGradient>
-
-    <linearGradient id="jacketHeaterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#1e293b" />
-      <stop offset="40%" stop-color="#334155" />
-      <stop offset="60%" stop-color="#1e293b" />
-      <stop offset="100%" stop-color="#0f172a" />
-    </linearGradient>
-
-    <!-- 글로우 필터 -->
-    <filter id="neonGlowCyan" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-
-    <filter id="neonGlowGreen" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-
-    <filter id="neonGlowRed" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-
-    <filter id="hudCardShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.5" />
-    </filter>
-
     <style>
-      .glass-pipe-outer { stroke: rgba(148, 163, 184, 0.4); stroke-width: 9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-      .glass-pipe-core { stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-      .glass-pipe-highlight { stroke: rgba(255, 255, 255, 0.7); stroke-width: 1.5; fill: none; stroke-linecap: round; }
-      
-      .pipe-main { stroke: #00f0ff; filter: url(#neonGlowCyan); }
-      .pipe-n2 { stroke: #10b981; filter: url(#neonGlowGreen); }
-      .pipe-vent { stroke: #f59e0b; }
-      .pipe-emg { stroke: #ef4444; filter: url(#neonGlowRed); }
-      
-      .hud-text { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-weight: bold; }
-      .text-label { font-size: 13px; font-family: Arial, sans-serif; font-weight: bold; fill: var(--text, #000000); text-anchor: middle; }
-      .text-left-side { text-anchor: end; }
-      .text-right-side { text-anchor: start; }
+        .pipe { stroke: var(--text, #1a1a1a); stroke-width: 4.5; fill: none; stroke-linecap: round; stroke-linejoin: miter; }
+        .pipe-thin { stroke: var(--text, #1a1a1a); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: miter; }
+        .text-label { font-size: 13px; font-family: Arial, sans-serif; font-weight: bold; fill: var(--text, #000000); text-anchor: middle; }
+        .text-left-side { text-anchor: end; }
+        .text-right-side { text-anchor: start; }
+        .filter { fill: var(--input-bg, #ffffff); stroke: var(--text, #1a1a1a); stroke-width: 2.5; }
+        .regulator { fill: var(--input-bg, #e9ecef); stroke: var(--text, #1a1a1a); stroke-width: 2.5; }
     </style>
+    <bx:export>
+      <bx:file format="svg" path="제목 없음.svg"></bx:file>
+    </bx:export>
   </defs>
 
-  <!-- ── 0. 미래형 캐비닛 프레임 & 그리드 배경 (Glassmorphism Enclosure) ── -->
-  <g id="cabinetHousingLayer">
-    <rect x="36" y="22" width="914" height="805" rx="16" ry="16" fill="#0b1120" stroke="#1e293b" stroke-width="2" />
-    <!-- 내부 투명 글래스 도킹 룸 -->
-    <rect x="50" y="70" width="886" height="745" rx="12" ry="12" fill="rgba(15, 23, 42, 0.65)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.5" />
-    <!-- 구역 구분 라인 -->
-    <line x1="185" y1="70" x2="185" y2="815" stroke="rgba(56, 189, 248, 0.12)" stroke-width="1" stroke-dasharray="4,4" />
-    <line x1="455" y1="70" x2="455" y2="815" stroke="rgba(56, 189, 248, 0.12)" stroke-width="1" stroke-dasharray="4,4" />
-    <line x1="785" y1="70" x2="785" y2="815" stroke="rgba(56, 189, 248, 0.12)" stroke-width="1" stroke-dasharray="4,4" />
-  </g>
-
-  <!-- ── 1. 투명 강화유리 배관 베이스 레이어 (Glass Piping Tubes) ── -->
+  <!-- 1. 기본 검정색 배관선 레이어 -->
   <g id="pipesBaseLayer">
-    <!-- 외곽 유리관 튜브 (두께 9px) -->
-    <g class="glass-tubes-outer">
-      <path d="M 150 203.425 L 150 134.769" class="glass-pipe-outer" />
-      <path d="M 221.226 135.681 L 221.226 562.431" class="glass-pipe-outer" />
-      <path d="M 366.999 144 L 367 693.565" class="glass-pipe-outer" />
-      <path d="M 700.295 173 L 700.295 693.901" class="glass-pipe-outer" />
-      <path d="M 551.537 205.518 L 551.537 564.068" class="glass-pipe-outer" />
-      <path d="M 509.828 144 L 699.411 144" class="glass-pipe-outer" />
-      <path d="M 221.34 365 L 366.758 365" class="glass-pipe-outer" />
-      <path d="M 836 136.308 L 836 293.352" class="glass-pipe-outer" />
-      <path d="M 916 239.385 L 915.999 622" class="glass-pipe-outer" />
-      <path d="M 368.312 173 L 700.12 173" class="glass-pipe-outer" />
-      <path d="M 699.999 143.231 L 700 58.232" class="glass-pipe-outer" />
-      <path d="M 80.308 83.747 L 80.308 57.002" class="glass-pipe-outer" />
-      <path d="M 80.308 204.014 L 80.308 180.681" class="glass-pipe-outer" />
-      <path d="M 149.846 101.616 L 149.846 57.002" class="glass-pipe-outer" />
-      <path d="M 835.746 102.918 L 835.746 58.302" class="glass-pipe-outer" />
-      <path d="M 368.99 143.966 L 481.753 143.966" class="glass-pipe-outer" />
-      <path d="M 915.998 102.764 L 915.999 58.152" class="glass-pipe-outer" />
-      <path d="M 916.002 239.033 L 916 198.689" class="glass-pipe-outer" />
-      <path d="M 221.34 564.7 L 366.759 564.7" class="glass-pipe-outer" />
-      <path d="M 551.729 364.868 L 697.151 364.867" class="glass-pipe-outer" />
-      <path d="M 551.731 564.585 L 697.15 564.562" class="glass-pipe-outer" />
-      <path d="M 377.309 204.988 L 551.261 204.988" class="glass-pipe-outer" />
-      <path d="M 80.964 204.988 L 355.601 204.988" class="glass-pipe-outer" />
-      <path d="M 221.754 87.761 L 489.942 87.761" class="glass-pipe-outer" />
-      <path d="M 775.695 295.117 L 914.875 295.116" class="glass-pipe-outer" />
-      <path d="M 427.118 623.76 L 916.763 623.752" class="glass-pipe-outer" />
-      <path d="M 367.733 749.003 L 427.396 749.001" class="glass-pipe-outer" />
-      <path d="M 427.354 747.233 L 427.361 623.76" class="glass-pipe-outer" />
-      <path d="M 700.466 749.003 L 760.44 749.001" class="glass-pipe-outer" />
-      <path d="M 760.573 747.321 L 760.58 623.76" class="glass-pipe-outer" />
-      <path d="M 255.699 646.073 L 366.964 646.069" class="glass-pipe-outer" />
-      <path d="M 587.258 646.073 L 698.001 646.069" class="glass-pipe-outer" />
-    </g>
-
-    <!-- 내부 컬러 가스 유체 코어 (두께 4.5px) -->
-    <g id="glassPipesCoreLayer">
-      <path d="M 366.999 144 L 367 693.565" class="glass-pipe-core pipe-main" />
-      <path d="M 700.295 173 L 700.295 693.901" class="glass-pipe-core pipe-main" />
-      <path d="M 368.99 143.966 L 700 144" class="glass-pipe-core pipe-main" />
-      <path d="M 368.312 173 L 700.12 173" class="glass-pipe-core pipe-main" />
-      <path d="M 80.964 204.988 L 551.261 204.988" class="glass-pipe-core pipe-vent" />
-      <path d="M 221.754 87.761 L 489.942 87.761" class="glass-pipe-core pipe-n2" />
-      <path d="M 221.226 87.761 L 221.226 562.431" class="glass-pipe-core pipe-n2" />
-      <path d="M 551.537 205.518 L 551.537 564.068" class="glass-pipe-core pipe-vent" />
-      <path d="M 775.695 295.117 L 914.875 295.116" class="glass-pipe-core pipe-n2" />
-      <path d="M 916 58 L 916 622" class="glass-pipe-core pipe-n2" />
-      <path d="M 427.118 623.76 L 916.763 623.752" class="glass-pipe-core pipe-emg" />
-      <path d="M 367.733 749.003 L 427.396 749.001 L 427.354 623.76" class="glass-pipe-core pipe-emg" />
-      <path d="M 700.466 749.003 L 760.44 749.001 L 760.573 623.76" class="glass-pipe-core pipe-emg" />
-      <path d="M 255.699 646.073 L 366.964 646.069" class="glass-pipe-core pipe-main" />
-      <path d="M 587.258 646.073 L 698.001 646.069" class="glass-pipe-core pipe-main" />
-    </g>
-
-    <!-- 피팅 접합부 VCR 메탈릭 가스켓 필터 디스크 (VCR Gasket Discs) -->
-    <g id="vcrGasketLayer">
-      <circle cx="221.2" cy="135" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-      <circle cx="367" cy="144" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-      <circle cx="700" cy="173" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-      <circle cx="551.5" cy="205" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-      <circle cx="427" cy="623.7" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-      <circle cx="760.5" cy="623.7" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-      <circle cx="916" cy="295" r="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.5" />
-    </g>
-
-    <!-- 배관 라인 히터 (Line Heaters - Option B: 코일형 사이버 네온 히터) -->
-    <g id="lineHeatersLayer">
-      <!-- Line Heater 1 (Main A) -->
-      <g transform="translate(367, 280)">
-        <rect x="-14" y="-18" width="28" height="36" rx="6" fill="#1e293b" stroke="#00f0ff" stroke-width="1.5" filter="url(#neonGlowCyan)" />
-        <path d="M -10 -12 L 10 -12 M -10 -4 L 10 -4 M -10 4 L 10 4 M -10 12 L 10 12" stroke="#ff8a00" stroke-width="2" stroke-linecap="round" />
-        <rect x="18" y="-10" width="46" height="20" rx="4" fill="rgba(15, 23, 42, 0.85)" stroke="#00f0ff" stroke-width="1" />
-        <text x="41" y="4" fill="#00f0ff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">65.0°C</text>
-      </g>
-      <!-- Line Heater 2 (Main B) -->
-      <g transform="translate(700, 280)">
-        <rect x="-14" y="-18" width="28" height="36" rx="6" fill="#1e293b" stroke="#00f0ff" stroke-width="1.5" filter="url(#neonGlowCyan)" />
-        <path d="M -10 -12 L 10 -12 M -10 -4 L 10 -4 M -10 4 L 10 4 M -10 12 L 10 12" stroke="#ff8a00" stroke-width="2" stroke-linecap="round" />
-        <rect x="18" y="-10" width="46" height="20" rx="4" fill="rgba(15, 23, 42, 0.85)" stroke="#00f0ff" stroke-width="1" />
-        <text x="41" y="4" fill="#00f0ff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">65.0°C</text>
-      </g>
-    </g>
+    <path d="M 150 203.425 L 150 134.769" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 221.226 135.681 L 221.226 562.431" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 366.999 144 L 367 693.565" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 700.295 173 L 700.295 693.901" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 551.537 205.518 L 551.537 564.068" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 509.828 144 L 699.411 144" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 1, 0, 0.000049)"></path>
+    <path d="M 276.123 365 L 308.501 365" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1.000001, 0, 0, 1, -0.000144, 0)"></path>
+    <path d="M 221.34 365 L 257.842 365" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 1.000001, 0, 0)"></path>
+    <path d="M 340.953 365.001 L 366.758 365.001" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 0.999999, 0, 0.000541)"></path>
+    <path d="M 836 136.308 L 836 293.352" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 916 239.385 L 915.999 622" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 940 95 L 975 95 L 975 155 L 940 155" class="pipe-thin" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 2.5px; transform: matrix(1, 0, 0, 1, -24.000002, -6);"></path>
+    <path d="M 74 64.002 L 80 54.002 L 86 64.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 144 64.002 L 150 54.002 L 156 64.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 485 64.002 L 491 54.002 L 497 64.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 368.312 173 L 700.12 173" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 699.999 143.231 L 700 58.232" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 693.514 63.002 L 699.514 53.002 L 705.514 63.002" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 80.308 83.747 L 80.308 57.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 80.308 204.014 L 80.308 180.681" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 149.846 101.616 L 149.846 57.002" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 829.746 53.002 L 835.746 63.002 L 841.746 53.002" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 835.746 102.918 L 835.746 58.302" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 368.99 143.966 L 481.753 143.966" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-origin: 425.371px 143.966px;"></path>
+    <path d="M 910 53.002 L 916 63.002 L 922 53.002" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 915.998 102.764 L 915.999 58.152" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 916.002 239.033 L 916 198.689" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 916px 218.861px;"></path>
+    <path d="M 915.998 179.701 L 915.999 135.085" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 276.124 564.699 L 308.502 564.699" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 221.34 564.7 L 257.842 564.7" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 341.543 564.7 L 366.759 564.7" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 606.516 364.867 L 638.894 364.867" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0.999999, 0, 0, 1.000001, 0.000575, 0)"></path>
+    <path d="M 551.729 364.868 L 591.383 364.868" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1.000001, 0, 0, 1, -0.00047, 0)"></path>
+    <path d="M 671.346 364.867 L 697.151 364.867" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1.000001, 0, 0, 1.000004, -0.000722, -0.001624)"></path>
+    <path d="M 606.507 564.549 L 638.884 564.548" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 622.695px 564.548px;"></path>
+    <path d="M 551.731 564.585 L 593.658 564.585" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 575.283px 564.574px;"></path>
+    <path d="M 671.346 564.561 L 697.15 564.562" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 684.248px 564.561px;" transform="matrix(1, 0.000001, -0.000001, 1, 0, 0)"></path>
+    <path d="M 377.309 204.988 L 551.261 204.988" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 80.964 204.988 L 355.601 204.988" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 221.754 87.761 L 489.942 87.761" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(1, 0, 0, 1, 0, 0.000017)"></path>
+    <path d="M 221.226 102.205 L 221.226 87.632" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 491.024 86.889 L 491.024 59.942" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 775.695 295.117 L 914.875 295.116" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5; transform-box: fill-box; transform-origin: 50% 50%;"></path>
+    <path d="M 775.522 294.142 L 775.522 280.27" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <rect x="769.397" y="273.742" width="11.782" height="5.302" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 1;"></rect>
+    <path d="M 836 136.308 L 836 293.352" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
+    <path d="M 276.124 564.699 L 308.502 564.699" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 427.396 639.097 L 427.396 625.572" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 427.355px 632.344px;"></path>
+    <path d="M 427.118 623.76 L 690.413 623.752" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 558.765px 623.76px;"></path>
+    <path d="M 427.355 623.76 L 427.355 636.441" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round;"></path>
+    <path d="M 709.635 623.76 L 916.763 623.752" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 812.674px 623.76px;"></path>
+    <path d="M 427.354 747.233 L 427.361 670.677" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 126.193px 414.092px;"></path>
+    <path d="M 367.733 749.003 L 427.396 749.001" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 397.565px 749.003px;"></path>
+    <path d="M 760.438 637.353 L 760.437 624.417" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 545.159px 558.13px;"></path>
+    <path d="M 760.573 747.321 L 760.58 670.765" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 459.412px 414.18px;"></path>
+    <path d="M 700.466 749.003 L 760.44 749.001" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 730.454px 749.003px;"></path>
+    <path d="M 255.699 646.073 L 366.964 646.069" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 311.332px 646.073px;"></path>
+    <path d="M 254.907 656.389 L 254.908 647.057" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 218.198px 615.781px;"></path>
+    <path d="M 587.258 646.073 L 698.001 646.069" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 642.631px 646.073px;"></path>
+    <path d="M 586.466 656.389 L 586.467 647.057" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 549.757px 615.781px;"></path>
+    <path d="M 366.366 748.72 L 366.368 726.116" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 277.447px 650.358px;"></path>
+    <path d="M 17950.3 550.22 L 17950.5 573.031" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 9325.33px 649.486px;" transform="matrix(-1, 0, 0, -1, -0.001073, -0.000019)"></path>
+    <path d="M 690.27 623.173 C 691.846 634.552 709.98 633.676 709.98 623.172" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 702.489px 623.173px;"></path>
+    <path d="M 356.508 205.115 C 358.084 216.494 376.218 215.618 376.218 205.114" class="pipe" style="stroke-width: 4.5; fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; transform-origin: 368.727px 205.115px;"></path>
+    <path d="M 80.42 146.641 L 80.42 116.726" class="pipe" style="fill: none; stroke: rgb(26, 26, 26); stroke-linecap: round; stroke-width: 4.5;"></path>
   </g>
 
-  <!-- ── 2. 가스 흐름 애니메이션 오버레이 레이어 ── -->
+  <!-- 2. 추가 가스 흐름 배관 오버레이 레이어 (적색 라인) - 검정 배관선 위에 선명하게 렌더링됨 -->
   <g id="gasFlowLayer"></g>
 
-  <!-- ── 3. 정적 부품 레이어 (실린더, 로드셀 저울, 자켓히터, 레귤레이터, 필터, 체크밸브) ── -->
+  <!-- 3. 정적 부품 및 기호 레이어 (레귤레이터, 필터, 체크밸브, 실린더, 라벨) - 적색선 위에 얹어져서 적색선이 부품 밑으로 자연스럽게 통과함 -->
   <g id="staticPartsLayer">
-    
-    <!-- 🛢️ 실린더 A (Cylinder A) + 로드셀 저울 받침대 + 자켓 히터 + 다단 LED 레벨 바 -->
-    <g id="cylinderGroupA" transform="translate(220, 620)">
-      <!-- 1. 3D 스테인리스 로드셀 저울 받침대 (Load Cell Platform - Option A) -->
-      <path d="M -5 185 L 73 185 L 85 205 L -17 205 Z" fill="url(#loadCellGrad)" stroke="#334155" stroke-width="1.5" />
-      <rect x="-17" y="205" width="102" height="14" rx="3" fill="#1e293b" stroke="#475569" stroke-width="1" />
-      <!-- 로드셀 실시간 중량 디지털 표시창 (45.2 kg) -->
-      <rect x="10" y="193" width="48" height="18" rx="3" fill="#0f172a" stroke="#00f0ff" stroke-width="1" />
-      <text x="34" y="206" fill="#00f0ff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">45.2 kg</text>
+    <!-- 체크밸브 CV3A -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="241.576 188.738 256.576 178.738 256.576 198.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 241.576 181.738 L 241.576 195.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="267.15" y="214.738" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 70.6406px 99.25px; text-anchor: end;">CV3A</text>
+    </g>
+    <!-- 체크밸브 CV2A -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="241.576 388.738 256.576 378.738 256.576 398.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 241.576 381.738 L 241.576 395.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="265.15" y="414.438" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 70.6406px 149.172px; text-anchor: end;">CV2A</text>
+    </g>
+    <!-- 체크밸브 CV3B -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="591.576 178.738 576.576 188.738 591.576 198.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 575.576 181.738 L 575.576 195.738" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="599.541" y="214.605" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 153.234px 99.2109px; text-anchor: end;">CV3B</text>
+    </g>
+    <!-- 체크밸브 CV2B -->
+    <g transform="matrix(1, 0, 0, 1, 17.423658, 176.26178)">
+      <polygon points="591.576 378.738 576.576 388.738 591.576 398.738" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8" style="stroke-width: 1.8;"></polygon>
+      <path d="M 576.576 381.739 L 576.576 395.739" stroke="#1a1a1a" stroke-width="2" style="stroke-width: 2;"></path>
+      <text x="599.541" y="414.305" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 153.234px 149.141px; text-anchor: end;">CV2B</text>
+    </g>
+    <!-- 체크밸브 CV1 -->
+    <g transform="matrix(1, 0, 0, 1, -24.000002, -6)">
+      <polygon points="930 188 950 188 940 203" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8"></polygon>
+      <path d="M 933 206 L 947 206" stroke="#1a1a1a" stroke-width="2"></path>
+      <text x="927.227" y="222" class="text-label text-left-side" style="fill: rgb(178, 89, 0); white-space: pre; font-size: 13px; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 231.805px 55.5px; text-anchor: end;">CV1</text>
+    </g>
 
-      <!-- 2. 3D 메탈릭 가스 실린더 본체 (Cylinder Body - Option A) -->
-      <rect x="0" y="30" width="68" height="155" rx="34" ry="34" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="2" />
-      <rect x="26.5" y="15" width="15" height="18" rx="2" fill="url(#cylinderSteelGrad)" stroke="#334155" />
-      
-      <!-- 3. 실린더 자켓 히터 (Heating Jacket + 65.0°C HUD) -->
-      <rect x="-2" y="70" width="72" height="75" rx="8" fill="url(#jacketHeaterGrad)" stroke="#00f0ff" stroke-width="1.5" filter="url(#neonGlowCyan)" />
-      <!-- 자켓 히터 온도 HUD 카드 -->
-      <rect x="42" y="92" width="46" height="20" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="#00f0ff" stroke-width="1" />
-      <text x="65" y="106" fill="#00f0ff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">65.0°C</text>
-
-      <!-- 4. 세로형 다단 LED 레벨 바 게이지 (초록-노랑-빨강 12단계) -->
-      <g transform="translate(10, 78)">
-        <rect x="0" y="0" width="12" height="60" rx="3" fill="#0f172a" stroke="#475569" />
-        <!-- 녹색 레벨 -->
-        <rect x="2" y="3" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="8" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="13" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="18" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="23" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="28" width="8" height="4" rx="1" fill="#10b981" />
-        <!-- 노란색 레벨 -->
-        <rect x="2" y="33" width="8" height="4" rx="1" fill="#f59e0b" />
-        <rect x="2" y="38" width="8" height="4" rx="1" fill="#f59e0b" />
-        <rect x="2" y="43" width="8" height="4" rx="1" fill="#f59e0b" />
-        <!-- 빨간색 레벨 -->
-        <rect x="2" y="48" width="8" height="4" rx="1" fill="#ef4444" />
-        <rect x="2" y="53" width="8" height="4" rx="1" fill="#ef4444" />
+    <!-- 필터 LF2 -->
+    <g>
+      <text x="498.178" y="128.124" class="text-label" style="font-size: 11px; white-space: pre; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 127.242px 32.0234px; text-anchor: middle;">LF2</text>
+      <g>
+        <rect x="485" y="134" width="26" height="20" class="filter" style="fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26); stroke-width: 2.5px;"></rect>
+        <polygon points="489 136 489 153 509 144" fill="#d8d8d8" stroke="#1a1a1a" stroke-width="1"></polygon>
       </g>
-      <text x="34" y="172" fill="#0f172a" font-size="11" font-family="Arial" font-weight="bold" text-anchor="middle">CYL-A</text>
     </g>
 
-    <!-- 🛢️ 실린더 B (Cylinder B) + 로드셀 저울 받침대 + 자켓 히터 + 다단 LED 레벨 바 -->
-    <g id="cylinderGroupB" transform="translate(552, 620)">
-      <!-- 1. 3D 스테인리스 로드셀 저울 받침대 -->
-      <path d="M -5 185 L 73 185 L 85 205 L -17 205 Z" fill="url(#loadCellGrad)" stroke="#334155" stroke-width="1.5" />
-      <rect x="-17" y="205" width="102" height="14" rx="3" fill="#1e293b" stroke="#475569" stroke-width="1" />
-      <!-- 로드셀 실시간 중량 디지털 표시창 (45.2 kg) -->
-      <rect x="10" y="193" width="48" height="18" rx="3" fill="#0f172a" stroke="#00f0ff" stroke-width="1" />
-      <text x="34" y="206" fill="#00f0ff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">45.2 kg</text>
-
-      <!-- 2. 3D 메탈릭 가스 실린더 본체 -->
-      <rect x="0" y="30" width="68" height="155" rx="34" ry="34" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="2" />
-      <rect x="26.5" y="15" width="15" height="18" rx="2" fill="url(#cylinderSteelGrad)" stroke="#334155" />
-      
-      <!-- 3. 실린더 자켓 히터 -->
-      <rect x="-2" y="70" width="72" height="75" rx="8" fill="url(#jacketHeaterGrad)" stroke="#00f0ff" stroke-width="1.5" filter="url(#neonGlowCyan)" />
-      <!-- 자켓 히터 온도 HUD 카드 -->
-      <rect x="42" y="92" width="46" height="20" rx="4" fill="rgba(15, 23, 42, 0.9)" stroke="#00f0ff" stroke-width="1" />
-      <text x="65" y="106" fill="#00f0ff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">65.0°C</text>
-
-      <!-- 4. 세로형 다단 LED 레벨 바 게이지 -->
-      <g transform="translate(10, 78)">
-        <rect x="0" y="0" width="12" height="60" rx="3" fill="#0f172a" stroke="#475569" />
-        <!-- 녹색 레벨 -->
-        <rect x="2" y="3" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="8" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="13" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="18" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="23" width="8" height="4" rx="1" fill="#10b981" />
-        <rect x="2" y="28" width="8" height="4" rx="1" fill="#10b981" />
-        <!-- 노란색 레벨 -->
-        <rect x="2" y="33" width="8" height="4" rx="1" fill="#f59e0b" />
-        <rect x="2" y="38" width="8" height="4" rx="1" fill="#f59e0b" />
-        <rect x="2" y="43" width="8" height="4" rx="1" fill="#f59e0b" />
-        <!-- 빨간색 레벨 -->
-        <rect x="2" y="48" width="8" height="4" rx="1" fill="#ef4444" />
-        <rect x="2" y="53" width="8" height="4" rx="1" fill="#ef4444" />
+    <!-- 필터 LF1A -->
+    <g>
+      <g transform="matrix(1, 0, 0, 1, 0, -28)">
+        <rect x="209.272" y="610.23" width="26.149" height="20" class="filter" style="stroke-width: 1.976; fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26);" transform="matrix(0, -1, 1, 0, -252.009918, 849.00177)"></rect>
+        <path d="M 368.434 615.389 L 376.975 637.639 L 359.892 637.639 L 368.434 615.389 Z" bx:shape="triangle 359.892 615.389 17.083 22.25 0.5 0 1@31273ec8" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 0.791; transform-origin: 368.434px 626.514px;"></path>
       </g>
-      <text x="34" y="172" fill="#0f172a" font-size="11" font-family="Arial" font-weight="bold" text-anchor="middle">CYL-B</text>
+      <text x="398.838" y="601.361" class="text-label" style="font-size: 11px; white-space: pre; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 103.305px 150.336px; text-anchor: middle;">LF1A</text>
     </g>
 
-    <!-- 🎛️ 3D 스테인리스 스틸 레귤레이터 (Option A: 듀얼 다이얼 게이지 장착) -->
-    <!-- REG2A, REG1A -->
-    <g transform="translate(367, 397)">
-      <circle cx="0" cy="0" r="18" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="2" />
-      <circle cx="0" cy="0" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="1.5" />
-      <!-- 듀얼 미니 다이얼 압력계 -->
-      <circle cx="-16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="-16" y1="-18" x2="-12" y2="-22" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
-      <circle cx="16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="16" y1="-18" x2="20" y2="-22" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
-      <text x="28" y="5" class="text-label text-right-side" fill="#f8fafc">REG2A</text>
-    </g>
-    <g transform="translate(367, 457)">
-      <circle cx="0" cy="0" r="18" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="2" />
-      <circle cx="0" cy="0" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="1.5" />
-      <circle cx="-16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="-16" y1="-18" x2="-12" y2="-22" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
-      <circle cx="16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="16" y1="-18" x2="20" y2="-22" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
-      <text x="28" y="5" class="text-label text-right-side" fill="#f8fafc">REG1A</text>
+    <!-- 필터 LF1B -->
+    <g transform="matrix(1, 0, 0, 1, 1, 0)">
+      <g transform="matrix(1, 0, 0, 1, 330.157318, -28)">
+        <rect x="209.272" y="610.23" width="26.149" height="20" class="filter" style="stroke-width: 1.976; fill: rgb(255, 255, 255); stroke: rgb(26, 26, 26);" transform="matrix(0, -1, 1, 0, -252.009918, 849.00177)"></rect>
+        <path d="M 368.434 615.389 L 376.975 637.639 L 359.892 637.639 L 368.434 615.389 Z" bx:shape="triangle 359.892 615.389 17.083 22.25 0.5 0 1@31273ec8" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 0.791; transform-origin: 368.434px 626.514px;"></path>
+      </g>
+      <text x="729.025" y="601.361" class="text-label" style="font-size: 11px; white-space: pre; stroke-width: 1; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 185.852px 150.336px; text-anchor: middle;">LF1B</text>
     </g>
 
-    <!-- REG2B, REG1B -->
-    <g transform="translate(700, 397)">
-      <circle cx="0" cy="0" r="18" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="2" />
-      <circle cx="0" cy="0" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="1.5" />
-      <circle cx="-16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="-16" y1="-18" x2="-12" y2="-22" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
-      <circle cx="16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="16" y1="-18" x2="20" y2="-22" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
-      <text x="-28" y="5" class="text-label text-left-side" fill="#f8fafc">REG2B</text>
+    <!-- 레귤레이터 REG2A, REG1A -->
+    <g transform="matrix(1, 0, 0, 1, 67, 27)">
+      <circle cx="300" cy="370" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="300" cy="370" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="314.693" y="392" class="text-label text-right-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 87.6719px 98px;">REG2A</text>
     </g>
-    <g transform="translate(700, 457)">
-      <circle cx="0" cy="0" r="18" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="2" />
-      <circle cx="0" cy="0" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="1.5" />
-      <circle cx="-16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="-16" y1="-18" x2="-12" y2="-22" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
-      <circle cx="16" cy="-18" r="9" fill="#ffffff" stroke="#334155" stroke-width="1.5" />
-      <line x1="16" y1="-18" x2="20" y2="-22" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
-      <text x="-28" y="5" class="text-label text-left-side" fill="#f8fafc">REG1B</text>
+    <g transform="matrix(1, 0, 0, 1, 67, 27)">
+      <circle cx="300" cy="430" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="300" cy="430" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="314.693" y="456" class="text-label text-right-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 87.6719px 114px;">REG1A</text>
     </g>
 
-    <!-- 🔩 3D 메탈릭 바디 체크밸브 (Option A: 양각 방향 화살표) -->
-    <!-- CV3A -->
-    <g transform="translate(259, 365)">
-      <rect x="-16" y="-12" width="32" height="24" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <polygon points="-6 -6 6 0 -6 6" fill="#10b981" />
-      <text x="0" y="24" class="text-label" fill="#fb923c">CV3A</text>
+    <!-- 레귤레이터 REG2B, REG1B -->
+    <g transform="matrix(1, 0, 0, 1, 0, -6)">
+      <circle cx="700" cy="403" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="700" cy="403" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="758.002" y="425" class="text-label text-left-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 189.5px 106.25px; text-anchor: end;">REG2B</text>
     </g>
-    <!-- CV2A -->
-    <g transform="translate(259, 565)">
-      <rect x="-16" y="-12" width="32" height="24" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <polygon points="-6 -6 6 0 -6 6" fill="#10b981" />
-      <text x="0" y="24" class="text-label" fill="#fb923c">CV2A</text>
-    </g>
-    <!-- CV3B -->
-    <g transform="translate(608, 365)">
-      <rect x="-16" y="-12" width="32" height="24" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <polygon points="6 -6 -6 0 6 6" fill="#10b981" />
-      <text x="0" y="24" class="text-label" fill="#fb923c">CV3B</text>
-    </g>
-    <!-- CV2B -->
-    <g transform="translate(608, 565)">
-      <rect x="-16" y="-12" width="32" height="24" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <polygon points="6 -6 -6 0 6 6" fill="#10b981" />
-      <text x="0" y="24" class="text-label" fill="#fb923c">CV2B</text>
-    </g>
-    <!-- CV1 -->
-    <g transform="translate(916, 182)">
-      <rect x="-12" y="-16" width="24" height="32" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <polygon points="-6 -6 0 6 6 -6" fill="#10b981" />
-      <text x="-20" y="5" class="text-label text-left-side" fill="#fb923c">CV1</text>
+    <g transform="matrix(1, 0, 0, 1, 0, -6)">
+      <circle cx="700" cy="463" r="16" fill="#e9ecef" stroke="#1a1a1a" stroke-width="2.5"></circle>
+      <circle cx="700" cy="463" r="8" fill="none" stroke="#1a1a1a"></circle>
+      <text x="758.002" y="489" class="text-label text-left-side" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; perspective-origin: 189.5px 122.25px; text-anchor: end;">REG1B</text>
     </g>
 
-    <!-- 🧪 원통형 라인 필터 (Option A: 차압계 & SS 메쉬 투시창) -->
-    <!-- LF2 -->
-    <g transform="translate(498, 144)">
-      <rect x="-18" y="-12" width="36" height="24" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <rect x="-10" y="-8" width="20" height="16" fill="#0f172a" stroke="#64748b" stroke-dasharray="2,2" />
-      <!-- 차압 ΔP 게이지 -->
-      <circle cx="0" cy="-18" r="8" fill="#ffffff" stroke="#334155" stroke-width="1" />
-      <line x1="0" y1="-18" x2="4" y2="-22" stroke="#10b981" stroke-width="1.5" />
-      <text x="0" y="-28" class="text-label" fill="#f8fafc">LF2</text>
+    <!-- 실린더 AG_A, AG_B 외형 -->
+    <g transform="matrix(1, 0, 0, 1, 1, 30.790619)">
+      <rect x="219.895" y="636.569" width="68" height="171.903" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" rx="34" ry="34"></rect>
+      <rect x="246.557" y="626.585" width="14.705" height="10.504" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"></rect>
     </g>
-    <!-- LF1A -->
-    <g transform="translate(367, 582)">
-      <rect x="-12" y="-18" width="24" height="36" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <rect x="-8" y="-10" width="16" height="20" fill="#0f172a" stroke="#64748b" stroke-dasharray="2,2" />
-      <circle cx="18" cy="0" r="8" fill="#ffffff" stroke="#334155" stroke-width="1" />
-      <line x1="18" y1="0" x2="22" y2="-4" stroke="#10b981" stroke-width="1.5" />
-      <text x="36" y="5" class="text-label text-right-side" fill="#f8fafc">LF1A</text>
-    </g>
-    <!-- LF1B -->
-    <g transform="translate(700, 582)">
-      <rect x="-12" y="-18" width="24" height="36" rx="4" fill="url(#cylinderSteelGrad)" stroke="#334155" stroke-width="1.5" />
-      <rect x="-8" y="-10" width="16" height="20" fill="#0f172a" stroke="#64748b" stroke-dasharray="2,2" />
-      <circle cx="18" cy="0" r="8" fill="#ffffff" stroke="#334155" stroke-width="1" />
-      <line x1="18" y1="0" x2="22" y2="-4" stroke="#10b981" stroke-width="1.5" />
-      <text x="36" y="5" class="text-label text-right-side" fill="#f8fafc">LF1B</text>
+    <g transform="matrix(1, 0, 0, 1, 332.558685, 30.790619)">
+      <rect x="219.895" y="636.569" width="68" height="171.903" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" rx="34" ry="34"></rect>
+      <rect x="246.557" y="626.585" width="14.705" height="10.504" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"></rect>
     </g>
 
-    <!-- 상단 매니폴드 헤더 텍스트 -->
-    <text x="80" y="44" class="text-label" fill="#94a3b8">PUMP</text>
-    <text x="150" y="44" class="text-label" fill="#94a3b8">VENT</text>
-    <text x="490" y="44" class="text-label" fill="#94a3b8">CAL VENT</text>
-    <text x="700" y="44" class="text-label" fill="#00f0ff" font-weight="bold">PROCESS</text>
-    <text x="836" y="44" class="text-label" fill="#94a3b8">L/C He</text>
-    <text x="916" y="44" class="text-label" fill="#10b981">SN2</text>
+    <!-- 상단 텍스트 라벨 -->
+    <text x="80" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">PUMP</text>
+    <text x="150" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">VENT</text>
+    <text x="490.386" y="34.182" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">CAL VENT</text>
+    <text x="699.565" y="34.182" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">PROCESS</text>
+    <text x="836" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">L/C He</text>
+    <text x="916" y="34.002" class="text-label" style="white-space: pre; font-size: 13px; font-family: Arial, sans-serif; font-weight: 700; text-anchor: middle;">SN2</text>
   </g>
 
-  <!-- ── 4. 동적 밸브 심볼 레이어 (valveLayer) ── -->
+  <!-- 4. 동적 밸브 심볼 레이어 (valveLayer) -->
   <g id="valveLayer"></g>
 
-  <!-- ── 5. 센서 박스 레이어 (ptLayer) ── -->
+  <!-- 5. 센서 박스 레이어 (ptLayer) -->
   <g id="ptLayer"></g>
 </svg>

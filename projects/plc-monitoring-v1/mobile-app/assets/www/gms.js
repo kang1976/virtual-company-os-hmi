@@ -205,9 +205,14 @@ document.addEventListener('click', closeGmsCtxMenu);
 
 // ── 장비 선택 화면에서 넘어온 unit id - 이 화면의 밸브 목록/폴링/쓰기가 모두 이 장비 기준이다.
 // 장비 선택 없이 이 페이지에 바로 들어오면(예: 즐겨찾기) 무엇을 봐야 할지 알 수 없으므로
-const selectedUnitId = new URLSearchParams(window.location.search).get('unit') || 'BSGS-01';
+// 선택 화면으로 돌려보낸다. mode(모니터링/Operation)도 같은 이유로 장비 선택 화면의 모드
+// 선택 팝업을 반드시 거치게 한다 - 없거나 알 수 없는 값이면 역시 되돌려보낸다. ──
+const selectedUnitId = new URLSearchParams(window.location.search).get('unit');
 const gmsModeParam = new URLSearchParams(window.location.search).get('mode');
-const gmsMode = gmsModeParam === 'operation' ? 'operation' : 'monitor';
+const gmsMode = gmsModeParam === 'operation' ? 'operation' : (gmsModeParam === 'monitor' ? 'monitor' : null);
+if (!selectedUnitId || !gmsMode) {
+  window.location.replace('/gms-select.html');
+}
 // gms-editor.js(뒤에 로드됨)가 맵 편집 기능 자체를 켤지 말지 판단하는 데 쓴다.
 window.__gmsOperationMode = gmsMode === 'operation';
 (function showSelectedUnit() {
@@ -1873,25 +1878,16 @@ async function fetchValves() {
 fetchValves();
 
 async function fillEquipmentInfo() {
-  function applyEqData(eq) {
-    if (!eq) return;
-    if (document.getElementById('eqGasName')) document.getElementById('eqGasName').textContent = eq.name || 'GAS CABINET';
-    if (document.getElementById('eqCode')) document.getElementById('eqCode').textContent = eq.id || 'unit1';
-    if (document.getElementById('eqIoMapVer')) document.getElementById('eqIoMapVer').textContent = eq.ioMapVer || '-';
-    if (document.getElementById('progressBarcodeA')) document.getElementById('progressBarcodeA').textContent = eq.barcodeA || '-';
-    if (document.getElementById('progressBarcodeB')) document.getElementById('progressBarcodeB').textContent = eq.barcodeB || '-';
-    if (document.getElementById('progressIpAddr')) {
-      const host = (eq.plc && eq.plc.host) ? eq.plc.host : (localStorage.getItem('plcFinsHost') || '-');
-      document.getElementById('progressIpAddr').textContent = host;
-    }
-  }
-
   try {
     const res = await fetch('/api/gms/equipment');
     if (res.ok) {
       const data = await res.json();
       const eq = (data.equipment || []).find((e) => e.id === selectedUnitId);
-      if (eq) { applyEqData(eq); return; }
+      if (eq) {
+        document.getElementById('eqGasName').textContent = eq.name || '-';
+        document.getElementById('eqCode').textContent = eq.id || '-';
+        return;
+      }
     }
   } catch (e) {}
 
@@ -1900,16 +1896,16 @@ async function fillEquipmentInfo() {
     if (res2.ok) {
       const data2 = await res2.json();
       const eq2 = (data2.equipment || []).find((e) => e.id === selectedUnitId);
-      if (eq2) { applyEqData(eq2); return; }
+      if (eq2) {
+        document.getElementById('eqGasName').textContent = eq2.name || '-';
+        document.getElementById('eqCode').textContent = eq2.id || '-';
+        return;
+      }
     }
   } catch (e2) {}
 
-  if (document.getElementById('eqGasName')) document.getElementById('eqGasName').textContent = 'GAS CABINET';
-  if (document.getElementById('eqCode')) document.getElementById('eqCode').textContent = 'unit1';
-  if (document.getElementById('eqIoMapVer')) document.getElementById('eqIoMapVer').textContent = '-';
-  if (document.getElementById('progressBarcodeA')) document.getElementById('progressBarcodeA').textContent = '-';
-  if (document.getElementById('progressBarcodeB')) document.getElementById('progressBarcodeB').textContent = '-';
-  if (document.getElementById('progressIpAddr')) document.getElementById('progressIpAddr').textContent = localStorage.getItem('plcFinsHost') || '-';
+  document.getElementById('eqGasName').textContent = 'GMS Unit #1 (M16 GC)';
+  document.getElementById('eqCode').textContent = 'unit1';
 }
 fillEquipmentInfo();
 
@@ -2672,7 +2668,7 @@ if (location.protocol !== 'file:') {
   }).catch(() => {});
 }
 
-// ── 좌/우 패널 폭 조절 (드래그 스플리터: 마우스 및 터치 완벽 지원) ──
+// ── 좌/우 패널 폭 조절 (드래그 스플리터) - monitoring.js의 트렌드/변수목록 스플리터와 동일 패턴 ──
 function initHSplitter({ splitterId, panelSelector, storageKey, growLeft }) {
   const splitter = document.getElementById(splitterId);
   const panel = document.querySelector(panelSelector);
@@ -2686,51 +2682,28 @@ function initHSplitter({ splitterId, panelSelector, storageKey, growLeft }) {
   let dragging = false;
   let startX = 0;
   let startWidth = 0;
-
-  function onStart(clientX) {
+  splitter.addEventListener('mousedown', (e) => {
     dragging = true;
     splitter.classList.add('dragging');
-    startX = clientX;
+    startX = e.clientX;
     startWidth = panel.getBoundingClientRect().width;
     document.body.style.userSelect = 'none';
-  }
-
-  function onMove(clientX) {
+  });
+  window.addEventListener('mousemove', (e) => {
     if (!dragging) return;
-    const rawDelta = clientX - startX;
-    const delta = growLeft ? rawDelta : -rawDelta;
-    const minW = Math.max(140, window.innerWidth * 0.12);
-    const maxW = Math.min(window.innerWidth * 0.88, window.innerWidth - 120);
-    const newWidth = Math.min(Math.max(startWidth + delta, minW), maxW);
+    const rawDelta = e.clientX - startX;
+    const delta = growLeft ? rawDelta : -rawDelta; // 스플리터를 바깥쪽으로 끌면 그 옆 패널이 넓어짐
+    const maxWidth = window.innerWidth * 0.6;
+    const newWidth = Math.min(Math.max(startWidth + delta, 220), maxWidth);
     panel.style.flexBasis = newWidth + 'px';
     localStorage.setItem(storageKey, String(newWidth));
-  }
-
-  function onEnd() {
+  });
+  window.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
     splitter.classList.remove('dragging');
     document.body.style.userSelect = '';
-  }
-
-  splitter.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    onStart(e.clientX);
   });
-  window.addEventListener('mousemove', (e) => onMove(e.clientX));
-  window.addEventListener('mouseup', onEnd);
-
-  splitter.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches.length > 0) {
-      onStart(e.touches[0].clientX);
-    }
-  }, { passive: true });
-  window.addEventListener('touchmove', (e) => {
-    if (dragging && e.touches && e.touches.length > 0) {
-      onMove(e.touches[0].clientX);
-    }
-  }, { passive: true });
-  window.addEventListener('touchend', onEnd);
 }
 initHSplitter({ splitterId: 'rightSplitter', panelSelector: '.op-panel', storageKey: 'gmsOpPanelWidth', growLeft: false });
 // Equipment Info / BAR CODE·IP ADDR 사이 폭 조절 - BAR CODE 박스가 스플리터 오른쪽에 있으므로
@@ -2741,11 +2714,116 @@ initHSplitter({ splitterId: 'equipMidSplitter', panelSelector: '.equip-io-box', 
 // 있으므로 growLeft:true.
 initHSplitter({ splitterId: 'equipRightSplitter', panelSelector: '.equip-io-box', storageKey: 'gmsEquipIoBoxWidth', growLeft: true });
 
-// ── 상단 상태 바(Equipment Info/BAR CODE/Cylinder Step Status) 높이 조절 - 아래로 끌면 커진다.
-// bottomSplitter(끌면 위로 커짐)와 반대 방향이라 별도 함수로 둔다. ──
+
+// ══════════════════════════════════════════════════════════════
+// GMS 화면 최대화 v3 통합 핸들러
+// ① 상단 바 자동 숨김 (핸들 클릭 토글)
+// ② 3단 커튼 슬라이드 (EQ Info / BAR CODE 각각 독립 토글, localStorage 저장)
+// ③ 우측 op-panel 접기/펼치기
+// ④ 전체화면 버튼 (CYL STEP 헤더)
+// ══════════════════════════════════════════════════════════════
+(function initScreenMaximize() {
+
+  // ── ① 상단 바 자동 숨김 ──
+  const equipBar   = document.getElementById('equipStatusBarV2');
+  const handle     = document.getElementById('equipBarHandle');
+  const handleLbl  = document.getElementById('equipBarHandleLabel');
+
+  if (handle && equipBar) {
+    // localStorage에서 저장된 숨김 상태 복원
+    const barHidden = localStorage.getItem('gmsEquipBarHidden') === '1';
+    if (barHidden) {
+      equipBar.classList.add('collapsed');
+      handleLbl.textContent = '▼ 펼치기';
+    }
+
+    handle.addEventListener('click', () => {
+      const isCollapsed = equipBar.classList.toggle('collapsed');
+      handleLbl.textContent = isCollapsed ? '▼ 펼치기' : '▲ 접기';
+      localStorage.setItem('gmsEquipBarHidden', isCollapsed ? '1' : '0');
+    });
+  }
+
+  // ── ② 3단 커튼 슬라이드 ──
+  // 커튼 패널 설정: [버튼ID, 패널ID, localStorage키]
+  const curtains = [
+    ['curtainBtn1', 'curtainPanel1', 'gmsCurtain1Open'],
+    ['curtainBtn2', 'curtainPanel2', 'gmsCurtain2Open'],
+  ];
+
+  curtains.forEach(([btnId, panelId, storageKey]) => {
+    const btn   = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    if (!btn || !panel) return;
+
+    // 저장된 상태 복원
+    const wasOpen = localStorage.getItem(storageKey) === '1';
+    if (wasOpen) {
+      panel.classList.add('open');
+      btn.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+
+    btn.addEventListener('click', () => {
+      const isOpen = panel.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+      btn.setAttribute('aria-expanded', String(isOpen));
+      localStorage.setItem(storageKey, isOpen ? '1' : '0');
+    });
+  });
+
+  // ── ③ 우측 op-panel 접기/펼치기 ──
+  const collapseBtn   = document.getElementById('opPanelCollapseBtn');
+  const opPanel       = document.getElementById('opPanel');
+  const rightSplitter = document.getElementById('rightSplitter');
+
+  if (collapseBtn && opPanel) {
+    // localStorage에서 접힘 상태 복원
+    const panelCollapsed = localStorage.getItem('gmsOpPanelCollapsed') === '1';
+    if (panelCollapsed) {
+      opPanel.classList.add('panel-collapsed');
+      rightSplitter && rightSplitter.classList.add('panel-collapsed');
+      collapseBtn.textContent  = '▶ 패널';
+      collapseBtn.setAttribute('aria-expanded', 'false');
+      collapseBtn.classList.add('active');
+    }
+
+    collapseBtn.addEventListener('click', () => {
+      const isNowCollapsed = opPanel.classList.toggle('panel-collapsed');
+      rightSplitter && rightSplitter.classList.toggle('panel-collapsed', isNowCollapsed);
+      collapseBtn.textContent = isNowCollapsed ? '▶ 패널' : '◀ 패널';
+      collapseBtn.setAttribute('aria-expanded', String(!isNowCollapsed));
+      collapseBtn.classList.toggle('active', isNowCollapsed);
+      localStorage.setItem('gmsOpPanelCollapsed', isNowCollapsed ? '1' : '0');
+    });
+  }
+
+  // ── ④ 전체화면 버튼 (CYL STEP 헤더용, 기존 fullscreenToggleBtn 로직 공유) ──
+  const fsBtn2 = document.getElementById('fullscreenToggleBtn2');
+  if (fsBtn2) {
+    function updateFs2Btn() {
+      const isFull = !!document.fullscreenElement;
+      fsBtn2.textContent = isFull ? '⛶ 복원' : '⛶';
+      fsBtn2.classList.toggle('active', isFull);
+      fsBtn2.title = isFull ? '전체 화면 해제 (F11)' : '전체 화면 전환 (F11)';
+    }
+    fsBtn2.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+    document.addEventListener('fullscreenchange', updateFs2Btn);
+    updateFs2Btn();
+  }
+
+})();
+
+
 (function initEquipStatusSplitter() {
   const splitter = document.getElementById('equipStatusSplitter');
-  const box = document.querySelector('.equip-status-bar');
+  const box = document.querySelector('.equip-status-bar') || document.querySelector('.equip-status-bar-v2');
   if (!splitter || !box) return;
   const STORAGE_KEY = 'gmsEquipStatusBarHeight';
 
@@ -2944,33 +3022,3 @@ function initColumnResize(table) {
     document.body.style.userSelect = '';
   });
 })();
-
-
-
-// ── P&ID 배관도 단독 전면 뷰 / 오퍼레이션 분할 뷰 토글 ──
-(function initPidViewMode() {
-  const toggleBtn = document.getElementById('viewModeToggleBtn');
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialMode = urlParams.get('view') || localStorage.getItem('gmsViewMode') || 'split';
-
-  function applyViewMode(mode) {
-    if (mode === 'pid_full') {
-      document.body.classList.add('pid-full-view');
-      if (toggleBtn) toggleBtn.innerHTML = '◫ 분할 보기';
-    } else {
-      document.body.classList.remove('pid-full-view');
-      if (toggleBtn) toggleBtn.innerHTML = '📐 P&amp;ID 단독 보기';
-    }
-    localStorage.setItem('gmsViewMode', mode);
-  }
-
-  applyViewMode(initialMode);
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const isFull = document.body.classList.contains('pid-full-view');
-      applyViewMode(isFull ? 'split' : 'pid_full');
-    });
-  }
-})();
-

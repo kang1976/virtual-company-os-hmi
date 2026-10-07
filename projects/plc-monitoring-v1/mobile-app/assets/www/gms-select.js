@@ -58,79 +58,71 @@ const cntLatency = document.getElementById('cntLatency');
 const resetCountersBtn = document.getElementById('resetCountersBtn');
 
 function updateConnFieldsVisibility() {
-  if (!connType) return;
   const needsHost = connType.value === 'UDP' || connType.value === 'TCP';
-  if (connHost) {
-    connHost.disabled = !needsHost || (connectBtn ? connectBtn.disabled : false);
-    connHost.placeholder = needsHost ? 'PLC IP (예: 192.168.0.80)' : 'USB는 IP 불필요';
-  }
-  if (connPort) connPort.disabled = !needsHost || (connectBtn ? connectBtn.disabled : false);
+  connHost.disabled = !needsHost || connectBtn.disabled;
+  connPort.disabled = !needsHost || connectBtn.disabled;
+  connHost.placeholder = needsHost ? 'PLC IP (예: 192.168.0.80)' : 'USB는 IP 불필요';
 }
-connType?.addEventListener('change', updateConnFieldsVisibility);
+connType.addEventListener('change', updateConnFieldsVisibility);
 updateConnFieldsVisibility();
 
-const connTypeUsbOption = connType ? Array.from(connType.options).find((o) => o.value === 'USB') : null;
+const connTypeUsbOption = Array.from(connType.options).find((o) => o.value === 'USB');
 function applySeriesConstraints() {
-  if (!plcSeriesSelect) return;
   const isNx = plcSeriesSelect.value === 'NX';
   if (connTypeUsbOption) connTypeUsbOption.hidden = isNx;
-  if (isNx && connType && connType.value === 'USB') connType.value = 'UDP';
+  if (isNx && connType.value === 'USB') connType.value = 'UDP';
   updateConnFieldsVisibility();
 }
-plcSeriesSelect?.addEventListener('change', applySeriesConstraints);
+plcSeriesSelect.addEventListener('change', applySeriesConstraints);
 applySeriesConstraints();
 
 function setConnStatus(status) {
   if (!status) return;
-  statusPill?.classList.remove('connected', 'error');
+  statusPill.classList.remove('connected', 'error');
   if (status.connected) {
-    statusPill?.classList.add('connected');
-    if (statusText) {
-      if ((status.connectionType === 'UDP' || status.connectionType === 'TCP') && status.connectionParams) {
-        statusText.textContent = `${status.connectionType} 연결됨 (${status.connectionParams.host}:${status.connectionParams.port})`;
-      } else {
-        statusText.textContent = 'USB 연결됨';
-      }
+    statusPill.classList.add('connected');
+    if ((status.connectionType === 'UDP' || status.connectionType === 'TCP') && status.connectionParams) {
+      statusText.textContent = `${status.connectionType} 연결됨 (${status.connectionParams.host}:${status.connectionParams.port})`;
+    } else {
+      statusText.textContent = 'USB 연결됨';
     }
-    if (connectBtn) connectBtn.disabled = true;
-    if (disconnectBtn) disconnectBtn.disabled = false;
-    if (connType) connType.disabled = true;
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    connType.disabled = true;
   } else if (status.lastError) {
-    statusPill?.classList.add('error');
-    if (statusText) statusText.textContent = '오류: ' + status.lastError;
-    if (connectBtn) connectBtn.disabled = false;
-    if (disconnectBtn) disconnectBtn.disabled = true;
-    if (connType) connType.disabled = false;
+    statusPill.classList.add('error');
+    statusText.textContent = '오류: ' + status.lastError;
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    connType.disabled = false;
   } else {
-    if (statusText) statusText.textContent = '연결 안 됨';
-    if (connectBtn) connectBtn.disabled = false;
-    if (disconnectBtn) disconnectBtn.disabled = true;
-    if (connType) connType.disabled = false;
+    statusText.textContent = '연결 안 됨';
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    connType.disabled = false;
   }
   updateConnFieldsVisibility();
   const hasMeaningfulStatus = status.connected || status.connectionParams;
-  if (hasMeaningfulStatus && status.connectionType && document.activeElement !== connType && connType) connType.value = status.connectionType;
-  if (status.connectionParams && document.activeElement !== connHost && connHost) connHost.value = status.connectionParams.host || '';
-  if (status.connectionParams && document.activeElement !== connPort && connPort) connPort.value = status.connectionParams.port || 9600;
+  if (hasMeaningfulStatus && status.connectionType && document.activeElement !== connType) connType.value = status.connectionType;
+  if (status.connectionParams && document.activeElement !== connHost) connHost.value = status.connectionParams.host || '';
+  if (status.connectionParams && document.activeElement !== connPort) connPort.value = status.connectionParams.port || 9600;
   if (status.counters) setCounters({ ...status.counters, latencyMs: status.latencyMs });
 
-  if (cpuInfo) {
-    if (status.controllerInfo && status.controllerInfo.model) {
-      const v = status.controllerInfo.version ? ` (Ver. ${status.controllerInfo.version})` : '';
-      cpuInfo.textContent = `— ${status.controllerInfo.model}${v}`;
-    } else if (!status.connected) {
-      cpuInfo.textContent = '— 연결 전';
-    } else {
-      cpuInfo.textContent = '— CPU 정보 확인 중...';
-    }
+  if (status.controllerInfo && status.controllerInfo.model) {
+    const v = status.controllerInfo.version ? ` (Ver. ${status.controllerInfo.version})` : '';
+    cpuInfo.textContent = `— ${status.controllerInfo.model}${v}`;
+  } else if (!status.connected) {
+    cpuInfo.textContent = '— 연결 전';
+  } else {
+    cpuInfo.textContent = '— CPU 정보 확인 중...';
   }
 }
 
 function setCounters(c) {
-  if (cntSend) cntSend.textContent = c.send;
-  if (cntRecv) cntRecv.textContent = c.recvSuccess;
-  if (cntErr) cntErr.textContent = c.recvError;
-  if (cntLatency) cntLatency.textContent = c.latencyMs != null ? c.latencyMs + 'ms' : '—';
+  cntSend.textContent = c.send;
+  cntRecv.textContent = c.recvSuccess;
+  cntErr.textContent = c.recvError;
+  cntLatency.textContent = c.latencyMs != null ? c.latencyMs + 'ms' : '—';
 }
 
 async function fetchConnStatus() {
@@ -143,8 +135,8 @@ async function fetchConnStatus() {
 
   setConnStatus({
     connected: true,
-    connectionType: (connType && connType.value) || 'UDP',
-    connectionParams: { host: (connHost && connHost.value) || '192.168.0.80', port: Number(connPort && connPort.value) || 9600 },
+    connectionType: connType.value || 'UDP',
+    connectionParams: { host: connHost.value || '192.168.0.80', port: Number(connPort.value) || 9600 },
     counters: { send: 10, recvSuccess: 10, recvError: 0 },
     latencyMs: 15,
     controllerInfo: { model: 'CJ2H-CPU65-EIP', version: '2.5' }
@@ -168,19 +160,19 @@ async function postJsonWithTimeout(url, body, timeoutMs = CONNECT_FETCH_TIMEOUT_
   }
 }
 
-connectBtn?.addEventListener('click', async () => {
-  const type = connType ? connType.value : 'UDP';
-  const body = { type, series: plcSeriesSelect ? plcSeriesSelect.value : 'CJ' };
+connectBtn.addEventListener('click', async () => {
+  const type = connType.value;
+  const body = { type, series: plcSeriesSelect.value };
   if (type === 'UDP' || type === 'TCP') {
-    const host = connHost ? connHost.value.trim() : '192.168.0.80';
+    const host = connHost.value.trim();
     if (!host) {
       alert(`${type} 연결에는 PLC IP 주소를 입력해야 합니다.`);
       return;
     }
     body.host = host;
-    body.port = (connPort && connPort.value) ? Number(connPort.value) : 9600;
+    body.port = connPort.value ? Number(connPort.value) : 9600;
   }
-  if (connectBtn) connectBtn.disabled = true;
+  connectBtn.disabled = true;
   try {
     const data = await postJsonWithTimeout('/api/gms/connect', body);
     if (!data.ok) toast('연결 시도 중: ' + (data.error || '모바일 모드'), 'warn');
@@ -191,12 +183,12 @@ connectBtn?.addEventListener('click', async () => {
   }
 });
 
-disconnectBtn?.addEventListener('click', async () => {
+disconnectBtn.addEventListener('click', async () => {
   try { await fetch('/api/gms/disconnect', { method: 'POST' }); } catch(e) {}
   setConnStatus({ connected: false });
 });
 
-resetCountersBtn?.addEventListener('click', async () => {
+resetCountersBtn.addEventListener('click', async () => {
   try { await fetch('/api/gms/counters/reset', { method: 'POST' }); } catch(e) {}
   setCounters({ send: 0, recvSuccess: 0, recvError: 0, latencyMs: null });
 });
@@ -209,17 +201,15 @@ const gmsPauseBtn = document.getElementById('gmsPauseBtn');
 const gmsStopBtn = document.getElementById('gmsStopBtn');
 
 function setGmsPollStatusUI(status) {
-  if (gmsStartBtn) gmsStartBtn.disabled = status === 'running';
-  if (gmsPauseBtn) {
-    gmsPauseBtn.disabled = status !== 'running';
-    gmsPauseBtn.classList.toggle('paused', status === 'paused');
-  }
-  if (gmsStopBtn) gmsStopBtn.disabled = status === 'stopped';
+  gmsStartBtn.disabled = status === 'running';
+  gmsPauseBtn.disabled = status !== 'running';
+  gmsStopBtn.disabled = status === 'stopped';
+  gmsPauseBtn.classList.toggle('paused', status === 'paused');
 }
 setGmsPollStatusUI('stopped');
 
-gmsStartBtn?.addEventListener('click', async () => {
-  const ms = Number(gmsIntervalInput ? gmsIntervalInput.value : 1000) || 1000;
+gmsStartBtn.addEventListener('click', async () => {
+  const ms = Number(gmsIntervalInput.value) || 1000;
   try {
     const data = await fetch('/api/gms/start', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ intervalMs: ms }),
@@ -229,8 +219,8 @@ gmsStartBtn?.addEventListener('click', async () => {
     toast('시작 실패: ' + e.message, 'err');
   }
 });
-gmsPauseBtn?.addEventListener('click', async () => { await fetch('/api/gms/pause', { method: 'POST' }); });
-gmsStopBtn?.addEventListener('click', async () => { await fetch('/api/gms/stop', { method: 'POST' }); });
+gmsPauseBtn.addEventListener('click', async () => { await fetch('/api/gms/pause', { method: 'POST' }); });
+gmsStopBtn.addEventListener('click', async () => { await fetch('/api/gms/stop', { method: 'POST' }); });
 
 // ── 통신 이력 패널 ──
 const logList = document.getElementById('logList');
@@ -240,7 +230,6 @@ let allLogs = [];
 let errorOnlyFilter = false;
 
 function renderLogEntry(entry) {
-  if (!logList) return;
   const div = document.createElement('div');
   div.className = `log-entry ${entry.direction}`;
   const time = new Date(entry.time).toLocaleTimeString('ko-KR');
@@ -249,7 +238,6 @@ function renderLogEntry(entry) {
   logList.appendChild(div);
 }
 function renderAllLogs() {
-  if (!logList) return;
   logList.innerHTML = '';
   const toShow = errorOnlyFilter ? allLogs.filter((e) => e.direction === 'ERROR') : allLogs;
   toShow.slice(-300).forEach(renderLogEntry);
@@ -260,21 +248,19 @@ function appendLog(entry) {
   if (allLogs.length > 1000) allLogs.shift();
   if (!errorOnlyFilter || entry.direction === 'ERROR') {
     renderLogEntry(entry);
-    if (logList) {
-      logList.scrollTop = logList.scrollHeight;
-      while (logList.children.length > 300) logList.removeChild(logList.firstChild);
-    }
+    logList.scrollTop = logList.scrollHeight;
+    while (logList.children.length > 300) logList.removeChild(logList.firstChild);
   }
 }
-filterErrorBtn?.addEventListener('click', () => {
+filterErrorBtn.addEventListener('click', () => {
   errorOnlyFilter = !errorOnlyFilter;
   filterErrorBtn.classList.toggle('active', errorOnlyFilter);
   filterErrorBtn.textContent = errorOnlyFilter ? '🔴 전체 보기' : '🔴 에러만 보기';
   renderAllLogs();
 });
-clearLogBtn?.addEventListener('click', async () => {
+clearLogBtn.addEventListener('click', async () => {
   allLogs = [];
-  if (logList) logList.innerHTML = '';
+  logList.innerHTML = '';
   await fetch('/api/gms/logs/clear', { method: 'POST' });
 });
 
@@ -314,7 +300,7 @@ function connectWs() {
       else if (msg.type === 'gmsConnCounters') setCounters(msg.payload);
       else if (msg.type === 'gmsConnLog') appendLog(msg.payload);
       else if (msg.type === 'gmsConnLogHistory') msg.payload.forEach(appendLog);
-      else if (msg.type === 'gmsConnLogsCleared') { allLogs = []; if (logList) logList.innerHTML = ''; }
+      else if (msg.type === 'gmsConnLogsCleared') { allLogs = []; logList.innerHTML = ''; }
       else if (msg.type === 'gmsStatus') setGmsPollStatusUI(msg.payload.status);
     };
     ws.onclose = () => setTimeout(connectWs, 1000);
@@ -328,7 +314,7 @@ setInterval(fetchConnStatus, 5000);
 if (location.protocol !== 'file:') {
   fetch('/api/gms/status').then((r) => r.json()).then((d) => {
     if (d && d.ok) {
-      if (d.intervalMs && gmsIntervalInput) gmsIntervalInput.value = d.intervalMs;
+      if (d.intervalMs) gmsIntervalInput.value = d.intervalMs;
       if (d.status) setGmsPollStatusUI(d.status);
     }
   }).catch(() => {});
