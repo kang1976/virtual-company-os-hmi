@@ -8,13 +8,17 @@ wb = openpyxl.Workbook()
 # 스타일 공통 정의
 font_title = Font(name="맑은 고딕", size=15, bold=True, color="FFFFFF")
 font_section = Font(name="맑은 고딕", size=12, bold=True, color="1E3A8A")
+font_warn_section = Font(name="맑은 고딕", size=12, bold=True, color="991B1B")
 font_header = Font(name="맑은 고딕", size=10, bold=True, color="FFFFFF")
 font_bold = Font(name="맑은 고딕", size=10, bold=True)
 font_normal = Font(name="맑은 고딕", size=10)
+font_red_bold = Font(name="맑은 고딕", size=10, bold=True, color="DC2626")
 
 fill_title = PatternFill(start_color="1E40AF", end_color="1E40AF", fill_type="solid")
 fill_section = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid")
+fill_warn_section = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
 fill_hdr_blue = PatternFill(start_color="1D4ED8", end_color="1D4ED8", fill_type="solid")
+fill_hdr_red = PatternFill(start_color="B91C1C", end_color="B91C1C", fill_type="solid")
 fill_hdr_amber = PatternFill(start_color="B45309", end_color="B45309", fill_type="solid")
 fill_hdr_green = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
 fill_zebra = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
@@ -53,7 +57,7 @@ trail_end = total_cols
 
 
 # ========================================================
-# 1. 첫 번째 시트: "사용 방법" (상세 매뉴얼 & 상황별 가이드)
+# 1. 첫 번째 시트: "사용 방법" (상세 매뉴얼 & 글씨 깨짐 방지 규칙)
 # ========================================================
 ws_guide = wb.active
 ws_guide.title = "사용 방법"
@@ -61,35 +65,67 @@ ws_guide.views.sheetView[0].showGridLines = True
 
 # 타이틀 배너
 ws_guide.merge_cells("A1:G1")
-ws_guide["A1"] = "📘 GMS 자동진행 시퀀스 엑셀 마스터 매뉴얼 & 상황별 규칙 총정리"
+ws_guide["A1"] = "📘 GMS 자동진행 시퀀스 엑셀 마스터 매뉴얼 & 표준 규칙 총정리"
 ws_guide["A1"].font = font_title
 ws_guide["A1"].fill = fill_title
 ws_guide["A1"].alignment = align_center
 ws_guide.row_dimensions[1].height = 42
 
 ws_guide.merge_cells("A2:G2")
-ws_guide["A2"] = "본 시트는 GMS(Gas Management System) 자동 시퀀스를 엑셀로 작성하고 수정할 때 준수해야 하는 모든 셀 규칙과 5가지 실전 상황별 예제를 담고 있습니다."
+ws_guide["A2"] = "본 시트는 GMS(Gas Management System) 자동 시퀀스를 엑셀로 작성하고 수정할 때 준수해야 하는 모든 셀 규칙, 글씨 깨짐 방지 요령 및 5대 실전 예제를 담고 있습니다."
 ws_guide["A2"].font = font_bold
 ws_guide["A2"].alignment = align_left
 ws_guide.row_dimensions[2].height = 24
 
-# 섹션 1: 엑셀 작성 3대 절대 원칙
+# 섹션 0: ★ 글씨 깨짐 및 파일 손상 방지 규칙 (사용자 피드백 반영 최우선 배치)
 ws_guide.merge_cells("A4:G4")
-ws_guide["A4"] = "1. 엑셀 시트 작성 3대 절대 원칙 (주의사항)"
-ws_guide["A4"].font = font_section
-ws_guide["A4"].fill = fill_section
+ws_guide["A4"] = "★ [필독] 글씨 깨짐(PK... 외계어) 원인 및 올바른 파일 오픈 규칙"
+ws_guide["A4"].font = font_warn_section
+ws_guide["A4"].fill = fill_warn_section
 ws_guide.row_dimensions[4].height = 28
 
-for col_idx, h in enumerate(["항목", "규칙명", "핵심 규칙 및 시스템 동작 원리"], 1):
+for col_idx, h in enumerate(["구분", "발생 원인", "화면에 나타나는 증상", "해결책 및 올바른 사용 방법"], 1):
     cell = ws_guide.cell(row=5, column=col_idx, value=h)
+    cell.font = font_header
+    cell.fill = fill_hdr_red
+    cell.alignment = align_center
+ws_guide.merge_cells("D5:G5")
+ws_guide.row_dimensions[5].height = 26
+
+crash_rules = [
+    ("원인 1: 뷰어 오사용", "에디터/메모장으로 열기", "PK... docProps/app.xml 등 외계어 및 글자 깨짐 발생", "★ .xlsx는 압축 바이너리 파일입니다. 메모장이나 VS Code 기본 텍스트 뷰어로 열지 마시고, 반드시 [Microsoft Excel], [한셀], [LibreOffice] 등 정식 스프레드시트 프로그램으로 열어야 합니다."),
+    ("원인 2: 확장자 오류", ".csv를 .xlsx로 강제 변경", "서버 업로드 시 '시트를 찾을 수 없습니다' 파싱 오류", "CSV 파일을 이름만 .xlsx로 바꾸면 안 됩니다. 반드시 엑셀에서 [다른 이름으로 저장 ➔ Excel 통합 문서(*.xlsx)]로 정식 저장하세요."),
+    ("원인 3: 한글 인코딩", "UTF-8 인코딩 손실", "웹 화면에 '' 형태로 물음표 다이아몬드 깨짐", "엑셀 내 한글 셀 내용(공정명, 메시지, 밸브명)은 표준 UTF-8 인코딩을 따르며, 저장 시 기본 통합 문서 포맷을 유지하면 100% 정상 인식됩니다.")
+]
+
+for r_idx, cr in enumerate(crash_rules, 6):
+    ws_guide.cell(row=r_idx, column=1, value=cr[0]).alignment = align_center
+    ws_guide.cell(row=r_idx, column=2, value=cr[1]).alignment = align_center
+    ws_guide.cell(row=r_idx, column=3, value=cr[2]).alignment = align_left
+    ws_guide.merge_cells(f"D{r_idx}:G{r_idx}")
+    ws_guide.cell(row=r_idx, column=4, value=cr[3]).alignment = align_left
+    ws_guide.row_dimensions[r_idx].height = 28
+    for c in range(1, 8):
+        ws_guide.cell(row=r_idx, column=c).border = thin_border
+        ws_guide.cell(row=r_idx, column=c).font = font_normal
+
+# 섹션 1: 엑셀 작성 3대 절대 원칙
+ws_guide.merge_cells("A10:G10")
+ws_guide["A10"] = "1. 엑셀 시트 작성 3대 절대 원칙 (구조 규칙)"
+ws_guide["A10"].font = font_section
+ws_guide["A10"].fill = fill_section
+ws_guide.row_dimensions[10].height = 28
+
+for col_idx, h in enumerate(["항목", "규칙명", "핵심 규칙 및 시스템 동작 원리"], 1):
+    cell = ws_guide.cell(row=11, column=col_idx, value=h)
     cell.font = font_header
     cell.fill = fill_hdr_blue
     cell.alignment = align_center
-ws_guide.merge_cells("C5:E5")
-ws_guide.merge_cells("F5:G5")
-ws_guide.cell(row=5, column=6, value="주의사항 (절대 금지)").font = font_header
-ws_guide.cell(row=5, column=6).fill = fill_hdr_blue
-ws_guide.cell(row=5, column=6).alignment = align_center
+ws_guide.merge_cells("C11:E11")
+ws_guide.merge_cells("F11:G11")
+ws_guide.cell(row=11, column=6, value="주의사항 (절대 금지)").font = font_header
+ws_guide.cell(row=11, column=6).fill = fill_hdr_blue
+ws_guide.cell(row=11, column=6).alignment = align_center
 
 rules = [
     ("원칙 1", "시트 이름 규칙", "엑셀의 워크시트 이름이 시스템의 서브시퀀스 ID가 됩니다 (예: Bypass_v1, OneP_v1).", "시트명을 임의로 바꾸면 시스템이 다른 시퀀스로 인식하거나 누락됩니다."),
@@ -97,7 +133,7 @@ rules = [
     ("원칙 3", "상태 유지(빈칸) 원칙", "밸브 셀에 아무것도 적지 않은 공백(빈칸)은 '이전 스텝의 개폐 상태를 그대로 유지'함을 의미합니다.", "매 스텝마다 모든 밸브를 O/C로 채울 필요가 없으며, 빈칸이 통신 부하와 장비 쇼크를 막습니다.")
 ]
 
-for r_idx, r in enumerate(rules, 6):
+for r_idx, r in enumerate(rules, 12):
     ws_guide.cell(row=r_idx, column=1, value=r[0]).alignment = align_center
     ws_guide.cell(row=r_idx, column=2, value=r[1]).alignment = align_center
     ws_guide.merge_cells(f"C{r_idx}:E{r_idx}")
@@ -110,11 +146,11 @@ for r_idx, r in enumerate(rules, 6):
         ws_guide.cell(row=r_idx, column=c).font = font_normal
 
 # 섹션 2: 5가지 상황별 실전 작성 가이드
-ws_guide.merge_cells("A10:G10")
-ws_guide["A10"] = "2. 실무에서 가장 많이 쓰는 5가지 상황별 엑셀 작성 예제 가이드"
-ws_guide["A10"].font = font_section
-ws_guide["A10"].fill = fill_section
-ws_guide.row_dimensions[10].height = 28
+ws_guide.merge_cells("A16:G16")
+ws_guide["A16"] = "2. 실무에서 가장 많이 쓰는 5가지 상황별 엑셀 작성 예제 가이드"
+ws_guide["A16"].font = font_section
+ws_guide["A16"].fill = fill_section
+ws_guide.row_dimensions[16].height = 28
 
 scenarios = [
     ("상황 1", "단순 밸브 개폐 및 안정화 대기", "진행방식: 자동 / Time: 30초 / VN1: O, PNV: C, 나머지 빈칸", "공백(빈칸)은 이전 밸브 상태를 그대로 유지하므로 필요한 밸브만 O/C 입력"),
@@ -125,15 +161,15 @@ scenarios = [
 ]
 
 for col_idx, h in enumerate(["상황 구분", "상황 명칭", "엑셀 셀 입력 규칙 (핵심)", "동작 결과 및 엔지니어링 팁"], 1):
-    cell = ws_guide.cell(row=11, column=col_idx, value=h)
+    cell = ws_guide.cell(row=17, column=col_idx, value=h)
     cell.font = font_header
     cell.fill = fill_hdr_amber
     cell.alignment = align_center
-ws_guide.merge_cells("C11:E11")
-ws_guide.merge_cells("F11:G11")
-ws_guide.row_dimensions[11].height = 26
+ws_guide.merge_cells("C17:E17")
+ws_guide.merge_cells("F17:G17")
+ws_guide.row_dimensions[17].height = 26
 
-for r_idx, sc in enumerate(scenarios, 12):
+for r_idx, sc in enumerate(scenarios, 18):
     ws_guide.cell(row=r_idx, column=1, value=sc[0]).alignment = align_center
     ws_guide.cell(row=r_idx, column=2, value=sc[1]).alignment = align_left
     ws_guide.merge_cells(f"C{r_idx}:E{r_idx}")
@@ -146,19 +182,19 @@ for r_idx, sc in enumerate(scenarios, 12):
         ws_guide.cell(row=r_idx, column=c).font = font_normal
 
 # 섹션 3: 엑셀 열(Column) 상세 규칙표
-ws_guide.merge_cells("A18:G18")
-ws_guide["A18"] = "3. 전체 엑셀 컬럼(열)별 정밀 규칙 및 사용 방법"
-ws_guide["A18"].font = font_section
-ws_guide["A18"].fill = fill_section
-ws_guide.row_dimensions[18].height = 28
+ws_guide.merge_cells("A24:G24")
+ws_guide["A24"] = "3. 전체 엑셀 컬럼(열)별 정밀 규칙 및 사용 방법"
+ws_guide["A24"].font = font_section
+ws_guide["A24"].fill = fill_section
+ws_guide.row_dimensions[24].height = 28
 
 col_headers = ["구역", "열 헤더명", "필수여부", "입력 가능 값 / 문법", "상세 설명 및 동작 방식", "실전 입력 예시", "비고"]
 for col_idx, h in enumerate(col_headers, 1):
-    cell = ws_guide.cell(row=19, column=col_idx, value=h)
+    cell = ws_guide.cell(row=25, column=col_idx, value=h)
     cell.font = font_header
     cell.fill = fill_hdr_blue
     cell.alignment = align_center
-ws_guide.row_dimensions[19].height = 26
+ws_guide.row_dimensions[25].height = 26
 
 col_details = [
     ("고정 제어", "S/No.", "필수", "1, 2, 3...", "스텝 고유 순번입니다. 비어있는 행은 실행 시 자동으로 무시됩니다.", "1", "스텝 식별자"),
@@ -183,7 +219,7 @@ col_details = [
     ("감시 판정", "Remarks", "선택", "문자열", "엔지니어 작업 메모입니다. 공정 이력 로그에 함께 기록됩니다.", "1차 배관 진공 배기", "엔지니어 메모")
 ]
 
-for r_idx, col_info in enumerate(col_details, 20):
+for r_idx, col_info in enumerate(col_details, 26):
     area_cell = ws_guide.cell(row=r_idx, column=1, value=col_info[0])
     area_cell.alignment = align_center
     if col_info[0] == "고정 제어":
@@ -204,9 +240,9 @@ for r_idx, col_info in enumerate(col_details, 20):
         ws_guide.cell(row=r_idx, column=c).border = thin_border
         ws_guide.cell(row=r_idx, column=c).font = font_normal
 
-ws_guide.column_dimensions['A'].width = 14
+ws_guide.column_dimensions['A'].width = 16
 ws_guide.column_dimensions['B'].width = 24
-ws_guide.column_dimensions['C'].width = 12
+ws_guide.column_dimensions['C'].width = 14
 ws_guide.column_dimensions['D'].width = 28
 ws_guide.column_dimensions['E'].width = 46
 ws_guide.column_dimensions['F'].width = 24
