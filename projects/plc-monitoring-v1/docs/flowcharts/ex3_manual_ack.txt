@@ -1,0 +1,16 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef ackNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제3_수동확인"]):::startNode
+    S1["[Step 1] 시험 압력 가압 진행 (20초)<br>• VN1=O, PNV=O (가스 주입)"]:::procNode
+    S2{"[Step 2] 작업자 육안 확인 대기<br>• 진행방식 = 확인 (ACK)<br>• 화면 [확인] 클릭 전까지 무한 대기"}:::ackNode
+    S3["[Step 3] 가압 해제 및 배기 (10초)<br>• HPV=O (배기 밸브 Open)"]:::procNode
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> S1
+    S1 -->|20초 가압 완료| S2
+    S2 -- "작업자가 HMI 화면의<br>[확인(ACK)] 버튼 클릭" --> S3
+    S3 -->|10초 배기 완료| EndNode

@@ -1,0 +1,19 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제5_반복루프"]):::startNode
+    S1["[Step 1] 루프 준비 - 전 밸브 Close (5초)"]:::procNode
+    S2["[Step 2] 퍼지 가스 가압 (10초)<br>• VN1=O, PNV=O<br>★ 루프 시작점 (Alarm Goto 목적지)"]:::procNode
+    S3{"[Step 3] 배기 진행 (15초)<br>판정: 진행횟수 >= 3 ?"}:::condNode
+    S4["[Step 4] 3회 반복 완료 및 정상 종료 (5초)<br>• 전 밸브 Close"]:::procNode
+    EndNode(["[공정 완료] 정상 종료"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 -- "거짓 (아직 1~2회차)<br>[Alarm Goto: 2 로 루프백]" --> S2
+    S3 -- "참 (목표 3회 완료)<br>[Next Step: 4 로 정상 탈출]" --> S4
+    S4 --> EndNode

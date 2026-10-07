@@ -1,0 +1,15 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제1_단순개폐"]):::startNode
+    S1["[Step 1] 전 밸브 안전 Close (5초)<br>• VN1=C, VN2=C, PNV=C, HPV=C"]:::procNode
+    S2["[Step 2] 질소 가스 공급 개방 (30초)<br>• VN1=O, PNV=O (나머지 밸브 빈칸=상태유지)"]:::procNode
+    S3["[Step 3] 질소 차단 및 대기 (10초)<br>• VN1=C, PNV=C 닫고 안정화 대기"]:::procNode
+    EndNode(["[공정 완료] 정상 종료"]):::passNode
+
+    Start --> S1
+    S1 -->|5초 카운트다운 완료| S2
+    S2 -->|30초 카운트다운 완료| S3
+    S3 -->|10초 카운트다운 완료| EndNode

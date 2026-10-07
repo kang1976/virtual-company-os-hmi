@@ -1,0 +1,19 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+    classDef alarmNode fill:#fee2e2,stroke:#ef4444,color:#b91c1c,font-weight:bold
+
+    Start(["[공정 시작] 예제2_조기통과"]):::startNode
+    S1["[Step 1] 진공 라인 밸브 개방 (5초)<br>• HPV=O"]:::procNode
+    S2["[Step 2] 고진공 배기 120초 대기<br>• 감시: VPT <= 0.5 Torr<br>• 조기통과(Early Pass) = Y"]:::condNode
+    S3["[Step 3] 진공 유지 및 다음 공정 (10초)<br>• HPV=C 닫고 대기"]:::procNode
+    S99["[Step 99] 비상 정지 (Alarm Seq 1)<br>• 120초 내 진공 미도달 (누설 의심)"]:::alarmNode
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 -- "VPT <= 0.5 Torr 도달<br>(남은 시간 무시하고 즉시 통과!)" --> S3
+    S2 -- "120초 경과할 때까지 미도달<br>[Alarm Goto: 99]" --> S99
+    S3 --> EndNode

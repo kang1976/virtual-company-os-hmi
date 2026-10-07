@@ -1,0 +1,30 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+    classDef alarmNode fill:#fee2e2,stroke:#ef4444,color:#b91c1c,font-weight:bold
+
+    Start(["[공정 시작] Bypass_v1 종합 실전"]):::startNode
+    S1["[Step 1] 전 밸브 안전 초기화 (5초)"]:::procNode
+    S2["[Step 2] 1차 질소 공급 및 퍼지 (20초)<br>• VN1=O, PNV=O"]:::procNode
+    S3{"[Step 3] 2차 진공 배기 120초<br>감시: VPT <= 0.5 Torr (조기통과 Y)"}:::condNode
+    S4{"[Step 4] 작업자 육안 확인<br>• 진행방식 = 확인 (ACK)"}:::condNode
+    S5["[Step 5] 순차 지연 개방 (15초)<br>• VN2(0s) ➔ LPV(2s) ➔ HPIV(4s)"]:::procNode
+    S6["[Step 6] 3회 반복 퍼지 - 가압 (10초)<br>★ 루프 시작점 (Alarm Goto 목적지)"]:::procNode
+    S7{"[Step 7] 배기 및 3회 반복 판정 (15초)<br>판정: 진행횟수 >= 3 ?"}:::condNode
+    S8["[Step 8] 전 밸브 Close 및 완료 (5초)"]:::procNode
+    S99["[Step 99] 비상 알람 조치 스텝 (Alarm Seq 1)"]:::alarmNode
+    EndNode(["[Bypass 전 공정 정상 완료]"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 -- "0.5 Torr 도달<br>(조기통과!)" --> S4
+    S3 -- "120초 미도달<br>[Alarm Goto: 99]" --> S99
+    S4 -- "작업자 [확인] 클릭" --> S5
+    S5 --> S6
+    S6 --> S7
+    S7 -- "거짓 (1~2회차 미달)<br>[Alarm Goto: 6 으로 루프백]" --> S6
+    S7 -- "참 (3회 완료)<br>[Next Step: 8 로 정상 탈출]" --> S8
+    S8 --> EndNode

@@ -1,0 +1,19 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제4_지연개폐"]):::startNode
+    subgraph Step1 ["Step 1: 충격 방지 순차 지연 개방 (총 15초)"]
+        T0["T+0초: VN2 즉시 Open (O)"] --> T2["T+2초: LPV 지연 Open (O+2)"]
+        T2 --> T4["T+4초: HPIV 지연 Open (O+4)"]
+    end
+    subgraph Step2 ["Step 2: 순차 지연 닫힘 제어 (총 10초)"]
+        C0["T+0초: VN2 즉시 Close (C)"] --> C2["T+2초: LPV 지연 Close (C+2)"]
+        C2 --> C3["T+3초: HPIV 지연 Close (C+3)"]
+    end
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> Step1
+    Step1 -->|15초 완료| Step2
+    Step2 -->|10초 완료| EndNode

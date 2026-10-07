@@ -1,0 +1,21 @@
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+    classDef alarmNode fill:#fee2e2,stroke:#ef4444,color:#b91c1c,font-weight:bold
+
+    Start(["[공정 시작] 예제6_누출시험"]):::startNode
+    S1["[Step 1] 배관 시험 진공 배기 (30초)<br>• HPV=O, PNV=O"]:::procNode
+    S2["[Step 2] 배관 밀폐 & 초기압력 캡처 (5초)<br>• 전 밸브 Close<br>• Cycle: CAPTURE:VPT_{side} (P0 저장)"]:::procNode
+    S3{"[Step 3] 정밀 누출 감시 (60초)<br>감시: VPT:CAPOFFSET <= 0.05 Torr"}:::condNode
+    S4["[Step 4] 누출 시험 합격 및 완료 (5초)<br>• 배관 건전성 통과 완료"]:::procNode
+    S99["[Step 99] 비상 정지 및 경보 (Alarm Seq 1)<br>• 허용치 초과 누출 발생!"]:::alarmNode
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 -- "변동량 <= 0.05 Torr<br>(누출 없음 / 합격)" --> S4
+    S3 -- "변동량 > 0.05 Torr<br>(누출 발생 / Alarm Goto 99)" --> S99
+    S4 --> EndNode

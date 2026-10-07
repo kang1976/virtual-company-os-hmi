@@ -1,3 +1,4 @@
+import os
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -12,7 +13,15 @@ font_chart_section = Font(name="맑은 고딕", size=12, bold=True, color="065F4
 font_header = Font(name="맑은 고딕", size=10, bold=True, color="FFFFFF")
 font_bold = Font(name="맑은 고딕", size=10, bold=True)
 font_normal = Font(name="맑은 고딕", size=10)
+font_mono = Font(name="Consolas", size=9.5, color="1E293B")
 font_link = Font(name="맑은 고딕", size=10, bold=True, color="1D4ED8", underline="single")
+
+font_flow_step = Font(name="맑은 고딕", size=10, bold=True, color="1E3A8A")
+font_flow_desc = Font(name="맑은 고딕", size=9, color="475569")
+font_flow_arrow = Font(name="맑은 고딕", size=11, bold=True, color="2563EB")
+font_flow_cond = Font(name="맑은 고딕", size=10, bold=True, color="B45309")
+font_flow_pass = Font(name="맑은 고딕", size=10, bold=True, color="047857")
+font_flow_alarm = Font(name="맑은 고딕", size=10, bold=True, color="B91C1C")
 
 fill_title = PatternFill(start_color="1E40AF", end_color="1E40AF", fill_type="solid")
 fill_section = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid")
@@ -22,9 +31,17 @@ fill_hdr_blue = PatternFill(start_color="1D4ED8", end_color="1D4ED8", fill_type=
 fill_hdr_red = PatternFill(start_color="B91C1C", end_color="B91C1C", fill_type="solid")
 fill_hdr_amber = PatternFill(start_color="B45309", end_color="B45309", fill_type="solid")
 fill_hdr_green = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+fill_hdr_slate = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
+
 fill_zebra = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
 fill_highlight = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid")
 fill_green_tag = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
+
+fill_flow_box = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+fill_flow_cond = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid")
+fill_flow_pass = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
+fill_flow_alarm = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
+fill_mermaid_bg = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
 
 thin_border = Border(
     left=Side(style='thin', color='CBD5E1'),
@@ -33,11 +50,47 @@ thin_border = Border(
     bottom=Side(style='thin', color='CBD5E1')
 )
 
+box_border = Border(
+    left=Side(style='medium', color='3B82F6'),
+    right=Side(style='medium', color='3B82F6'),
+    top=Side(style='medium', color='3B82F6'),
+    bottom=Side(style='medium', color='3B82F6')
+)
+
+cond_border = Border(
+    left=Side(style='medium', color='F59E0B'),
+    right=Side(style='medium', color='F59E0B'),
+    top=Side(style='medium', color='F59E0B'),
+    bottom=Side(style='medium', color='F59E0B')
+)
+
+pass_border = Border(
+    left=Side(style='medium', color='10B981'),
+    right=Side(style='medium', color='10B981'),
+    top=Side(style='medium', color='10B981'),
+    bottom=Side(style='medium', color='10B981')
+)
+
+alarm_border = Border(
+    left=Side(style='medium', color='EF4444'),
+    right=Side(style='medium', color='EF4444'),
+    top=Side(style='medium', color='EF4444'),
+    bottom=Side(style='medium', color='EF4444')
+)
+
+code_border = Border(
+    left=Side(style='medium', color='64748B'),
+    right=Side(style='thin', color='CBD5E1'),
+    top=Side(style='thin', color='CBD5E1'),
+    bottom=Side(style='thin', color='CBD5E1')
+)
+
 align_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
 align_left = Alignment(horizontal="left", vertical="center", wrap_text=True)
 align_right = Alignment(horizontal="right", vertical="center")
+align_top_left = Alignment(horizontal="left", vertical="top", wrap_text=True)
 
-# 공통 컬럼 정의 (GMS 표준 32개 열)
+# 공통 컬럼 정의
 fixed_cols = [
     "S/No.", "Main Step", "Sub Step", "Next Step", "Operations", "Cycle",
     "진행방식", "Ack Goto", "Alarm Goto", "Message at Controller", "Time (Sec)", "Acc,Time (Sec)"
@@ -73,7 +126,7 @@ ws_guide["A1"].alignment = align_center
 ws_guide.row_dimensions[1].height = 42
 
 ws_guide.merge_cells("A2:G2")
-ws_guide["A2"] = "본 시트는 GMS 35개 전체 컬럼 문법, 타임차트/플로우차트 렌더링 엔진 연동 규칙, 6대 실무 상황별 예제 시트 바로가기를 완벽 제공합니다."
+ws_guide["A2"] = "본 시트는 GMS 35개 전체 컬럼 문법, Mermaid 공식 플로우차트 기법, 6대 실무 상황별 예제 시트 바로가기를 완벽 제공합니다."
 ws_guide["A2"].font = font_bold
 ws_guide["A2"].alignment = align_left
 ws_guide.row_dimensions[2].height = 24
@@ -117,7 +170,7 @@ ws_guide["A10"].font = font_section
 ws_guide["A10"].fill = fill_section
 ws_guide.row_dimensions[10].height = 28
 
-for col_idx, h in enumerate(["상황 구분", "예제 시트 바로가기 (링크)", "상황 명칭 및 핵심 동작", "초보자 핵심 학습 포인트"], 1):
+for col_idx, h in enumerate(["상황 구분", "예제 시트 바로가기 (링크)", "상황 명칭 및 핵심 동작", "초보자 핵심 학습 포인트 (플로우차트 탑재)"], 1):
     cell = ws_guide.cell(row=11, column=col_idx, value=h)
     cell.font = font_header
     cell.fill = fill_hdr_amber
@@ -127,13 +180,13 @@ ws_guide.merge_cells("E11:G11")
 ws_guide.row_dimensions[11].height = 26
 
 scenarios = [
-    ("상황 1", "예제1_단순개폐", "단순 밸브 개폐 및 안정화 대기 (상태 유지)", "필요한 밸브만 O/C 입력하고, 빈칸(공백)은 이전 상태를 유지하는 방법 학습"),
-    ("상황 2", "예제2_조기통과", "진공 배기 조기통과 (Early Pass)", "120초 설정했으나 0.5 Torr 도달 시 5초 만에 즉시 다음 스텝 통과하는 방법 학습"),
-    ("상황 3", "예제3_수동확인", "작업자 육안 확인 대기 (수동 ACK)", "진행방식 '확인' 설정 시 작업자가 버튼을 누를 때까지 정지 대기하는 방법 학습"),
-    ("상황 4", "예제4_지연개폐", "밸브 순차 지연 개폐 (시차 제어)", "O+2, O+4 문법을 사용하여 밸브를 2초, 4초 간격으로 순차 개폐하는 방법 학습"),
-    ("상황 5", "예제5_반복루프", "다회 반복 퍼지 루프 (Cycle 3회)", "★개선: 진행횟수 >= 3 판정 시 Next Step, 미달 시 Alarm Goto로 복귀하는 정상 루프 학습"),
-    ("상황 6", "예제6_누출시험", "정밀 압력 변동 누출 시험 (Leak Check)", "★신설: CAPTURE 문법으로 초기압력 저장 후 :CAPOFFSET으로 허용변동량 이내인지 검사"),
-    ("종합본", "Bypass_v1", "6가지 상황이 모두 합쳐진 종합 실전 시퀀스", "실제 현장 가스 캐비닛 장비에 즉시 업로드 가능한 완전한 시퀀스 양식 학습")
+    ("상황 1", "예제1_단순개폐", "단순 밸브 개폐 및 안정화 대기 (상태 유지)", "필요한 밸브만 O/C 입력하고, 빈칸(공백)은 이전 상태 유지 ➔ 시트 하단 비주얼/Mermaid 플로우차트 제공"),
+    ("상황 2", "예제2_조기통과", "진공 배기 조기통과 (Early Pass)", "120초 설정했으나 0.5 Torr 도달 시 5초 만에 즉시 다음 스텝 패스 ➔ Early Pass 분기 플로우차트 제공"),
+    ("상황 3", "예제3_수동확인", "작업자 육안 확인 대기 (수동 ACK)", "진행방식 '확인' 설정 시 작업자가 버튼 누를 때까지 정지 대기 ➔ 수동 승인 대기 플로우차트 제공"),
+    ("상황 4", "예제4_지연개폐", "밸브 순차 지연 개폐 (시차 제어)", "O+2, O+4 문법을 사용하여 밸브를 2초, 4초 간격으로 순차 개폐 ➔ 시차 제어 플로우차트 제공"),
+    ("상황 5", "예제5_반복루프", "다회 반복 퍼지 루프 (Cycle 3회)", "진행횟수 >= 3 판정 시 Next Step, 미달 시 Alarm Goto로 복귀 ➔ 루프백(Loop-back) 플로우차트 제공"),
+    ("상황 6", "예제6_누출시험", "정밀 압력 변동 누출 시험 (Leak Check)", "CAPTURE 문법으로 초기압력 저장 후 :CAPOFFSET으로 누출량 판정 ➔ 정밀 검사 플로우차트 제공"),
+    ("종합본", "Bypass_v1", "6가지 상황이 모두 합쳐진 종합 실전 시퀀스", "현장 가스 캐비닛 장비에 즉시 업로드 가능한 완전한 시퀀스 ➔ 전 공정 종합 Mermaid 플로우차트 탑재")
 ]
 
 for r_idx, sc in enumerate(scenarios, 12):
@@ -253,16 +306,16 @@ for r_idx, col_info in enumerate(col_details, hdr_row2 + 1):
         ws_guide.cell(row=r_idx, column=c).border = thin_border
         ws_guide.cell(row=r_idx, column=c).font = font_normal
 
-# 섹션 4: ★ [신설] 시퀀스 차트(Time Chart & Flow Chart) 구현 엔진 연동 가이드
+# 섹션 4: 시퀀스 차트 및 공식 Mermaid 기법 연동 가이드
 next_row = hdr_row2 + 1 + len(col_details) + 1
 ws_guide.merge_cells(f"A{next_row}:G{next_row}")
-ws_guide[f"A{next_row}"] = "4. ★ 시퀀스 차트(Time Chart & Flow Chart) 렌더링 엔진 연동 가이드"
+ws_guide[f"A{next_row}"] = "4. ★ 플로우차트(Mermaid 기법) 및 시퀀스 타임차트 연동 가이드"
 ws_guide[f"A{next_row}"].font = font_chart_section
 ws_guide[f"A{next_row}"].fill = fill_chart_section
 ws_guide.row_dimensions[next_row].height = 28
 
 hdr_row3 = next_row + 1
-chart_headers = ["차트 유형", "항목", "엑셀 데이터 해석 방법", "차트 렌더링 시각화 규칙 (주의사항)"]
+chart_headers = ["차트 유형", "항목", "엑셀 데이터 해석 방법", "공식 Mermaid 및 렌더링 규칙"]
 for col_idx, h in enumerate(chart_headers, 1):
     cell = ws_guide.cell(row=hdr_row3, column=col_idx, value=h)
     cell.font = font_header
@@ -272,13 +325,13 @@ ws_guide.merge_cells(f"D{hdr_row3}:G{hdr_row3}")
 ws_guide.row_dimensions[hdr_row3].height = 26
 
 chart_rules = [
-    ("타임차트 (Gantt)", "공백(빈칸) 셀 처리", "이전 스텝의 밸브 개폐 상태를 누적 상속(Carry-forward)", "★빈칸을 CLOSE(0)로 그리면 차트 선이 끊어집니다! 직전 스텝의 ON/OFF 상태를 그대로 연장하여 연속된 바로 그려야 합니다."),
-    ("타임차트 (Gantt)", "지연 개폐 (O+n, C+n)", "스텝 시작점(T0)으로부터 +n초 시점에 상태 전이 발생", "스텝 전체 시간 바 안에서 +n초 오프셋 지점에 색상 반전(Rising/Falling Edge) 마커를 표시해야 합니다."),
-    ("타임차트 (Gantt)", "조기통과 (Early Pass)", "Time(Sec) 전체를 점선 바로 표시하고, 통과 예상 시점을 마킹", "조기통과 조건 충족 시 실제 시간은 단축되므로, 예상 최대 시간(점선)과 최소 보장 시간(실선)을 구분하여 표시합니다."),
-    ("플로우차트 (Flow)", "정상 진행선", "Next Step이 공백이면 S/No.+1로 이동, 지정 시 Next Step으로 점프", "초록색 실선 화살표로 연결합니다."),
-    ("플로우차트 (Flow)", "루프 반복선", "'진행횟수' 조건 불만족 시 Alarm Goto 번호로 루프백 점프", "주황색/파란색 점선 화살표로 이전 스텝에 되돌아가는 루프백(Loop-back) 연결을 표시하고 'N회 반복' 배지를 표시합니다."),
-    ("플로우차트 (Flow)", "비상 알람선", "센서 조건 불만족 시 Alarm Goto 번호로 비상 점프", "빨간색 실선 화살표로 비상 대응 스텝(Step 99)으로 연결하고 경고 아이콘을 표시합니다."),
-    ("플로우차트 (Flow)", "수동 확인 대기", "진행방식 = '확인(ack)'", "단계 블록 옆에 손가락/버튼 아이콘을 띄워 작업자 수동 승인 후 진행됨을 직관적으로 표시합니다.")
+    ("플로우차트 (공식 기법)", "Mermaid.js (flowchart TD)", "프로젝트 표준 문서([Q-004], [Q-013], [Q-014]) 공식 채택 기법", "★모든 예제 시트 하단에 비주얼 블록 다이어그램과 Mermaid 소스코드가 1:1로 함께 탑재되어 있습니다."),
+    ("플로우차트 (Mermaid)", "정상 진행선 (실선 화살표)", "Next Step 지정 시 S/No ➔ Next Step, 미지정 시 S/No ➔ S/No+1", "S1 --> S2 (녹색/파랑 실선 화살표로 연결)"),
+    ("플로우차트 (Mermaid)", "루프 반복선 (Loop-back)", "Alarm Monitoring='진행횟수' 조건 불만족 시 Alarm Goto로 복귀", "S3 -- '거짓(미달) [Alarm Goto: 2]' --> S2 (주황/점선 루프백)"),
+    ("플로우차트 (Mermaid)", "비상 알람선 (Alarm)", "센서 감시 조건 불만족 시 Alarm Goto 번호로 비상 점프", "S2 -- '알람 발생 [Goto 99]' --> S99['비상 정지']:::alarmNode"),
+    ("플로우차트 (Mermaid)", "수동 확인 대기 (ACK)", "진행방식 = '확인(ack)'", "S2{'작업자 육안 확인 대기'} -- '[확인] 버튼 클릭' --> S3"),
+    ("타임차트 (Gantt)", "공백(빈칸) 셀 처리", "이전 스텝의 밸브 개폐 상태를 누적 상속(Carry-forward)", "빈칸을 CLOSE(0)로 그리지 않고 이전 ON/OFF 상태를 연장하여 연속된 바로 렌더링"),
+    ("타임차트 (Gantt)", "지연 개폐 (O+n, C+n)", "스텝 시작점(T0)으로부터 +n초 시점에 상태 전이 발생", "스텝 전체 시간 바 안에서 +n초 오프셋 지점에 Rising/Falling Edge 마커 표시")
 ]
 
 for r_idx, cr in enumerate(chart_rules, hdr_row3 + 1):
@@ -302,9 +355,9 @@ ws_guide.column_dimensions['G'].width = 16
 
 
 # ========================================================
-# 공통 템플릿 빌더 함수
+# 공통 템플릿 빌더 함수 (시퀀스 테이블 + 비주얼 플로우차트 + Mermaid 소스 코드)
 # ========================================================
-def build_scenario_sheet(sheet_title, banner_title, scenario_desc, steps):
+def build_scenario_sheet(sheet_title, banner_title, scenario_desc, steps, visual_flow_blocks, mermaid_code):
     ws = wb.create_sheet(title=sheet_title)
     ws.views.sheetView[0].showGridLines = True
     
@@ -361,7 +414,9 @@ def build_scenario_sheet(sheet_title, banner_title, scenario_desc, steps):
             c.fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
             
     # 5행부터 스텝 데이터
+    last_table_row = 4
     for row_offset, step in enumerate(steps, 5):
+        last_table_row = row_offset
         ws.row_dimensions[row_offset].height = 24
         row_data = [
             step["no"], step["mainStep"], step["subStep"], step["nextStep"],
@@ -399,11 +454,98 @@ def build_scenario_sheet(sheet_title, banner_title, scenario_desc, steps):
                         cell.fill = fill_green_tag
                 else:
                     cell.alignment = align_left
-                    
+
+    # ========================================================
+    # 플로우차트 섹션 (테이블 바로 아래 Row last_table_row + 3 부터)
+    # ========================================================
+    chart_start_row = last_table_row + 3
+    
+    # 플로우차트 섹션 배너
+    ws.merge_cells(start_row=chart_start_row, start_column=1, end_row=chart_start_row, end_column=total_cols)
+    banner_cell = ws.cell(row=chart_start_row, column=1, value="📊 [공정 시퀀스 플로우차트 - 비주얼 블록 다이어그램 & 공식 Mermaid 기법]")
+    banner_cell.font = font_chart_section
+    banner_cell.fill = fill_chart_section
+    banner_cell.alignment = align_left
+    ws.row_dimensions[chart_start_row].height = 28
+    
+    chart_hdr_row = chart_start_row + 1
+    # 좌측 비주얼 플로우차트 타이틀
+    ws.merge_cells(start_row=chart_hdr_row, start_column=1, end_row=chart_hdr_row, end_column=11)
+    c1 = ws.cell(row=chart_hdr_row, column=1, value="🎨 비주얼 공정 흐름도 (Visual Step Flowchart)")
+    c1.font = font_header
+    c1.fill = fill_hdr_blue
+    c1.alignment = align_center
+    
+    # 우측 Mermaid 코드 블록 타이틀
+    ws.merge_cells(start_row=chart_hdr_row, start_column=13, end_row=chart_hdr_row, end_column=total_cols)
+    c2 = ws.cell(row=chart_hdr_row, column=13, value="📜 공식 Mermaid 기법 소스 코드 (flowchart TD - 복사용)")
+    c2.font = font_header
+    c2.fill = fill_hdr_slate
+    c2.alignment = align_center
+    ws.row_dimensions[chart_hdr_row].height = 24
+    
+    # 좌측: 비주얼 플로우차트 블록 렌더링
+    cur_flow_row = chart_hdr_row + 1
+    for block in visual_flow_blocks:
+        b_type = block[0] # 'STEP', 'ARROW', 'COND', 'PASS', 'ALARM'
+        b_title = block[1]
+        b_sub = block[2] if len(block) > 2 else ""
+        
+        ws.row_dimensions[cur_flow_row].height = 22 if b_type == 'ARROW' else 26
+        
+        if b_type == 'ARROW':
+            ws.merge_cells(start_row=cur_flow_row, start_column=2, end_row=cur_flow_row, end_column=10)
+            cell = ws.cell(row=cur_flow_row, column=2, value=b_title)
+            cell.font = font_flow_arrow
+            cell.alignment = align_center
+        elif b_type == 'STEP':
+            ws.merge_cells(start_row=cur_flow_row, start_column=2, end_row=cur_flow_row, end_column=10)
+            cell = ws.cell(row=cur_flow_row, column=2, value=f"▶ {b_title} | {b_sub}")
+            cell.font = font_flow_step
+            cell.fill = fill_flow_box
+            cell.border = box_border
+            cell.alignment = align_center
+        elif b_type == 'COND':
+            ws.merge_cells(start_row=cur_flow_row, start_column=2, end_row=cur_flow_row, end_column=10)
+            cell = ws.cell(row=cur_flow_row, column=2, value=f"◆ {b_title} | {b_sub}")
+            cell.font = font_flow_cond
+            cell.fill = fill_flow_cond
+            cell.border = cond_border
+            cell.alignment = align_center
+        elif b_type == 'PASS':
+            ws.merge_cells(start_row=cur_flow_row, start_column=2, end_row=cur_flow_row, end_column=10)
+            cell = ws.cell(row=cur_flow_row, column=2, value=f"★ {b_title} | {b_sub}")
+            cell.font = font_flow_pass
+            cell.fill = fill_flow_pass
+            cell.border = pass_border
+            cell.alignment = align_center
+        elif b_type == 'ALARM':
+            ws.merge_cells(start_row=cur_flow_row, start_column=2, end_row=cur_flow_row, end_column=10)
+            cell = ws.cell(row=cur_flow_row, column=2, value=f"▲ {b_title} | {b_sub}")
+            cell.font = font_flow_alarm
+            cell.fill = fill_flow_alarm
+            cell.border = alarm_border
+            cell.alignment = align_center
+            
+        cur_flow_row += 1
+        
+    flow_end_row = cur_flow_row - 1
+    
+    # 우측: 공식 Mermaid 소스 코드 텍스트 박스
+    mermaid_lines = mermaid_code.strip().split("\n")
+    m_row_span = max(len(visual_flow_blocks), len(mermaid_lines))
+    
+    ws.merge_cells(start_row=chart_hdr_row + 1, start_column=13, end_row=chart_hdr_row + m_row_span, end_column=total_cols)
+    m_cell = ws.cell(row=chart_hdr_row + 1, column=13, value=mermaid_code.strip())
+    m_cell.font = font_mono
+    m_cell.fill = fill_mermaid_bg
+    m_cell.border = code_border
+    m_cell.alignment = align_top_left
+
     # 열 너비 조정
     for col in ws.columns:
         col_letter = get_column_letter(col[0].column)
-        max_len = max(len(str(cell.value or '')) for cell in col)
+        max_len = max(len(str(cell.value or '')) for cell in col[:last_table_row])
         ws.column_dimensions[col_letter].width = max(max_len + 4, 12)
     ws.column_dimensions['E'].width = 30
     ws.column_dimensions['J'].width = 36
@@ -412,50 +554,184 @@ def build_scenario_sheet(sheet_title, banner_title, scenario_desc, steps):
 
 
 # ========================================================
-# 2. 예제 1 시트: "예제1_단순개폐"
+# 2. 예제 1: "예제1_단순개폐"
 # ========================================================
 steps_ex1 = [
     {"no": 1, "mainStep": 1, "subStep": 1, "nextStep": "", "op": "[ 전 밸브 안전 Close ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "공정 시작 전 전 밸브 Close", "time": 5, "valves": {"VN1": "C", "VN2": "C", "PNV": "C", "HPV_{side}": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "모든 밸브를 안전하게 닫고 5초 대기"},
     {"no": 2, "mainStep": 1, "subStep": 2, "nextStep": "", "op": "[ 질소 가스 공급 개방 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "질소 공급 밸브 개방 유지", "time": 30, "valves": {"VN1": "O", "PNV": "O"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "★핵심: VN1, PNV만 O 입력하고 나머지 밸브는 빈칸으로 상태 유지!"},
     {"no": 3, "mainStep": 1, "subStep": 3, "nextStep": "", "op": "[ 질소 차단 및 대기 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "질소 공급 밸브 차단", "time": 10, "valves": {"VN1": "C", "PNV": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "공급 밸브 닫고 10초간 안정화 대기"}
 ]
-build_scenario_sheet("예제1_단순개폐", "단순 밸브 개폐 및 안정화 대기", "원하는 밸브만 O/C 입력하고, 빈칸으로 두면 이전 개폐 상태를 그대로 유지합니다.", steps_ex1)
+
+flow_ex1 = [
+    ('STEP', '[Step 1] 전 밸브 안전 Close', '5초 대기 (VN1=C, VN2=C, PNV=C, HPV=C)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼ (5초 경과 후 자동 진행)', ''),
+    ('STEP', '[Step 2] 질소 가스 공급 개방', '30초 유지 (VN1=O, PNV=O / 공백 밸브 상태유지)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼ (30초 경과 후 자동 진행)', ''),
+    ('STEP', '[Step 3] 질소 차단 및 대기', '10초 안정화 (VN1=C, PNV=C)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼ (10초 경과 후 정상 종료)', ''),
+    ('PASS', '[공정 정상 완료]', '전 밸브 안전 Close 및 다음 서브시퀀스 인계')
+]
+
+mmd_ex1 = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제1_단순개폐"]):::startNode
+    S1["[Step 1] 전 밸브 안전 Close (5초)<br>• VN1=C, VN2=C, PNV=C, HPV=C"]:::procNode
+    S2["[Step 2] 질소 가스 공급 개방 (30초)<br>• VN1=O, PNV=O (나머지 밸브 빈칸=상태유지)"]:::procNode
+    S3["[Step 3] 질소 차단 및 대기 (10초)<br>• VN1=C, PNV=C 닫고 안정화 대기"]:::procNode
+    EndNode(["[공정 완료] 정상 종료"]):::passNode
+
+    Start --> S1
+    S1 -->|5초 카운트다운 완료| S2
+    S2 -->|30초 카운트다운 완료| S3
+    S3 -->|10초 카운트다운 완료| EndNode
+```"""
+
+build_scenario_sheet("예제1_단순개폐", "단순 밸브 개폐 및 안정화 대기", "원하는 밸브만 O/C 입력하고, 빈칸으로 두면 이전 개폐 상태를 그대로 유지합니다.", steps_ex1, flow_ex1, mmd_ex1)
 
 
 # ========================================================
-# 3. 예제 2 시트: "예제2_조기통과"
+# 3. 예제 2: "예제2_조기통과"
 # ========================================================
 steps_ex2 = [
     {"no": 1, "mainStep": 2, "subStep": 1, "nextStep": "", "op": "[ 진공 라인 밸브 개방 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "진공 배기 밸브 Open", "time": 5, "valves": {"HPV_{side}": "O"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "진공 배기 라인 개방"},
     {"no": 2, "mainStep": 2, "subStep": 2, "nextStep": "", "op": "[ 고진공 배기 (조기통과 적용) ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": 99, "msg": "목표 진공 도달 시 조기 통과", "time": 120, "valves": {}, "mon": "VPT_{side}", "opCond": "<=", "valCond": "0.5", "early": "Y", "alarmSeq": 1, "alarmMsg": "120초 내 진공 미도달 (누설 의심)", "rem": "★핵심: 120초 설정했으나 0.5 Torr 도달 시 5초 만에 즉시 다음 스텝 패스!"},
     {"no": 3, "mainStep": 2, "subStep": 3, "nextStep": "", "op": "[ 진공 유지 및 다음 공정 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "진공 도달 완료 후 다음 단계 진행", "time": 10, "valves": {"HPV_{side}": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "조기통과 후 즉시 진공 밸브 Close"}
 ]
-build_scenario_sheet("예제2_조기통과", "진공 배기 조기통과 (Early Pass)", "조기통과 'Y'를 입력하면 설정 시간(120초)이 다 안 지나도 목표 진공(0.5 Torr) 도달 즉시 패스합니다.", steps_ex2)
+
+flow_ex2 = [
+    ('STEP', '[Step 1] 진공 라인 밸브 개방', '5초 대기 (HPV=O)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼ (5초 경과)', ''),
+    ('STEP', '[Step 2] 고진공 배기 (조기통과 Y)', 'Time: 120초 / 목표: VPT <= 0.5 Torr'),
+    ('ARROW', '├─ [조건 충족: VPT <= 0.5 Torr] ➔ ★ 조기통과 (Early Pass, 즉시 진행)', ''),
+    ('ARROW', '└─ [조건 미달: 120초 경과] ➔ ▲ 비상 알람 발생 (Alarm Goto: 99 / Alarm Seq 1)', ''),
+    ('STEP', '[Step 3] 진공 유지 및 다음 공정', '10초 대기 (HPV=C 닫힘)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('PASS', '[공정 정상 완료]', '진공 배기 완료 후 안전 종료')
+]
+
+mmd_ex2 = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+    classDef alarmNode fill:#fee2e2,stroke:#ef4444,color:#b91c1c,font-weight:bold
+
+    Start(["[공정 시작] 예제2_조기통과"]):::startNode
+    S1["[Step 1] 진공 라인 밸브 개방 (5초)<br>• HPV=O"]:::procNode
+    S2["[Step 2] 고진공 배기 120초 대기<br>• 감시: VPT <= 0.5 Torr<br>• 조기통과(Early Pass) = Y"]:::condNode
+    S3["[Step 3] 진공 유지 및 다음 공정 (10초)<br>• HPV=C 닫고 대기"]:::procNode
+    S99["[Step 99] 비상 정지 (Alarm Seq 1)<br>• 120초 내 진공 미도달 (누설 의심)"]:::alarmNode
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 -- "VPT <= 0.5 Torr 도달<br>(남은 시간 무시하고 즉시 통과!)" --> S3
+    S2 -- "120초 경과할 때까지 미도달<br>[Alarm Goto: 99]" --> S99
+    S3 --> EndNode
+```"""
+
+build_scenario_sheet("예제2_조기통과", "진공 배기 조기통과 (Early Pass)", "조기통과 'Y'를 입력하면 설정 시간(120초)이 다 안 지나도 목표 진공(0.5 Torr) 도달 즉시 패스합니다.", steps_ex2, flow_ex2, mmd_ex2)
 
 
 # ========================================================
-# 4. 예제 3 시트: "예제3_수동확인"
+# 4. 예제 3: "예제3_수동확인"
 # ========================================================
 steps_ex3 = [
     {"no": 1, "mainStep": 3, "subStep": 1, "nextStep": "", "op": "[ 시험 압력 가압 진행 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "시험 가스 주입 중", "time": 20, "valves": {"VN1": "O", "PNV": "O"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "시험 압력까지 가스 주입"},
     {"no": 2, "mainStep": 3, "subStep": 2, "nextStep": "", "op": "[ 작업자 육안 확인 대기 (ACK) ]", "cycle": "", "adv": "확인", "ackGoto": "", "alarmGoto": "", "msg": "압력 게이지 지침 확인 후 화면의 [확인] 버튼을 누르세요", "time": 0, "valves": {"VN1": "C", "PNV": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "★핵심: 진행방식에 '확인'을 적으면 작업자가 확인 버튼을 누를 때까지 정지 대기"},
     {"no": 3, "mainStep": 3, "subStep": 3, "nextStep": "", "op": "[ 가압 해제 및 완료 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "작업자 확인 완료 후 배기 진행", "time": 10, "valves": {"HPV_{side}": "O"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "확인 후 자동 진행"}
 ]
-build_scenario_sheet("예제3_수동확인", "작업자 육안 확인 대기 (수동 ACK)", "진행방식 열에 '확인'(또는 ack)을 적으면 작업자가 화면의 [확인] 버튼을 누를 때까지 안전 대기합니다.", steps_ex3)
+
+flow_ex3 = [
+    ('STEP', '[Step 1] 시험 압력 가압 진행', '20초 주입 (VN1=O, PNV=O)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('COND', '[Step 2] 작업자 육안 확인 대기 (ACK)', '진행방식 = 확인 / Time = 0초 무한 대기'),
+    ('ARROW', '│  (현장 게이지 확인 후 화면의 [확인] 버튼 클릭)', ''),
+    ('ARROW', '▼', ''),
+    ('STEP', '[Step 3] 가압 해제 및 완료', '10초 배기 (HPV=O)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('PASS', '[공정 정상 완료]', '작업자 확인 승인 후 배기 완료')
+]
+
+mmd_ex3 = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef ackNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제3_수동확인"]):::startNode
+    S1["[Step 1] 시험 압력 가압 진행 (20초)<br>• VN1=O, PNV=O (가스 주입)"]:::procNode
+    S2{"[Step 2] 작업자 육안 확인 대기<br>• 진행방식 = 확인 (ACK)<br>• 화면 [확인] 클릭 전까지 무한 대기"}:::ackNode
+    S3["[Step 3] 가압 해제 및 배기 (10초)<br>• HPV=O (배기 밸브 Open)"]:::procNode
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> S1
+    S1 -->|20초 가압 완료| S2
+    S2 -- "작업자가 HMI 화면의<br>[확인(ACK)] 버튼 클릭" --> S3
+    S3 -->|10초 배기 완료| EndNode
+```"""
+
+build_scenario_sheet("예제3_수동확인", "작업자 육안 확인 대기 (수동 ACK)", "진행방식 열에 '확인'(또는 ack)을 적으면 작업자가 화면의 [확인] 버튼을 누를 때까지 안전 대기합니다.", steps_ex3, flow_ex3, mmd_ex3)
 
 
 # ========================================================
-# 5. 예제 4 시트: "예제4_지연개폐"
+# 5. 예제 4: "예제4_지연개폐"
 # ========================================================
 steps_ex4 = [
     {"no": 1, "mainStep": 4, "subStep": 1, "nextStep": "", "op": "[ 배관 충격 방지 순차 지연 개폐 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "밸브가 2초, 4초 간격으로 순차 개방됩니다", "time": 15, "valves": {"VN2": "O", "LPV_{side}": "O+2", "HPIV": "O+4"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "★핵심: VN2는 즉시 열림, LPV는 2초 뒤, HPIV는 4초 뒤 순차적으로 열림!"},
     {"no": 2, "mainStep": 4, "subStep": 2, "nextStep": "", "op": "[ 순차 지연 닫힘 제어 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "밸브가 순차적으로 닫힙니다", "time": 10, "valves": {"VN2": "C", "LPV_{side}": "C+2", "HPIV": "C+3"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "★핵심: C+n 문법으로 닫힘 동작도 시차 제어 가능"}
 ]
-build_scenario_sheet("예제4_지연개폐", "밸브 순차 지연 개폐 (시차 제어)", "O+n 또는 C+n 문법(예: O+2, C+3)을 사용하여 밸브가 시간차를 두고 순차 동작하도록 제어합니다.", steps_ex4)
+
+flow_ex4 = [
+    ('STEP', '[Step 1] 충격 방지 순차 지연 개방', '총 15초 유지 (T+0s: VN2=O ➔ T+2s: LPV=O ➔ T+4s: HPIV=O)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼ (15초 경과)', ''),
+    ('STEP', '[Step 2] 순차 지연 닫힘 제어', '총 10초 유지 (T+0s: VN2=C ➔ T+2s: LPV=C ➔ T+3s: HPIV=C)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼ (10초 경과)', ''),
+    ('PASS', '[공정 정상 완료]', '배관 충격 없이 순차 개폐 완료')
+]
+
+mmd_ex4 = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제4_지연개폐"]):::startNode
+    subgraph Step1 ["Step 1: 충격 방지 순차 지연 개방 (총 15초)"]
+        T0["T+0초: VN2 즉시 Open (O)"] --> T2["T+2초: LPV 지연 Open (O+2)"]
+        T2 --> T4["T+4초: HPIV 지연 Open (O+4)"]
+    end
+    subgraph Step2 ["Step 2: 순차 지연 닫힘 제어 (총 10초)"]
+        C0["T+0초: VN2 즉시 Close (C)"] --> C2["T+2초: LPV 지연 Close (C+2)"]
+        C2 --> C3["T+3초: HPIV 지연 Close (C+3)"]
+    end
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> Step1
+    Step1 -->|15초 완료| Step2
+    Step2 -->|10초 완료| EndNode
+```"""
+
+build_scenario_sheet("예제4_지연개폐", "밸브 순차 지연 개폐 (시차 제어)", "O+n 또는 C+n 문법(예: O+2, C+3)을 사용하여 밸브가 시간차를 두고 순차 동작하도록 제어합니다.", steps_ex4, flow_ex4, mmd_ex4)
 
 
 # ========================================================
-# 6. 예제 5 시트: "예제5_반복루프" (★엔진 표준 규격으로 완벽 교정)
+# 6. 예제 5: "예제5_반복루프"
 # ========================================================
 steps_ex5 = [
     {"no": 1, "mainStep": 5, "subStep": 1, "nextStep": "", "op": "[ 루프 준비 - 밸브 초기화 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "퍼지 루프 시작 전 준비", "time": 5, "valves": {"VN1": "C", "PNV": "C", "HPV_{side}": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "반복 퍼지 준비"},
@@ -463,24 +739,104 @@ steps_ex5 = [
     {"no": 3, "mainStep": 5, "subStep": 3, "nextStep": 4, "op": "[ 배기 진행 및 3회 반복 판정 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": 2, "msg": "배기 진행 중 (설정 3회 반복)", "time": 15, "valves": {"VN1": "C", "PNV": "C", "HPV_{side}": "O"}, "mon": "진행횟수", "opCond": ">=", "valCond": "3", "early": "", "alarmSeq": 1, "alarmMsg": "", "rem": "★표준 규칙: 3회 도달(참) 시 Next Step 4로 탈출! 3회 미만(거짓) 시 Alarm Goto 2로 루프백 재진입!"},
     {"no": 4, "mainStep": 5, "subStep": 4, "nextStep": "", "op": "[ 3회 반복 완료 및 정상 종료 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "3회 퍼지 사이클 정상 완료", "time": 5, "valves": {"HPV_{side}": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "루프 완료 후 전 밸브 Close"}
 ]
-build_scenario_sheet("예제5_반복루프", "다회 반복 퍼지 루프 (Cycle 3회)", "진행횟수 >= 3 조건에서 참이면 Next Step(4)으로 탈출하고, 미달 시 Alarm Goto(2)로 되돌아가 사이클을 반복합니다.", steps_ex5)
+
+flow_ex5 = [
+    ('STEP', '[Step 1] 루프 준비 - 밸브 초기화', '5초 대기 (전 밸브 Close)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('STEP', '[Step 2] 퍼지 가스 가압 (루프 시작점)', '10초 유지 (VN1=O, PNV=O / Alarm Goto 복귀 지점)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('COND', '[Step 3] 배기 진행 및 반복 판정', '15초 배기 후 판정: 진행횟수 >= 3 ?'),
+    ('ARROW', '├─ [거짓: 1~2회 미달] ➔ Alarm Goto 2로 재진입 (▲ Step 2 Loop-back)', ''),
+    ('ARROW', '└─ [참: 3회 완료] ➔ Next Step 4로 정상 탈출 (▼ Step 4 진행)', ''),
+    ('STEP', '[Step 4] 3회 반복 완료 및 정상 종료', '5초 대기 (전 밸브 Close)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('PASS', '[공정 정상 완료]', '3회 퍼지 사이클 완료')
+]
+
+mmd_ex5 = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+
+    Start(["[공정 시작] 예제5_반복루프"]):::startNode
+    S1["[Step 1] 루프 준비 - 전 밸브 Close (5초)"]:::procNode
+    S2["[Step 2] 퍼지 가스 가압 (10초)<br>• VN1=O, PNV=O<br>★ 루프 시작점 (Alarm Goto 목적지)"]:::procNode
+    S3{"[Step 3] 배기 진행 (15초)<br>판정: 진행횟수 >= 3 ?"}:::condNode
+    S4["[Step 4] 3회 반복 완료 및 정상 종료 (5초)<br>• 전 밸브 Close"]:::procNode
+    EndNode(["[공정 완료] 정상 종료"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 -- "거짓 (아직 1~2회차)<br>[Alarm Goto: 2 로 루프백]" --> S2
+    S3 -- "참 (목표 3회 완료)<br>[Next Step: 4 로 정상 탈출]" --> S4
+    S4 --> EndNode
+```"""
+
+build_scenario_sheet("예제5_반복루프", "다회 반복 퍼지 루프 (Cycle 3회)", "진행횟수 >= 3 조건에서 참이면 Next Step(4)으로 탈출하고, 미달 시 Alarm Goto(2)로 되돌아가 사이클을 반복합니다.", steps_ex5, flow_ex5, mmd_ex5)
 
 
 # ========================================================
-# 7. 예제 6 시트: "예제6_누출시험" (★신설: 반도체 정밀 누출검사 표준)
+# 7. 예제 6: "예제6_누출시험"
 # ========================================================
 steps_ex6 = [
     {"no": 1, "mainStep": 6, "subStep": 1, "nextStep": "", "op": "[ 배관 시험 진공 배기 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "배관 고진공 형성 중", "time": 30, "valves": {"HPV_{side}": "O", "PNV": "O"}, "mon": "VPT_{side}", "opCond": "<=", "valCond": "0.1", "early": "Y", "alarmSeq": 1, "alarmMsg": "진공 미도달", "rem": "누출 검사 전 배관 진공화"},
     {"no": 2, "mainStep": 6, "subStep": 2, "nextStep": "", "op": "[ 배관 밀폐 및 초기 압력 캡처 ]", "cycle": "CAPTURE:VPT_{side}", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "전 밸브 차단 후 기준 초기압력(P0) 캡처", "time": 5, "valves": {"HPV_{side}": "C", "PNV": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "★핵심: Cycle열의 CAPTURE 지시어로 현재 압력을 초기값으로 메모리 저장"},
-    {"no": 3, "mainStep": 6, "subStep": 3, "nextStep": "", "op": "[ 정밀 감압 누출 감시 (Leak Check) ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": 99, "msg": "60초간 압력 상승량(누출) 정밀 감시 중", "time": 60, "valves": {}, "mon": "VPT_{side}:CAPOFFSET", "opCond": "<=", "valCond": "0.05", "early": "", "alarmSeq": 1, "alarmMsg": "배관 진공 누출 발생 (허용치 초과)", "rem": "★핵심: :CAPOFFSET 문법으로 초기값 대비 60초간 상승량이 0.05 Torr 이내인지 실시간 판정!"},
+    {"no": 3, "mainStep": 6, "subStep": 3, "nextStep": "", "op": "[ 정밀 감압 누출 감시 (Leak Check) ]", "cycle": "", "adv": "자동", "ackGoto": 99, "alarmGoto": 99, "msg": "60초간 압력 상승량(누출) 정밀 감시 중", "time": 60, "valves": {}, "mon": "VPT_{side}:CAPOFFSET", "opCond": "<=", "valCond": "0.05", "early": "", "alarmSeq": 1, "alarmMsg": "배관 진공 누출 발생 (허용치 초과)", "rem": "★핵심: :CAPOFFSET 문법으로 초기값 대비 60초간 상승량이 0.05 Torr 이내인지 실시간 판정!"},
     {"no": 4, "mainStep": 6, "subStep": 4, "nextStep": "", "op": "[ 누출 시험 합격 및 완료 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "누출 시험 합격 - 배관 건전성 확인 완료", "time": 5, "valves": {}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "누출 테스트 정상 통과"},
     {"no": 99, "mainStep": 99, "subStep": 99, "nextStep": "", "op": "[ 비상 정지 및 경보 ]", "cycle": "", "adv": "확인", "ackGoto": "", "alarmGoto": "", "msg": "누출 불합격! 배관 연결부를 점검하세요.", "time": 0, "valves": {"HPV_{side}": "C", "PNV": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": 1, "alarmMsg": "배관 누출 비상 정지", "rem": "누출 발생 시 긴급 점프하는 비상 스텝"}
 ]
-build_scenario_sheet("예제6_누출시험", "정밀 압력 변동 누출 시험 (Leak Check)", "CAPTURE 지시어로 기준 압력을 캡처하고, :CAPOFFSET 문법으로 허용 압력 변동량 이내인지 정밀 감시합니다.", steps_ex6)
+
+flow_ex6 = [
+    ('STEP', '[Step 1] 배관 시험 진공 배기', '30초 배기 (HPV=O, PNV=O / Early Pass Y)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('STEP', '[Step 2] 배관 밀폐 및 초기값 캡처', '5초 대기 (Cycle: CAPTURE:VPT_{side} ➔ 기준압력 P0 저장)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('COND', '[Step 3] 정밀 감압 누출 감시', '60초 감시: VPT_{side}:CAPOFFSET <= 0.05 Torr ?'),
+    ('ARROW', '├─ [참: 상승량 <= 0.05 Torr] ➔ ★ 합격 (Step 4 진행)', ''),
+    ('ARROW', '└─ [거짓: 허용치 초과 누출] ➔ ▲ 비상 알람 발생 (Alarm Goto: 99)', ''),
+    ('STEP', '[Step 4] 누출 시험 합격 및 완료', '5초 대기 (배관 건전성 확인 완료)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('PASS', '[공정 정상 완료]', '누출 시험 통과 후 공정 종료')
+]
+
+mmd_ex6 = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+    classDef alarmNode fill:#fee2e2,stroke:#ef4444,color:#b91c1c,font-weight:bold
+
+    Start(["[공정 시작] 예제6_누출시험"]):::startNode
+    S1["[Step 1] 배관 시험 진공 배기 (30초)<br>• HPV=O, PNV=O"]:::procNode
+    S2["[Step 2] 배관 밀폐 & 초기압력 캡처 (5초)<br>• 전 밸브 Close<br>• Cycle: CAPTURE:VPT_{side} (P0 저장)"]:::procNode
+    S3{"[Step 3] 정밀 누출 감시 (60초)<br>감시: VPT:CAPOFFSET <= 0.05 Torr"}:::condNode
+    S4["[Step 4] 누출 시험 합격 및 완료 (5초)<br>• 배관 건전성 통과 완료"]:::procNode
+    S99["[Step 99] 비상 정지 및 경보 (Alarm Seq 1)<br>• 허용치 초과 누출 발생!"]:::alarmNode
+    EndNode(["[공정 완료]"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 -- "변동량 <= 0.05 Torr<br>(누출 없음 / 합격)" --> S4
+    S3 -- "변동량 > 0.05 Torr<br>(누출 발생 / Alarm Goto 99)" --> S99
+    S4 --> EndNode
+```"""
+
+build_scenario_sheet("예제6_누출시험", "정밀 압력 변동 누출 시험 (Leak Check)", "CAPTURE 지시어로 기준 압력을 캡처하고, :CAPOFFSET 문법으로 허용 압력 변동량 이내인지 정밀 감시합니다.", steps_ex6, flow_ex6, mmd_ex6)
 
 
 # ========================================================
-# 8. 종합본 시트: "Bypass_v1" (실전 전체 양식)
+# 8. 종합본: "Bypass_v1"
 # ========================================================
 steps_bypass = [
     {"no": 1, "mainStep": 11, "subStep": 1, "nextStep": "", "op": "[ 준비 - 전 밸브 초기화 ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "Bypass 공정 시작 - 전 밸브 안전 초기화", "time": 5, "valves": {"VN1": "C", "VN2": "C", "PNV": "C", "GNV": "C", "HPV_{side}": "C", "LPV_{side}": "C", "HPIV": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "★상황 1: 전 밸브 안전 Close 후 5초 대기"},
@@ -493,9 +849,98 @@ steps_bypass = [
     {"no": 8, "mainStep": 11, "subStep": 8, "nextStep": "", "op": "[ 공정 완료 및 전 밸브 안전 Close ]", "cycle": "", "adv": "자동", "ackGoto": "", "alarmGoto": "", "msg": "Bypass 전 공정 정상 완료되었습니다", "time": 5, "valves": {"VN1": "C", "VN2": "C", "PNV": "C", "HPV_{side}": "C", "LPV_{side}": "C", "HPIV": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": "", "alarmMsg": "", "rem": "전 공정 완료 후 안전 닫힘"},
     {"no": 99, "mainStep": 99, "subStep": 99, "nextStep": "", "op": "[ 비상 알람 조치 스텝 ]", "cycle": "", "adv": "확인", "ackGoto": "", "alarmGoto": "", "msg": "이상 발생으로 비상 정지되었습니다. 설비를 점검하세요.", "time": 0, "valves": {"VN1": "C", "VN2": "C", "PNV": "C", "GNV": "C", "HPV_{side}": "C", "LPV_{side}": "C"}, "mon": "", "opCond": "", "valCond": "", "early": "", "alarmSeq": 1, "alarmMsg": "비상 알람 발생 (안전 Close 완료)", "rem": "Step 3에서 알람 시 점프하는 비상 대응 스텝"}
 ]
-build_scenario_sheet("Bypass_v1", "5대 실전 상황 종합 예제", "5가지 상황이 모두 들어간 완성형 종합 실전 시퀀스입니다. 웹 화면에 즉시 업로드 가능합니다.", steps_bypass)
 
-# 파일 저장 (새로운 v4 파일명으로 저장하여 엑셀 프로그램 열림 잠금 완벽 방지)
+flow_bypass = [
+    ('STEP', '[Step 1] 전 밸브 안전 초기화', '5초 대기 (전 밸브 Close)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('STEP', '[Step 2] 1차 질소 공급 및 퍼지', '20초 유지 (VN1=O, PNV=O)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('COND', '[Step 3] 2차 진공 배기 (조기통과 Y)', '120초 (VPT <= 0.5 Torr 시 즉시 패스, 초과 시 Step 99 알람)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('COND', '[Step 4] 작업자 육안 확인 (ACK 대기)', '진행방식 = 확인 (작업자 [확인] 클릭 시까지 대기)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('STEP', '[Step 5] 밸브 순차 지연 개폐 제어', '15초 (VN2=0s ➔ LPV=2s ➔ HPIV=4s)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('STEP', '[Step 6] 3회 반복 퍼지 - 가압', '10초 (루프 시작점 / Alarm Goto 목적지)'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('COND', '[Step 7] 3회 반복 퍼지 - 배기 및 판정', '15초 배기 후 판정: 진행횟수 >= 3 ?'),
+    ('ARROW', '├─ [거짓: 1~2회 미달] ➔ Alarm Goto 6 으로 재진입 (▲ Step 6 Loop)', ''),
+    ('ARROW', '└─ [참: 3회 완료] ➔ Next Step 8 로 정상 탈출 (▼ Step 8 진행)', ''),
+    ('STEP', '[Step 8] 공정 완료 및 전 밸브 Close', '5초 대기'),
+    ('ARROW', '│', ''),
+    ('ARROW', '▼', ''),
+    ('PASS', '[Bypass 종합 공정 정상 완료]', '모든 단계 완벽 수행 완료')
+]
+
+mmd_bypass = """```mermaid
+flowchart TD
+    classDef startNode fill:#1e40af,stroke:#1e3a8a,color:#fff,font-weight:bold
+    classDef procNode fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    classDef condNode fill:#fef3c7,stroke:#f59e0b,color:#b45309,font-weight:bold
+    classDef passNode fill:#d1fae5,stroke:#10b981,color:#047857,font-weight:bold
+    classDef alarmNode fill:#fee2e2,stroke:#ef4444,color:#b91c1c,font-weight:bold
+
+    Start(["[공정 시작] Bypass_v1 종합 실전"]):::startNode
+    S1["[Step 1] 전 밸브 안전 초기화 (5초)"]:::procNode
+    S2["[Step 2] 1차 질소 공급 및 퍼지 (20초)<br>• VN1=O, PNV=O"]:::procNode
+    S3{"[Step 3] 2차 진공 배기 120초<br>감시: VPT <= 0.5 Torr (조기통과 Y)"}:::condNode
+    S4{"[Step 4] 작업자 육안 확인<br>• 진행방식 = 확인 (ACK)"}:::condNode
+    S5["[Step 5] 순차 지연 개방 (15초)<br>• VN2(0s) ➔ LPV(2s) ➔ HPIV(4s)"]:::procNode
+    S6["[Step 6] 3회 반복 퍼지 - 가압 (10초)<br>★ 루프 시작점 (Alarm Goto 목적지)"]:::procNode
+    S7{"[Step 7] 배기 및 3회 반복 판정 (15초)<br>판정: 진행횟수 >= 3 ?"}:::condNode
+    S8["[Step 8] 전 밸브 Close 및 완료 (5초)"]:::procNode
+    S99["[Step 99] 비상 알람 조치 스텝 (Alarm Seq 1)"]:::alarmNode
+    EndNode(["[Bypass 전 공정 정상 완료]"]):::passNode
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 -- "0.5 Torr 도달<br>(조기통과!)" --> S4
+    S3 -- "120초 미도달<br>[Alarm Goto: 99]" --> S99
+    S4 -- "작업자 [확인] 클릭" --> S5
+    S5 --> S6
+    S6 --> S7
+    S7 -- "거짓 (1~2회차 미달)<br>[Alarm Goto: 6 으로 루프백]" --> S6
+    S7 -- "참 (3회 완료)<br>[Next Step: 8 로 정상 탈출]" --> S8
+    S8 --> EndNode
+```"""
+
+build_scenario_sheet("Bypass_v1", "5대 실전 상황 종합 예제", "5가지 상황이 모두 들어간 완성형 종합 실전 시퀀스입니다. 웹 화면에 즉시 업로드 가능합니다.", steps_bypass, flow_bypass, mmd_bypass)
+
+# 파일 저장
 output_path = r"d:\AI_Work\Antigravity\06.CEO\projects\plc-monitoring-v1\GMS_자동진행_시퀀스_표준템플릿_v4.xlsx"
 wb.save(output_path)
-print("완전 복원 및 대폭 보강 완료:", output_path)
+print("플로우차트 탑재 v4 엑셀 생성 완료:", output_path)
+
+# ========================================================
+# [Q-014] 공식 프로토콜: docs/flowcharts/ 폴더에 .mmd 및 .txt 개별 파일 생성
+# ========================================================
+docs_flow_dir = r"d:\AI_Work\Antigravity\06.CEO\projects\plc-monitoring-v1\docs\flowcharts"
+os.makedirs(docs_flow_dir, exist_ok=True)
+
+flow_files = {
+    "ex1_simple_open_close": mmd_ex1,
+    "ex2_early_pass": mmd_ex2,
+    "ex3_manual_ack": mmd_ex3,
+    "ex4_delay_valves": mmd_ex4,
+    "ex5_loop_cycle": mmd_ex5,
+    "ex6_leak_check": mmd_ex6,
+    "bypass_total_sequence": mmd_bypass
+}
+
+for name, code in flow_files.items():
+    clean_code = code.replace("```mermaid\n", "").replace("```", "").strip()
+    mmd_p = os.path.join(docs_flow_dir, f"{name}.mmd")
+    txt_p = os.path.join(docs_flow_dir, f"{name}.txt")
+    with open(mmd_p, "w", encoding="utf-8") as f:
+        f.write(clean_code + "\n")
+    with open(txt_p, "w", encoding="utf-8") as f:
+        f.write(clean_code + "\n")
+
+print(f"[Q-014] 공식 Mermaid 다이어그램 7종 (.mmd, .txt) 생성 완료: {docs_flow_dir}")
