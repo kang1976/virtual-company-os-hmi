@@ -27,7 +27,7 @@ class PwaBridgeService {
   String? _sessionCookie;
   late final HttpClient _client;
 
-  PwaBridgeService({this.baseUrl = 'https://10.219.30.135:3001'}) {
+  PwaBridgeService({this.baseUrl = 'https://10.219.30.135:3004'}) {
     _client = HttpClient();
     _client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
     _client.connectionTimeout = const Duration(seconds: 4);

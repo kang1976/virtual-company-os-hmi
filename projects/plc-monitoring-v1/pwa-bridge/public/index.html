@@ -12,7 +12,7 @@
   // FOUC 방지 — 저장된 테마/글자크기를 스타일 적용 전에 먼저 반영 (S5 설정)
   try {
     var t = localStorage.getItem('plcTheme');
-    if (t === 'light' || t === 'dark' || t === 'oled-black') document.documentElement.dataset.theme = t;
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
     var f = localStorage.getItem('plcFontSize');
     if (f) document.documentElement.style.setProperty('--fs-base', parseInt(f, 10) + 'px');
   } catch (e) {}
@@ -141,9 +141,9 @@
         <div class="stat-row">
           <span class="stat-label">테마</span>
           <span class="seg" id="seg-theme">
+            <button type="button" data-theme="cyber">사이버</button>
             <button type="button" data-theme="dark">다크</button>
             <button type="button" data-theme="light">라이트</button>
-            <button type="button" data-theme="oled-black">OLED</button>
           </span>
         </div>
         <div class="stat-row">

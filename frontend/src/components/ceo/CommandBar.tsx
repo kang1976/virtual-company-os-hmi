@@ -95,6 +95,32 @@ export const CommandBar: React.FC<CommandBarProps> = ({
     }
   }, [latestResult]);
 
+  // 텍스트 내의 URL(http://, https://)을 클릭 가능한 하이퍼링크로 렌더링하는 헬퍼
+  const renderTextWithLinks = (text?: string | null) => {
+    if (!text) return null;
+    const urlRegex = /(https?:\/\/[^\s\)\],]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 font-bold underline inline-flex items-center gap-0.5 mx-0.5 break-all bg-sky-50 dark:bg-sky-950/80 px-1.5 py-0.5 rounded border border-sky-300 dark:border-sky-800 shadow-sm transition-colors cursor-pointer"
+          >
+            <span>{part}</span>
+            <ExternalLink className="w-3 h-3 inline shrink-0" />
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = instruction.trim();
@@ -105,6 +131,8 @@ export const CommandBar: React.FC<CommandBarProps> = ({
     setErrorMsg(null);
     try {
       await onCommandSubmit(trimmed, targetTeam, priority);
+      // 명령 실행 완료 시 즉시 보고서 모달 팝업 강제 활성화
+      setShowResultModal(true);
     } catch (err: any) {
       const msg = err.message || '';
       if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Failed to')) {
@@ -375,9 +403,9 @@ export const CommandBar: React.FC<CommandBarProps> = ({
           </div>
 
           {/* 총평 및 요약 */}
-          <div className="bg-slate-50 dark:bg-slate-950/70 rounded-lg p-3 border border-slate-200 dark:border-slate-800/80 mb-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+          <div className="bg-slate-50 dark:bg-slate-950/70 rounded-lg p-3 border border-slate-200 dark:border-slate-800/80 mb-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-sans whitespace-pre-wrap">
             <span className="font-semibold text-sky-600 dark:text-sky-400 block mb-0.5">총괄 요약 (COO 브리핑):</span>
-            {latestResult.summary || '전 공정 검증 완료 및 4대 장부 최종 마감되었습니다.'}
+            {renderTextWithLinks(latestResult.summary) || '전 공정 검증 완료 및 4대 장부 최종 마감되었습니다.'}
           </div>
 
           {/* COO 최종 종합 품질검수 (Quality Gate) 감사 리포트 */}
@@ -399,7 +427,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                 </span>
               </div>
               <p className="text-slate-700 dark:text-slate-300 mb-2 leading-relaxed">
-                {latestResult.coo_audit.executive_summary}
+                {renderTextWithLinks(latestResult.coo_audit.executive_summary)}
               </p>
               {latestResult.coo_audit.checked_items && latestResult.coo_audit.checked_items.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mb-2 bg-white/80 dark:bg-slate-900/60 p-2 rounded-lg border border-indigo-100 dark:border-slate-800/60">
@@ -413,7 +441,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
               )}
               {latestResult.coo_audit.directive_feedback && (
                 <div className="text-[11px] text-indigo-700 dark:text-indigo-300 italic">
-                  &bull; COO 총평: {latestResult.coo_audit.directive_feedback}
+                  &bull; COO 총평: {renderTextWithLinks(latestResult.coo_audit.directive_feedback)}
                 </div>
               )}
             </div>
@@ -537,7 +565,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                   </button>
                 </div>
                 <div className="text-slate-800 dark:text-slate-200 leading-relaxed font-sans whitespace-pre-wrap text-safe-render">
-                  {latestResult.summary || '전 공정 검증 완료 및 4대 장부 최종 마감되었습니다.'}
+                  {renderTextWithLinks(latestResult.summary) || '전 공정 검증 완료 및 4대 장부 최종 마감되었습니다.'}
                 </div>
               </div>
 
@@ -560,7 +588,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                     </span>
                   </div>
                   <p className="text-slate-800 dark:text-slate-200 mb-3 leading-relaxed text-safe-render">
-                    {latestResult.coo_audit.executive_summary}
+                    {renderTextWithLinks(latestResult.coo_audit.executive_summary)}
                   </p>
                   {latestResult.coo_audit.checked_items && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3 bg-white dark:bg-slate-900 p-2.5 rounded-lg border-2 border-indigo-100 dark:border-slate-800">
@@ -574,7 +602,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                   )}
                   {latestResult.coo_audit.directive_feedback && (
                     <div className="text-[11px] text-indigo-900 dark:text-indigo-300 italic bg-white dark:bg-slate-900/80 p-2.5 rounded-lg border border-indigo-200 dark:border-slate-800/80 leading-relaxed text-safe-render">
-                      &bull; COO 총평: {latestResult.coo_audit.directive_feedback}
+                      &bull; COO 총평: {renderTextWithLinks(latestResult.coo_audit.directive_feedback)}
                     </div>
                   )}
                 </div>
@@ -610,7 +638,7 @@ export const CommandBar: React.FC<CommandBarProps> = ({
                           {task.title}
                         </h5>
                         <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed mb-2.5 text-safe-render line-clamp-2">
-                          {task.deliverable || '산출물이 원장에 동기화되었습니다.'}
+                          {renderTextWithLinks(task.deliverable) || '산출물이 원장에 동기화되었습니다.'}
                         </p>
                         <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-400">
                           <span>담당: <strong className="text-slate-900 dark:text-slate-200 font-bold">{task.assignee}</strong></span>

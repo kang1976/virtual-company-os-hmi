@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수동 바코드 체크 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 수동 바코드 체크" 화면 분리 파일 - 유지보수 메뉴 화면의
+     "바코드 체크" 버튼으로 들어온다. 실린더 2개(A측이면 A1/A2, B측이면 B1/B2 - 현재 측에
+     맞춰 gms.js가 라벨만 동적으로 바꾼다)의 바코드 스캐너 입력칸을 보여준다. 스타일은
+     ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서 id="progressBarcodeCheckBody"
+     컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 수동 바코드 체크 - 바코드 스캐너로 실린더 바코드를 읽어 입력칸(A1/A2 또는 B1/B2)에
+       채운다(스캐너는 키보드 입력으로 동작하므로 일반 텍스트 입력칸이면 충분하다). 실제
+       검증(Gas name 일치 확인 등) 로직은 아직 없음(뼈대) - 확인은 "준비 중" 토스트만.
+       취소는 유지보수 메뉴로 되돌아간다(이미지에는 없지만 다른 화면들과의 일관성을 위해
+       추가). -->
+  <div class="progress-menu-body" id="progressBarcodeCheckBody">
+    <div class="barcode-check-title">[ Gas name 확인 ]</div>
+    <div class="barcode-check-desc">바코드 스캐너를 이용하여<br>실린더 바코드를 읽어 주시기 바랍니다.</div>
+    <div class="progress-btn-group">
+      <div class="barcode-input-row">
+        <span class="purge-count-label" id="barcodeLabel1">A1</span>
+        <input type="text" id="barcodeInput1" class="barcode-input" placeholder="바코드 스캔" />
+      </div>
+      <div class="barcode-input-row">
+        <span class="purge-count-label" id="barcodeLabel2">A2</span>
+        <input type="text" id="barcodeInput2" class="barcode-input" placeholder="바코드 스캔" />
+      </div>
+      <div class="barcode-check-warn">N.G시 담당자에게<br>연락 하시기 바랍니다.</div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="barcodeCheckConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="barcodeCheckCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

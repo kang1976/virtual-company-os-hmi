@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TREND - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 TREND 화면 - 각 시퀀스 화면의 "TREND" 버튼(~10곳)이 전부 이 화면을
+     연다(Operation.js showGmsTrend()). 옆(monitoring.html) 트렌드 모니터링과 같은 느낌으로
+     구성하되, GMS는 태그가 고정(unit1.json의 pts 15개)이라 그 태그들을 체크박스로 켜고 끄는
+     간단한 목록으로 구성했다(범용 변수 관리자는 아님). 실제 차트는 배관도화면 자리에
+     캔버스/미니 카드 그리드로 그린다(gms.js drawGmsTrendChart 등) - 이 화면은 오른쪽 컨트롤만 담당.
+     "이전화면"을 누르면 TREND 열기 전 화면(배관도+조작화면)으로 정확히 되돌아간다.
+     별도 데이터 로그: src/gmsHistory.js의 pt_samples/pt_samples_1m 테이블
+     (/api/gms/history/pt-trend) - 메인 앱의 트렌드 로그(data/trendVariables.json)와는 분리.
+     스타일은 ../gms.css를 그대로 참조. gms.js가 fetch해서 id="progressTrendBody" 컨테이너에
+     주입한다. 태그 체크리스트는 Univer 그리드(#gmsTrendGridContainer, gms-trend-widget.js)로
+     그린다 - 그 위젯 스크립트는 gms.html에 직접 로드되어 있고, gms.js가 openGmsTrend()에서
+     window.initGmsTrendGrid()를 호출해 마운트를 요청한다(이 fragment는 늦게 주입되므로). -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressTrendBody">
+    <!-- 폴링주기/시작/일시정지/정지/기록 불러오기·내보내기 - monitoring.html의 실행 툴바와
+         동일한 개념(gms.js의 gmsTrendRunStatus). GMS는 PT 값이 항상 WS로 계속 들어오지만,
+         이 버튼들은 "지금 화면에 기록/표시할지"를 제어한다(서버쪽 로그는 이 상태와 무관하게
+         항상 계속 쌓인다 - src/gmsHistory.js). -->
+    <div class="trend-toolbar-row">
+      <label>폴링주기 <input type="number" id="trendPollIntervalInput" value="1000" min="200" step="100" style="width:60px;" /> ms</label>
+      <button type="button" class="trend-toolbar-btn primary" id="trendRunStartBtn">▶ 시작</button>
+      <button type="button" class="trend-toolbar-btn" id="trendRunPauseBtn">⏸ 일시정지</button>
+      <button type="button" class="trend-toolbar-btn" id="trendRunStopBtn">⏹ 정지</button>
+    </div>
+    <div class="trend-toolbar-row">
+      <button type="button" class="trend-toolbar-btn" id="trendHistoryImportBtn" title="이전에 저장한 기록(Excel)을 불러와 오프라인으로 봅니다">📈 기록 불러오기</button>
+      <button type="button" class="trend-toolbar-btn" id="trendHistoryExportBtn" title="현재 그려진 기록을 Excel로 저장합니다">📤 기록 내보내기</button>
+      <button type="button" class="trend-toolbar-btn" id="trendModeIndividualBtn" title="선택한 태그마다 작은 그래프로 따로 표시">개별 트렌드</button>
+      <button type="button" class="trend-toolbar-btn primary" id="trendModeTotalBtn" title="선택한 태그를 한 그래프에 겹쳐 표시">Total 트렌드</button>
+      <input type="file" id="trendHistoryImportFile" accept=".xlsx" hidden />
+    </div>
+    <div class="trend-range-row">
+      <button type="button" class="trend-toolbar-btn" id="trendAutoFitBtn" title="Y축을 현재 데이터에 맞게 자동 조정">Auto Fit</button>
+      <label>Y min <input type="number" id="trendYMin" value="0" step="1" /></label>
+      <label>Y max <input type="number" id="trendYMax" value="100" step="1" /></label>
+      <button type="button" class="trend-toolbar-btn" id="trendYSetBtn">Y Set</button>
+      <label>구간(초) <input type="number" id="trendRangeSec" value="60" min="10" step="10" /></label>
+      <button type="button" class="trend-toolbar-btn" id="trendXSetBtn">X Set</button>
+    </div>
+    <div class="trend-range-row">
+      <label>시작 <input type="datetime-local" id="trendXMinInput" step="1" /></label>
+      <label>종료 <input type="datetime-local" id="trendXMaxInput" step="1" /></label>
+      <button type="button" class="trend-toolbar-btn" id="trendXRangeSetBtn">범위 설정</button>
+    </div>
+    <!-- 태그 선택 목록 - Univer 시트(선택/태그/태그설명/현재값 4열). gms.js populateGmsTrendTagList()가
+         window.initGmsTrendGrid()로 마운트+태그 채우기를 요청한다.
+         #gmsTrendGridContainer 자체 CSS(flex:1 1 0; min-height:0 - gms-trend-widget.css)가
+         이 flex 컬럼(#progressTrendBody)의 남은 세로 공간을 전부 차지하도록 만든다. -->
+    <div id="gmsTrendGridContainer"></div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn" id="trendBackBtn">◀ 이전화면</button>
+    </div>
+  </div>
+</body>
+</html>

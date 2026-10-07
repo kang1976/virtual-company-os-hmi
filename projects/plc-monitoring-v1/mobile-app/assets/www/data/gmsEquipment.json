@@ -1,0 +1,53 @@
+{
+  "equipment": [
+    {
+      "id": "unit1",
+      "name": "GAS CABINET",
+      "subName": "OMRON",
+      "maker": "OMRON",
+      "plc": {
+        "series": "CJ",
+        "connType": "TCP",
+        "host": "",
+        "port": 9600
+      }
+    },
+    {
+      "id": "unit2",
+      "name": "VMB",
+      "subName": "OMRON",
+      "maker": "OMRON",
+      "plc": {
+        "series": "CJ",
+        "connType": "TCP",
+        "host": "",
+        "port": 9600
+      }
+    },
+    {
+      "id": "unit3",
+      "name": "BUNDLE",
+      "subName": "OMRON",
+      "maker": "OMRON",
+      "plc": {
+        "series": "CJ",
+        "connType": "TCP",
+        "host": "",
+        "port": 9600
+      }
+    },
+    {
+      "id": "unit4",
+      "name": "BSGS",
+      "subName": "OMRON",
+      "maker": "OMRON",
+      "plc": {
+        "series": "CJ",
+        "connType": "TCP",
+        "host": "",
+        "port": 9600
+      }
+    }
+  ],
+  "savedAt": "2026-09-20T16:50:00.000Z"
+}

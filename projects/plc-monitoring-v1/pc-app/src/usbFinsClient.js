@@ -265,20 +265,47 @@ class UsbFinsClient {
     return { sid, endCode, values };
   }
 
+  _clearEndpointHalts() {
+    return new Promise((resolve) => {
+      try {
+        if (this.epOut && typeof this.epOut.clearHalt === 'function') {
+          this.epOut.clearHalt(() => {
+            if (this.epIn && typeof this.epIn.clearHalt === 'function') {
+              this.epIn.clearHalt(() => resolve());
+            } else {
+              resolve();
+            }
+          });
+        } else {
+          resolve();
+        }
+      } catch (e) {
+        resolve();
+      }
+    });
+  }
+
   _transfer(writeBuf) {
     return new Promise((resolve, reject) => {
       this.epOut.transfer(writeBuf, (errOut) => {
-        if (errOut) return reject(new Error('USB 쓰기 실패: ' + errOut.message));
+        if (errOut) {
+          this._clearEndpointHalts();
+          return reject(new Error('USB 쓰기 실패: ' + errOut.message));
+        }
 
         const tryRead = (attemptsLeft) => {
           this.epIn.transfer(512, (errIn, data) => {
-            if (errIn) return reject(new Error('USB 읽기 실패: ' + errIn.message));
+            if (errIn) {
+              this._clearEndpointHalts();
+              return reject(new Error('USB 읽기 실패: ' + errIn.message));
+            }
             if ((!data || data.length === 0) && attemptsLeft > 0) {
               // PLC가 아직 응답을 준비 못한 경우 - 짧게 대기 후 재시도
-              setTimeout(() => tryRead(attemptsLeft - 1), 20);
+              setTimeout(() => tryRead(attemptsLeft - 1), 15);
               return;
             }
-            resolve(data);
+            // USB 하드웨어 버퍼 안정화를 위해 짧은 딜레이 후 resolve
+            setTimeout(() => resolve(data), 5);
           });
         };
         tryRead(5);

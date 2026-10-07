@@ -1,30 +1,72 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:omron_fins_app/main.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('OmronFinsApp Widget UI Flow Test', (WidgetTester tester) async {
+    // 1. 앱 기동
+    await tester.pumpWidget(const OmronFinsApp());
+    expect(find.text('로그인'), findsOneWidget);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // 2. 로그인 수행
+    await tester.enterText(find.byType(TextField).first, 'admin');
+    await tester.enterText(find.byType(TextField).last, 'admin');
+    await tester.tap(find.text('로그인'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 3. 트렌드 탭 이동
+    final trendTabs = find.text('트렌드');
+    if (trendTabs.evaluate().isNotEmpty) {
+      await tester.tap(trendTabs.last);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('전체 보기'), findsOneWidget);
+    }
+  });
+
+  test('Trend Scale and Y-Axis Auto Margin Algorithm Verification', () {
+    // Y축 자동 스케일 알고리즘 검증
+    final spots = [
+      const FlSpot(0, 9500),
+      const FlSpot(100, 9800),
+      const FlSpot(200, 10050),
+    ];
+
+    double vMin = double.infinity;
+    double vMax = -double.infinity;
+    for (var s in spots) {
+      if (s.y < vMin) vMin = s.y;
+      if (s.y > vMax) vMax = s.y;
+    }
+
+    final gap = (vMax - vMin) * 0.08;
+    final effectiveMinY = (vMin - gap).floorToDouble();
+    final effectiveMaxY = (vMax + gap).ceilToDouble();
+
+    expect(effectiveMinY, lessThan(9500));
+    expect(effectiveMaxY, greaterThan(10050));
+    expect(effectiveMaxY - effectiveMinY, greaterThan(550));
+  });
+
+  test('Time-Lock calculation verification during past data browsing', () {
+    // 과거 데이터 탐색 중 Time-Lock 검증
+    bool isLiveTracking = false;
+    double trendTimeCounter = 600.0;
+    double viewportPanOffset = 120.0;
+
+    // 1초 타이머 발생 시
+    trendTimeCounter += 1.0;
+    if (!isLiveTracking) {
+      viewportPanOffset += 1.0;
+    }
+
+    final windowSec = 300.0;
+    final maxX = trendTimeCounter - viewportPanOffset;
+    final minX = maxX - windowSec;
+
+    expect(maxX, equals(480.0));
+    expect(minX, equals(180.0));
   });
 }

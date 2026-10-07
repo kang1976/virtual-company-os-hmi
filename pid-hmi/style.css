@@ -1,0 +1,530 @@
+/* ============================================================
+   style.css — P&ID HMI 정밀 오버레이 & 실시간 제어 스타일
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #060e18;
+  color: #e0f0ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Consolas', 'Courier New', monospace;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* ── 상단 헤더 바 ── */
+#topbar {
+  width: 100%;
+  background: linear-gradient(180deg, #091728 0%, #050d18 100%);
+  border-bottom: 1px solid #00e5ff33;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+#topbar h1 {
+  color: #00e5ff;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+#topbar .status {
+  color: #00ff88;
+  font-size: 12px;
+  font-weight: bold;
+}
+#topbar .clock {
+  color: #8da4be;
+  font-size: 12px;
+}
+
+/* ── 제어 컨트롤 바 ── */
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 24px;
+  background: #081424;
+  width: 100%;
+  border-bottom: 1px solid #00e5ff22;
+}
+.btn {
+  padding: 6px 14px;
+  border: 1px solid #00e5ff66;
+  background: rgba(0, 229, 255, 0.08);
+  color: #00e5ff;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  background: rgba(0, 229, 255, 0.22);
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+}
+.btn.active {
+  background: rgba(0, 229, 255, 0.3);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.6);
+}
+.btn.danger {
+  border-color: #ff444466;
+  color: #ff5555;
+  background: rgba(255, 68, 68, 0.08);
+}
+.btn.danger:hover {
+  background: rgba(255, 68, 68, 0.25);
+  border-color: #ff4444;
+}
+
+/* ── 메인 캔버스 ── */
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 14px;
+}
+
+#pid-container {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #00e5ff22;
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  background: #0b1929;
+}
+
+#pid-bg {
+  display: block;
+  max-height: calc(100vh - 120px);
+  width: auto;
+  border-radius: 6px;
+}
+
+/* ── 가스 유동 발광 애니메이션 SVG 레이어 (배관 정중앙 x=224 / x=636) ── */
+#pipe-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  mix-blend-mode: screen;
+}
+
+/* 1. 외곽 강렬한 적색 네온 플라즈마 글로우 */
+.gas-glow {
+  fill: none;
+  stroke: #ff0033;
+  stroke-width: 6.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px #ff0033) drop-shadow(0 0 16px rgba(255, 0, 50, 0.9));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.gas-glow.active {
+  opacity: 0.9;
+}
+
+/* 2. 상향 가스 흐름 펄스 레이저선 (연속 이동 애니메이션) */
+.gas-flow {
+  fill: none;
+  stroke: #ff2a4b;
+  stroke-width: 4.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 12 16;
+  filter: drop-shadow(0 0 6px #ff0033);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.gas-flow.active {
+  opacity: 1;
+  animation: gas-flow-anim 0.65s linear infinite;
+}
+
+/* 3. 중심 초고온 화이트 플라즈마 코어선 */
+.gas-core {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 12 16;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.gas-core.active {
+  opacity: 0.95;
+  animation: gas-flow-anim 0.65s linear infinite;
+}
+
+/* 4. VENT 라인 화이트 네온 플라즈마 글로우 */
+.vent-glow {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 6.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px #ffffff) drop-shadow(0 0 20px rgba(255, 255, 255, 0.95));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.vent-glow.active {
+  opacity: 0.95;
+}
+
+.vent-flow {
+  fill: none;
+  stroke: #e0f4ff;
+  stroke-width: 4.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 12 16;
+  filter: drop-shadow(0 0 8px #ffffff);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.vent-flow.active {
+  opacity: 1;
+  animation: gas-flow-anim 0.65s linear infinite;
+}
+
+.vent-core {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 12 16;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.vent-core.active {
+  opacity: 1;
+  animation: gas-flow-anim 0.65s linear infinite;
+}
+
+@keyframes gas-flow-anim {
+  0%   { stroke-dashoffset: 28; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* ── 공통 오버레이 위치 ── */
+.overlay {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  z-index: 10;
+}
+
+/* ── 1. PT 압력 센서 카드 (단위 옆 배치, 세로/가로 정중앙 정렬, 파트명 삭제) ── */
+.pt-card {
+  pointer-events: auto;
+  background: #081423;
+  border: 2px solid #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7), inset 0 0 6px rgba(0, 229, 255, 0.25);
+  border-radius: 6px;
+  width: 126px;
+  height: 38px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  cursor: default;
+  transition: all 0.2s ease;
+}
+.pt-card:hover {
+  border-color: #ffffff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 1);
+}
+.pt-card .val {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+}
+.pt-card .unit {
+  color: #00e5ff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── 2. Air Valve 반원형(Dome) 액추에이터 ── */
+.valve-led {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 25px;
+  height: 27px;
+  border-radius: 14px 0 0 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Lamp OFF: 적색 흐리게 */
+.valve-led.closed {
+  background: radial-gradient(circle at 40% 40%, #7a151b, #330508);
+  border: 1.5px solid rgba(255, 60, 60, 0.4);
+  opacity: 0.75;
+  box-shadow: none;
+}
+/* Lamp ON: 적색 형광에 글로우 약간 */
+.valve-led.open {
+  background: radial-gradient(circle at 35% 35%, #ff8888, #ff1a2b);
+  border: 1.5px solid #ffa0a0;
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(255, 40, 60, 0.9), inset 0 0 4px #ffffff88;
+}
+.valve-led:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+/* ── 2b. Vent Valve (White Glow 액추에이터) ── */
+.vent-valve-led {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Vent Lamp OFF: 은회색 다크 */
+.vent-valve-led.closed {
+  background: radial-gradient(circle at 40% 40%, #5d6874, #1a222a);
+  border: 1.5px solid rgba(220, 230, 240, 0.4);
+  opacity: 0.75;
+  box-shadow: none;
+}
+/* Vent Lamp ON: 순백색 강렬한 화이트 글로우 */
+.vent-valve-led.open {
+  background: radial-gradient(circle at 35% 35%, #ffffff, #d8eeff);
+  border: 1.5px solid #ffffff;
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 1), 0 0 24px rgba(255, 255, 255, 0.8), inset 0 0 6px #ffffff;
+}
+.vent-valve-led:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+/* ── 3. V/S (Valve Shutter) 타원형 테두리 형광 글로우 ── */
+.vs-led {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 32px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+}
+/* V/S OFF: 흐린 적색 테두리 */
+.vs-led.closed {
+  border: 2.5px solid rgba(255, 60, 60, 0.4);
+  background: rgba(255, 20, 20, 0.1);
+  box-shadow: none;
+  opacity: 0.65;
+}
+/* V/S ON: 밝은 형광 적색 테두리 + 네온 글로우 */
+.vs-led.open {
+  border: 2.5px solid #ff2233;
+  background: rgba(255, 30, 30, 0.3);
+  opacity: 1;
+  box-shadow: 0 0 12px #ff2233, inset 0 0 6px #ff2233;
+}
+.vs-led:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+/* ── 4. AG (Auto Guard) 사이언 네온 링 ── */
+.ag-ring {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+}
+/* AG OFF: 흐린 링 */
+.ag-ring.closed {
+  border: 2.5px solid rgba(0, 229, 255, 0.35);
+  background: rgba(0, 229, 255, 0.05);
+  box-shadow: none;
+  opacity: 0.6;
+}
+/* AG ON: 밝은 사이언 형광 네온 글로우 */
+.ag-ring.open {
+  border: 2.5px solid #00e5ff;
+  background: rgba(0, 229, 255, 0.25);
+  opacity: 1;
+  box-shadow: 0 0 12px #00e5ff, inset 0 0 6px #00e5ff;
+}
+.ag-ring:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+/* ── 5. 실린더 상부 잔량 디스플레이 (LV) (사이언 링 아래 간섭 방지) ── */
+.level-display {
+  background: #020c16;
+  border: 1.5px solid #00e5ff;
+  border-radius: 4px;
+  width: 72px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  white-space: nowrap;
+}
+.level-display .tag {
+  color: #8da4be;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.level-display .val {
+  color: #00e5ff;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.8);
+}
+.level-display .unit {
+  color: #00e5ff;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+/* ── 6. 실린더 잔량 세로 LED 바 (실시간 높이 연동 & 3D 슬롯 완벽 일치) ── */
+.level-bar-box {
+  background: #041008;
+  border: 1.5px solid #00ff8866;
+  border-radius: 2px;
+  width: 12px;
+  height: 171px;
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+.level-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #00ff88 0%, #00cc66 60%, #008844 100%);
+  box-shadow: 0 0 10px #00ff88;
+  transition: height 0.35s ease, background 0.35s ease;
+  position: relative;
+}
+/* LED 바 세그먼트 줄무늬 효과 */
+.level-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent,
+    transparent 5px,
+    rgba(4, 16, 8, 0.8) 5px,
+    rgba(4, 16, 8, 0.8) 7px
+  );
+}
+
+/* ── 7. 실린더 자켓 바로 밑 전용 자켓온도 디스플레이 (TEMP) ── */
+.temp-display {
+  background: #031408;
+  border: 1.5px solid #00ff88;
+  border-radius: 4px;
+  width: 72px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+  white-space: nowrap;
+}
+.temp-display .val {
+  color: #00ff88;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 0 8px #00ff88;
+}
+.temp-display .unit {
+  color: #00ff88;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* ── 8. 실린더 로드셀 저울 (WEIGHT) (하단 베이스 프레임 중앙) ── */
+.weight-display {
+  background: #041220;
+  border: 1.5px solid #00e5ff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.7);
+  border-radius: 4px;
+  width: 96px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+.weight-display .val {
+  color: #00e5ff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+}
+.weight-display .unit {
+  color: #00e5ff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── 하단 연결 상태 ── */
+#ws-status {
+  position: fixed;
+  bottom: 12px;
+  right: 18px;
+  background: rgba(5, 12, 22, 0.9);
+  border: 1px solid #00e5ff33;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 11px;
+  color: #a0b5cc;
+  backdrop-filter: blur(4px);
+  z-index: 100;
+}
+#ws-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+#ws-dot.connected    { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+#ws-dot.disconnected { background: #ff4444; box-shadow: 0 0 8px #ff4444; }
+#ws-dot.mock         { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }

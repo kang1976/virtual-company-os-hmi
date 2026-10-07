@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>가압시험 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 교환후+L 가압시험" 화면 분리 파일 - 3차 배관청소 다음,
+     "교환후" 자동 진행의 두 번째 화면(Status "+L" - 3P → +L → [VT 옵션] → 4P 순서). 서브시퀀스
+     엑셀 엔진(gms-sub-sequence-runner.js, ns='afterPlusL')으로 실행 - 교환전 -L
+     (exchangePressureTest)과 동일한 CAPTURE+분단위 반복판정 디자인(초기값/현재값 표시)이지만
+     안전조건 방향은 반대(가압 시험이라 압력이 하한 아래로 새면 알람). 실제 내용은
+     data/gmsSubSequences/AfterPlusL_v1.json(아직 뼈대, 밸브/조건 추정치 - "서브시퀀스 엑셀
+     내보내기"로 받아 채운 뒤 "불러오기"로 반영). 완료 시 advanceToNextEnabledStatus로 다음
+     Status(VT 사용 옵션에 따라 -VT 또는 4P)로 넘어간다. 스타일은 ../gms.css를 그대로
+     참조(복사 아님). gms.js가 fetch해서 id="progressExchangeAfterPressureTestBody" 컨테이너에
+     주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressExchangeAfterPressureTestBody">
+    <div class="step-badges-lg">
+      <span class="step-badge-lg done">3P</span>
+      <span class="step-badge-lg blinking">+L</span>
+      <span class="step-badge-lg" data-vt-badge>-VT</span>
+      <span class="step-badge-lg">4P</span>
+      <span class="step-badge-lg">PC</span>
+    </div>
+
+    <div id="exchangeAfterPressureTestIdle">
+      <div class="progress-menu-desc">가압시험 구간을 준비하는 중입니다...</div>
+      <div class="sub-seq-last-alarm" id="exchangeAfterPressureTestLastAlarm"></div>
+      <div class="purge-count-panel" id="exchangeAfterPressureTestIdleCycleInfo" style="display:none;">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정시간(분) :</span>
+          <span class="purge-count-box">[ <span id="exchangeAfterPressureTestIdleCycleTarget" class="purge-count-value">-</span> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행시간(분) :</span>
+          <span class="purge-count-box">[ <span id="exchangeAfterPressureTestIdleCycleCurrent" class="purge-count-value">-</span> ]</span>
+        </div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="exchangeAfterPressureTestExecuteBtn" style="margin:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestIdleCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestIdleTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestIdleExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestIdleExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="exchangeAfterPressureTestIdleExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="exchangeAfterPressureTestPanel" style="display:none;">
+      <div class="sub-seq-step-label" id="exchangeAfterPressureTestStepLabel">Main 1 - Sub 1</div>
+      <div class="sub-seq-operation" id="exchangeAfterPressureTestOperation">-</div>
+      <div class="sub-seq-message" id="exchangeAfterPressureTestMessage">-</div>
+      <div class="sub-seq-valve-diff" id="exchangeAfterPressureTestValveDiff"></div>
+      <div class="sub-seq-timer" id="exchangeAfterPressureTestTimer">-</div>
+      <div class="sub-seq-acc-time" id="exchangeAfterPressureTestAccTime">누적 경과시간: 0초</div>
+      <div class="sub-seq-alarm-banner" id="exchangeAfterPressureTestAlarmBanner" style="display:none;">
+        <div class="sub-seq-last-alarm" id="exchangeAfterPressureTestPanelAlarmMsg"></div>
+      </div>
+      <div class="progress-btn-group">
+        <!-- 초기값/현재값(HPT_{side})은 안정화 대기 Step에 최초 도달했을 때부터 표시된다
+             (교환전 -L 감압시험 화면과 동일한 구성). -->
+        <div class="purge-count-panel" id="exchangeAfterPressureTestCycleInfo" style="display:none;">
+          <div class="purge-count-row">
+            <span class="purge-count-label" id="exchangeAfterPressureTestInitialLabel">초기값(HPT) :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPressureTestCaptureInitial" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label" id="exchangeAfterPressureTestCurrentLabel">현재값(HPT) :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPressureTestCaptureCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">압력변동기준 :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPressureTestCaptureLimit" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정시간(분) :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPressureTestCycleTarget" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행시간(분) :</span>
+            <span class="purge-count-box">[ <span id="exchangeAfterPressureTestCycleCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+        </div>
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="exchangeAfterPressureTestAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestPauseBtn" style="margin:0;">일시정지</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestResetBtn" style="margin:0;">초기화</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="exchangeAfterPressureTestExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="exchangeAfterPressureTestExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+  </div>
+</body>
+</html>

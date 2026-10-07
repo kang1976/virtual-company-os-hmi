@@ -1422,3 +1422,16 @@ fetch('/api/grid/status')
     if (d.ok && d.status) setGridPollStatusUI(d.status);
   })
   .catch(() => {});
+
+// 상단 줌 컨트롤과의 동기화
+window.addEventListener('setGridZoom', (e) => {
+  try {
+    const sheet = getSheet();
+    if (sheet && typeof sheet.setZoomRatio === 'function' && e.detail && e.detail.zoom) {
+      sheet.setZoomRatio(e.detail.zoom);
+    }
+  } catch (err) {
+    console.warn('레시피 그리드 줌 적용 실패:', err);
+  }
+});
+

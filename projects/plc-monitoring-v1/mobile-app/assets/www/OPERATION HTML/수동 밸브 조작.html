@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수동 밸브 조작 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 수동 밸브 조작" 화면 분리 파일. 스타일은 ../gms.css를
+     그대로 참조(복사 아님). gms.js가 fetch해서 id="progressManualValveBody" 컨테이너에
+     주입한 뒤, renderManualValveGrid()가 #manualValveGrid 안을 실제 밸브 버튼으로 채운다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 수동밸브 조작 - 유지보수 메뉴의 첫 항목. A/B측 전용 밸브(_A/_B 접미사, AG 포함)와
+       공통 밸브(HPIV/PIV/PNV/PNBV/GNV/VN1/VN2)를 3열 격자로 배치, 우측에 Q/C(PT 이력 로그)/
+       취소/확인 버튼을 둔다. unit1.json의 밸브 25개 전부가 실제 점멸+확인+쓰기로 동작한다
+       (인터락 로직은 다음 단계). 행 수는 항목 개수에 맞춰 자동이고(.valve-grid의
+       grid-auto-rows:1fr), 세로 폭은 항상 균등하다. H/T는 밸브가 아니라 히터 조작
+       화면(히터 조작.html)으로 넘어가는 버튼이다. -->
+
+  <div class="progress-menu-body" id="progressManualValveBody">
+    <div class="valve-grid-layout">
+      <div class="valve-grid" id="manualValveGrid"></div>
+      <div class="valve-grid-side-actions">
+        <button type="button" class="valve-side-btn" id="manualValveQcBtn" style="flex:2;">Q<br>/<br>C</button>
+        <button type="button" class="valve-side-btn" id="manualValveCancelBtn" style="flex:2;">취소</button>
+        <button type="button" class="valve-side-btn primary" id="manualValveConfirmBtn" style="flex:1;">확인</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

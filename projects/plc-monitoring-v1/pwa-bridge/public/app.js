@@ -47,6 +47,78 @@ async function showAppVersion() {
 }
 showAppVersion();
 
+/* ────────── 설정 및 테마 관리 ────────── */
+function applyTheme(theme) {
+  const valid = ['cyber', 'dark', 'light'].includes(theme) ? theme : 'cyber';
+  document.documentElement.setAttribute('data-theme', valid);
+  localStorage.setItem('pwa_theme', valid);
+  document.querySelectorAll('#seg-theme button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.theme === valid);
+  });
+}
+
+function applyFontSize(size) {
+  const s = ['15', '16', '18'].includes(String(size)) ? String(size) : '16';
+  document.documentElement.style.fontSize = s + 'px';
+  localStorage.setItem('pwa_fs', s);
+  document.querySelectorAll('#seg-fs button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.fs === s);
+  });
+}
+
+// 앱 시작 시 테마/글자크기 즉시 적용 (로그인 화면 포함)
+applyTheme(localStorage.getItem('pwa_theme') || 'cyber');
+applyFontSize(localStorage.getItem('pwa_fs') || '16');
+
+let wakeLockObj = null;
+async function setWakeLock(enabled) {
+  if (enabled && 'wakeLock' in navigator) {
+    try {
+      wakeLockObj = await navigator.wakeLock.request('screen');
+    } catch { wakeLockObj = null; }
+  } else if (wakeLockObj) {
+    try { await wakeLockObj.release(); } catch {}
+    wakeLockObj = null;
+  }
+}
+
+function initSettings() {
+  const theme = localStorage.getItem('pwa_theme') || 'cyber';
+  applyTheme(theme);
+  const fs = localStorage.getItem('pwa_fs') || '16';
+  applyFontSize(fs);
+
+  const sh = $('settings-host');
+  if (sh) sh.textContent = location.host;
+
+  // 이벤트 리스너 중복 방지 플래그
+  if (initSettings.bound) return;
+  initSettings.bound = true;
+
+  const segTheme = $('seg-theme');
+  if (segTheme) {
+    segTheme.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-theme]');
+      if (btn) applyTheme(btn.dataset.theme);
+    });
+  }
+
+  const segFs = $('seg-fs');
+  if (segFs) {
+    segFs.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-fs]');
+      if (btn) applyFontSize(btn.dataset.fs);
+    });
+  }
+
+  const chkWake = $('chk-wakelock');
+  if (chkWake) {
+    chkWake.addEventListener('change', (e) => {
+      setWakeLock(e.target.checked);
+    });
+  }
+}
+
 /* ────────── 세션 / 화면 전환 ────────── */
 
 async function checkSession() {
@@ -655,7 +727,7 @@ function markSeg(segId, attr, value) {
 }
 
 function applyTheme(theme, save) {
-  if (theme !== 'light' && theme !== 'dark' && theme !== 'oled-black') theme = 'dark';
+  if (theme !== 'light' && theme !== 'dark') theme = 'dark';
   document.documentElement.dataset.theme = theme;
   markSeg('seg-theme', 'theme', theme);
   if (save) lsSet('plcTheme', theme);

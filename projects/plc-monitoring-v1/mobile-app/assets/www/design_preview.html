@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLC Monitoring - 사이버네틱 다크 테크 (Velocity Grid Style) 실시간 프리뷰</title>
+<style>
+  :root {
+    --bg: #0b0f19;
+    --panel: #131b2e;
+    --panel-border: rgba(56, 189, 248, 0.16);
+    --panel-border-glow: rgba(56, 189, 248, 0.35);
+    --text: #f1f5f9;
+    --muted: #8493a8;
+    --cyan: #00f0ff;
+    --cyan-glow: rgba(0, 240, 255, 0.4);
+    --lime: #a3e635;
+    --lime-glow: rgba(163, 230, 53, 0.4);
+    --amber: #fbbf24;
+    --amber-glow: rgba(251, 191, 36, 0.4);
+    --red: #f43f5e;
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 1px 1px var(--panel-border), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; }
+
+  .preview-top {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--panel); padding: 16px 24px; border-radius: 14px;
+    border: 1px solid var(--panel-border); box-shadow: var(--card-shadow);
+    margin-bottom: 24px;
+  }
+  .preview-top h1 { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; }
+  .logo-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #00f0ff, #3b82f6); box-shadow: 0 0 15px var(--cyan-glow); }
+
+  /* 캡슐 탭 */
+  .capsule-tabs {
+    display: inline-flex; background: rgba(11, 15, 25, 0.8); padding: 4px;
+    border-radius: 30px; border: 1px solid rgba(255,255,255,0.08); gap: 4px;
+  }
+  .capsule-tab {
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    color: var(--muted); cursor: pointer; text-decoration: none; transition: all 0.2s;
+  }
+  .capsule-tab.active {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 12px var(--cyan-glow);
+  }
+
+  .grid-layout { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+
+  .card {
+    background: var(--panel); border-radius: 14px; border: 1px solid var(--panel-border);
+    padding: 20px; box-shadow: var(--card-shadow); display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { border-color: var(--panel-border-glow); }
+
+  /* KPI 카드 */
+  .kpi-row { grid-column: span 12; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .kpi-card {
+    background: rgba(19, 27, 46, 0.85); border-radius: 12px; border: 1px solid var(--panel-border);
+    padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; position: relative;
+    box-shadow: var(--card-shadow);
+  }
+  .kpi-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .kpi-val { font-size: 28px; font-weight: 900; color: #fff; font-family: "JetBrains Mono", monospace; letter-spacing: -0.5px; }
+  .kpi-val span { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .sparkline { height: 36px; width: 100%; stroke: var(--cyan); fill: none; stroke-width: 2.5; filter: drop-shadow(0 0 6px var(--cyan-glow)); }
+
+  /* 중앙 차트 카드 */
+  .main-chart-card { grid-column: span 8; min-height: 380px; }
+  .side-card { grid-column: span 4; }
+
+  .card-title { font-size: 15px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .status-badge-live {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px;
+    background: rgba(0, 240, 255, 0.12); color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.3);
+    font-size: 11px; font-weight: 800; text-transform: uppercase;
+  }
+  .status-dot-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: pulse 1.5s infinite; }
+
+  /* 차트 캔버스 가상 렌더 */
+  .chart-mockup {
+    flex: 1; min-height: 240px; background: rgba(11, 15, 25, 0.6); border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; padding: 14px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .chart-grid-lines {
+    position: absolute; inset: 0;
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  }
+  .chart-curve-svg { width: 100%; height: 180px; position: relative; z-index: 2; }
+
+  /* 3D 네온 버튼 */
+  .btn-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .btn-cyber {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 9px 18px; font-size: 13px; font-weight: 800; border-radius: 8px;
+    cursor: pointer; user-select: none; transition: all 0.1s ease-in-out;
+    outline: none; border: 1px solid transparent;
+  }
+  .btn-cyber-cyan {
+    background: linear-gradient(180deg, #00f0ff 0%, #0284c7 100%);
+    color: #03121f; font-weight: 900;
+    box-shadow: 0 3px 0 #0369a1, 0 0 16px var(--cyan-glow);
+  }
+  .btn-cyber-cyan:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #0369a1, 0 0 22px var(--cyan-glow); }
+  .btn-cyber-cyan:active { transform: translateY(2px); box-shadow: 0 1px 0 #0369a1; }
+
+  .btn-cyber-lime {
+    background: linear-gradient(180deg, #bef264 0%, #65a30d 100%);
+    color: #142a04; font-weight: 900;
+    box-shadow: 0 3px 0 #4d7c0f, 0 0 16px var(--lime-glow);
+  }
+  .btn-cyber-lime:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #4d7c0f, 0 0 22px var(--lime-glow); }
+  .btn-cyber-lime:active { transform: translateY(2px); box-shadow: 0 1px 0 #4d7c0f; }
+
+  .btn-cyber-dark {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: var(--text); border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 3px 0 #020617;
+  }
+  .btn-cyber-dark:hover { border-color: var(--cyan); color: var(--cyan); transform: translateY(-1px); }
+  .btn-cyber-dark:active { transform: translateY(2px); }
+
+  /* 게이지 바 */
+  .gauge-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .gauge-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .gauge-bar-track { height: 8px; background: rgba(11, 15, 25, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+  .gauge-bar-fill { height: 100%; border-radius: 4px; }
+  .fill-cyan { background: linear-gradient(90deg, #0284c7, #00f0ff); box-shadow: 0 0 8px var(--cyan); }
+  .fill-lime { background: linear-gradient(90deg, #65a30d, #a3e635); box-shadow: 0 0 8px var(--lime); }
+  .fill-amber { background: linear-gradient(90deg, #d97706, #fbbf24); box-shadow: 0 0 8px var(--amber); }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+</style>
+</head>
+<body>
+
+<div class="preview-top">
+  <h1>
+    <div class="logo-icon"></div>
+    PLC Telemetry &amp; SCADA Grid
+    <span class="status-badge-live"><span class="status-dot-pulse"></span> Live 12ms</span>
+  </h1>
+
+  <div class="capsule-tabs">
+    <div class="capsule-tab active">📊 PLC 모니터링</div>
+    <div class="capsule-tab">📈 트렌드 모니터링</div>
+    <div class="capsule-tab">📋 레시피 배포/비교</div>
+    <div class="capsule-tab">⛽ GMS 모니터링</div>
+    <div class="capsule-tab">⚙️ 설정</div>
+  </div>
+</div>
+
+<div class="grid-layout">
+  <!-- KPI 카드 4종 -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-head"><span>PLC 스캔 주기</span> <span style="color:var(--cyan);">+0.2ms</span></div>
+      <div class="kpi-val">12.4 <span>ms</span></div>
+      <svg class="sparkline" viewBox="0 0 100 25"><path d="M0,20 Q20,10 40,16 T80,8 T100,12" fill="none"/></svg>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head"><span>통신 응답 속도</span> <span style="color:var(--lime);">99.9%</span></div>
+      <div class="kpi-val">4.2 <span>ms</span></div>
+      <svg class="sparkline" viewBox="0 0 100 25" style="stroke:var(--lime);"><path d="M0,18 Q30,6 60,14 T100,5" fill="none"/></svg>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head"><span>챔버 A1 압력 (PT1)</span> <span style="color:var(--amber);">정상 범위</span></div>
+      <div class="kpi-val">14.70 <span>Torr</span></div>
+      <svg class="sparkline" viewBox="0 0 100 25" style="stroke:var(--amber);"><path d="M0,12 Q25,18 50,10 T100,11" fill="none"/></svg>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head"><span>가스 유량 (MFC1)</span> <span style="color:var(--cyan);">가동 중</span></div>
+      <div class="kpi-val">82.5 <span>sccm</span></div>
+      <svg class="sparkline" viewBox="0 0 100 25"><path d="M0,22 Q30,12 60,8 T100,4" fill="none"/></svg>
+    </div>
+  </div>
+
+  <!-- 메인 트렌드 차트 -->
+  <div class="card main-chart-card">
+    <div class="card-title">
+      <span>📈 실시간 멀티채널 트렌드 파형 분석</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-cyber btn-cyber-cyan" style="padding:4px 12px;font-size:12px;">Auto Fit</button>
+        <button class="btn-cyber btn-cyber-dark" style="padding:4px 12px;font-size:12px;">Y-Axis Set</button>
+      </div>
+    </div>
+    <div class="chart-mockup">
+      <div class="chart-grid-lines"></div>
+      <svg class="chart-curve-svg" viewBox="0 0 500 150" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="gradCyan" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
+          </linearGradient>
+          <linearGradient id="gradLime" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#a3e635" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#a3e635" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <!-- 영역 채우기 -->
+        <path d="M0,120 Q80,30 160,90 T320,40 T440,70 L500,50 L500,150 L0,150 Z" fill="url(#gradCyan)"/>
+        <!-- 네온 라인 1 (Cyan) -->
+        <path d="M0,120 Q80,30 160,90 T320,40 T440,70 L500,50" fill="none" stroke="#00f0ff" stroke-width="3" style="filter:drop-shadow(0 0 8px #00f0ff);"/>
+        <!-- 네온 라인 2 (Lime) -->
+        <path d="M0,140 Q100,110 220,130 T380,90 T500,100" fill="none" stroke="#a3e635" stroke-width="2.5" style="filter:drop-shadow(0 0 6px #a3e635);"/>
+      </svg>
+    </div>
+    <div class="btn-grid">
+      <button class="btn-cyber btn-cyber-cyan">🚀 고속 폴링 시작</button>
+      <button class="btn-cyber btn-cyber-lime">💾 스냅샷 비교판정</button>
+      <button class="btn-cyber btn-cyber-dark">⏸️ 일시 정지</button>
+      <button class="btn-cyber btn-cyber-dark">📤 Excel 내보내기</button>
+    </div>
+  </div>
+
+  <!-- 사이드 장치 상태 & 게이지 -->
+  <div class="card side-card">
+    <div class="card-title">
+      <span>⚡ 실시간 장치 &amp; 밸브 상태</span>
+      <span style="font-size:12px;color:var(--lime);font-weight:700;">ALL OK</span>
+    </div>
+
+    <div class="gauge-row">
+      <div class="gauge-label"><span>MFC1 질소 유량</span> <span>82.5%</span></div>
+      <div class="gauge-bar-track"><div class="gauge-bar-fill fill-cyan" style="width:82.5%;"></div></div>
+    </div>
+    <div class="gauge-row">
+      <div class="gauge-label"><span>V1 챔버 진공도</span> <span>94.0%</span></div>
+      <div class="gauge-bar-track"><div class="gauge-bar-fill fill-lime" style="width:94%;"></div></div>
+    </div>
+    <div class="gauge-row">
+      <div class="gauge-label"><span>히터 라인 A 온도</span> <span>68.2%</span></div>
+      <div class="gauge-bar-track"><div class="gauge-bar-fill fill-amber" style="width:68.2%;"></div></div>
+    </div>
+
+    <div style="margin-top:auto;padding-top:14px;border-top:1px solid var(--panel-border);">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:700;">통신 프로토콜 연결 상태</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(11,15,25,0.8);padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+        <span style="font-size:13px;font-weight:700;">Omron CJ2H (UDP:9600)</span>
+        <span style="color:var(--lime);font-weight:800;font-size:12px;">CONNECTED</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

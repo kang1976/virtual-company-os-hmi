@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>압력조정 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 압력조정" 화면 분리 파일. "조정모드" 화면(압력 조정 모드.html)의
+     "압력조정" 버튼으로 들어온다(Operation.js의 adjustModePressureBtn). PT/Weight 센서의
+     아날로그 원시값을 실제 공학단위 값으로 환산하는 MAX/분해능/OFFSET을 편집하는 화면 -
+     아직 실제 아날로그 배선 전이라 "ANALOG VALUE1"(0~분해능 카운트)은 사용자가 직접
+     입력하는 테스트값이다. "ANALOG VALUE2"(mA/V)는 분해능+ANALOG VALUE1만으로 계산하는
+     읽기 전용 계측기 환산값(4.00~20.00mA와 1.000~5.000V는 같은 0~100% 신호를 표현하는
+     방식이라 동시에 보여준다 - 별도 입력/타입 선택 불필요). "현재값"의 공학단위 환산 공식은
+     그대로 ANALOG VALUE1/분해능 비율을 쓴다. 스타일은 ../gms.css를 그대로 참조. gms.js가
+     fetch해서 id="progressPressureAdjustBody" 컨테이너에 주입하고,
+     public/gms-pt-calibration.js가 표 렌더링/탭 전환/키패드 입력/열 너비 조절/저장을
+     전담한다(gms-sequence-editor.js와 같은 관심사 분리 패턴). -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressPressureAdjustBody">
+    <div class="progress-menu-desc">아날로그 센서 값을 실제 단위로 환산하는 MAX·분해능·OFFSET을 편집합니다.</div>
+    <div class="pt-calib-tabs">
+      <button type="button" class="pt-calib-tab" id="ptCalibTab1Btn"></button>
+      <button type="button" class="pt-calib-tab" id="ptCalibTab2Btn"></button>
+    </div>
+    <div class="pt-calib-table-wrap">
+      <table class="grid-table pt-calib-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>MAX값</th>
+            <th>분해능</th>
+            <th>ANALOG VALUE1</th>
+            <th>ANALOG VALUE2</th>
+            <th>현재값</th>
+            <th>OFFSET VALUE</th>
+          </tr>
+        </thead>
+        <tbody id="ptCalibTableBody"></tbody>
+      </table>
+      <div class="pt-calib-empty" id="ptCalibEmptyMsg" style="display:none;">이 탭에는 아직 등록된 센서가 없습니다.</div>
+    </div>
+
+    <div class="pt-calib-keypad-wrap" id="ptCalibKeypadWrap" style="display:none;">
+      <div class="pt-calib-keypad-title" id="ptCalibKeypadTitle"></div>
+      <div class="password-display" id="ptCalibKeypadDisplay"></div>
+      <div class="password-keypad pt-calib-keypad">
+        <button type="button" class="keypad-btn" data-key="7">7</button>
+        <button type="button" class="keypad-btn" data-key="8">8</button>
+        <button type="button" class="keypad-btn" data-key="9">9</button>
+        <button type="button" class="keypad-btn keypad-aux" data-key="up">▲</button>
+        <button type="button" class="keypad-btn" data-key="4">4</button>
+        <button type="button" class="keypad-btn" data-key="5">5</button>
+        <button type="button" class="keypad-btn" data-key="6">6</button>
+        <button type="button" class="keypad-btn keypad-aux" data-key="down">▼</button>
+        <button type="button" class="keypad-btn" data-key="1">1</button>
+        <button type="button" class="keypad-btn" data-key="2">2</button>
+        <button type="button" class="keypad-btn" data-key="3">3</button>
+        <button type="button" class="keypad-btn keypad-aux" data-key="bs">BS</button>
+        <button type="button" class="keypad-btn" data-key="0">0</button>
+        <button type="button" class="keypad-btn" data-key=".">.</button>
+        <button type="button" class="keypad-btn" data-key="-">-</button>
+        <button type="button" class="keypad-btn keypad-aux" data-key="clear">CLEAR</button>
+        <button type="button" class="keypad-btn keypad-aux" data-key="esc" style="grid-column: span 2;">ESC</button>
+        <button type="button" class="keypad-btn keypad-aux primary" data-key="enter" style="grid-column: span 2;">ENTER</button>
+      </div>
+    </div>
+
+    <div class="progress-btn-group">
+      <div class="adjust-mode-actions">
+        <button type="button" class="progress-btn" id="ptCalibSaveBtn" style="margin:0;">저장</button>
+        <button type="button" class="progress-aux-btn" id="ptCalibCancelBtn" style="margin:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

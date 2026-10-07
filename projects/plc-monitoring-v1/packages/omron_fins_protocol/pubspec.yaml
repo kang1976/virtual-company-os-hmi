@@ -1,0 +1,14 @@
+name: omron_fins_protocol
+description: Pure Dart implementation of Omron FINS 2.0 protocol and Omron USB encapsulation packet parser/builder.
+version: 1.0.0
+homepage: https://github.com/iconnmake/omron_fins_protocol
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  meta: ^1.11.0
+
+dev_dependencies:
+  test: ^1.24.0
+  lints: ^3.0.0

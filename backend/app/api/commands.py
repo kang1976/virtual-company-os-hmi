@@ -18,7 +18,10 @@ async def create_command(cmd: CommandCreate):
             pass
 
     orchestrator = CompanyOrchestrator(broadcast_fn=broadcast_sync)
-    result = await orchestrator.dispatch_ceo_command(cmd.instruction)
+    result = await orchestrator.dispatch_ceo_command(
+        instruction=cmd.instruction,
+        target_team=cmd.target_team or "전체"
+    )
     return result
 
 

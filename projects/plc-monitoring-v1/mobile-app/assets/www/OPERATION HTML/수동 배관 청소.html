@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수동 배관 청소 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 수동 배관 청소" 화면 분리 파일 - Maintenance Purge 화면의
+     "배관 청소" 버튼으로 들어온다("유지보수 메뉴.html"의 PASSWORD 게이트와는 다른 화면).
+     스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressPipeCleanBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 수동 배관 청소 - 설정 횟수만큼 청소 시퀀스를 반복하는 화면(뼈대). 실제 시퀀스/횟수
+       카운트 로직은 아직 없음 - 확인은 "준비 중" 토스트만 뜨고, 진행 횟수는 0 고정 표시. -->
+  <div class="progress-menu-body" id="progressPipeCleanBody">
+    <div class="progress-menu-desc">수동 배관 청소<br>모드입니다.</div>
+    <div class="progress-menu-desc" style="margin-top: 22px;">실린더를 잠근 후<br>실행하십시오!</div>
+    <div class="progress-btn-group">
+      <div class="purge-count-panel">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정 횟수 :</span>
+          <span class="purge-count-box">[ <input type="number" id="pipeCleanSetCount" class="purge-count-input" min="0" step="1" value="0" /> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행 횟수 :</span>
+          <span class="purge-count-box">[ <span id="pipeCleanProgressCount" class="purge-count-value">0</span> ]</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="pipeCleanConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="pipeCleanCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

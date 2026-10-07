@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>진행 메뉴 - GMS 조작화면</title>
+<!-- gms.html의 조작화면(진행 메뉴 패널) 중 "진행 메뉴" 화면만 분리한 파일이다.
+     스타일은 gms.html이 쓰는 공용 스타일시트(../gms.css)를 그대로 참조하며 복사하지 않는다 -
+     이 파일에서 색/여백을 바꾸면 gms.html에도 그대로 반영된다.
+     gms.js가 페이지 로드 시 이 파일을 fetch해서 id="progressRootBody" 컨테이너의
+     내용물로 그대로 주입한다 - id/class는 gms.js의 기존 로직과 맞물려 있으므로 유지해야 한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressRootBody">
+    <div class="progress-menu-desc">진행할 메뉴를 선택하십시오.</div>
+    <!-- 버튼 묶음은 프레임 맨 아래에 붙고, 그 안에서 아래→위 순서로 쌓인다
+         (margin-top:auto로 남는 세로 공간을 위쪽으로 밀어냄). -->
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn" id="progressABtn">A 진행</button>
+      <button type="button" class="progress-btn" id="progressBBtn">B 진행</button>
+      <button type="button" class="progress-aux-btn" id="progressAuxBtn">보조 메뉴</button>
+    </div>
+  </div>
+</body>
+</html>

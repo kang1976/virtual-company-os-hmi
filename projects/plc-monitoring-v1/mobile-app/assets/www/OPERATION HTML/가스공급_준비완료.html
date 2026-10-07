@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>가스공급준비 완료 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 가스공급 진행" 화면 분리 파일 - 가스공급 자동 진행의 마지막
+     화면(Step 7: 가스공급준비 완료). 실시간 HPT, MPT, LPT, NPT, WI 계측값을 확인하고
+     "확인"을 누르면 Status가 Service("가스공급")로 전환되며 실제 가스공급 화면으로 넘어간다.
+     "취소"는 퍼지완료 이후 취소 비밀번호 게이트를 거쳐 PC 화면으로 복귀한다.
+     id="progressGasSupplyReadyBody" 컨테이너에 주입된다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body gsp-pressure-check-body" id="progressGasSupplyReadyBody">
+    <div class="barcode-check-title" style="margin-bottom:6px;font-size:16px;">[ 공급준비 완료 ]</div>
+    <div class="progress-menu-desc" style="font-size:13px;line-height:1.5;margin-bottom:14px;color:var(--text);">
+      공급준비가 완료되었습니다.<br>
+      실린더 압력및 무게값을 확인 하시기 바랍니다.<br>
+      확인을 누르면 가스공급 진행화면으로 전환 됩니다.
+    </div>
+
+    <div class="gsp-readout-panel" style="margin-top:auto;margin-bottom:12px;">
+      <div class="gsp-readout-row" id="gspReadyHptRow">
+        <span class="gsp-readout-label" id="gspReadyHptLabel">HPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspReadyHptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspReadyMptRow">
+        <span class="gsp-readout-label" id="gspReadyMptLabel">MPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspReadyMptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspReadyLptRow">
+        <span class="gsp-readout-label" id="gspReadyLptLabel">LPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspReadyLptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspReadyNptRow">
+        <span class="gsp-readout-label" id="gspReadyNptLabel">NPT_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspReadyNptVal">--</span> ]</span>
+          <span class="gsp-readout-unit">psi</span>
+        </div>
+      </div>
+      <div class="gsp-readout-row" id="gspReadyWeightRow">
+        <span class="gsp-readout-label" id="gspReadyWeightLabel">WI_A :</span>
+        <div class="gsp-readout-val-wrap">
+          <span class="purge-count-box gsp-box">[ <span class="purge-count-value" id="gspReadyWeightVal">0.00</span> ]</span>
+          <span class="gsp-readout-unit">kg</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-btn-group" style="margin-top:0;">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="gasSupplyReadyConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="gasSupplyReadyCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

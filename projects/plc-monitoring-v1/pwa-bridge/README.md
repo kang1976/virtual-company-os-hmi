@@ -25,7 +25,7 @@ node scripts/importTags.js <태그목록.json>
 npm start
 ```
 
-기본 포트 3001, PLC는 `192.168.0.80:9600`(환경변수 `PORT`, `PLC_HOST`, `PLC_PORT`로 변경 가능).
+기본 포트 3004, PLC는 `192.168.0.80:9600`(환경변수 `PORT`, `PLC_HOST`, `PLC_PORT`로 변경 가능).
 
 ## 태그 가져오기 형식 (scripts/importTags.js)
 
@@ -52,7 +52,7 @@ npm start
    mkcert -cert-file server.pem -key-file server-key.pem localhost 127.0.0.1 <서버가 쓸 LAN IP들>
    ```
 2. `npm start`로 서버 실행하면 `certs/`가 있으므로 자동으로 HTTPS로 기동됨
-3. 모바일 브라우저로 `https://<서버IP>:3001` 접속 → 로그인 → 메뉴에서 "홈 화면에 추가" → "Add"/"Add to home screen"
+3. 모바일 브라우저로 `https://<서버IP>:3004` 접속 → 로그인 → 메뉴에서 "홈 화면에 추가" → "Add"/"Add to home screen"
 4. 인증서를 신뢰하지 않은 상태(경고를 넘겨서 접속)라면 "즐겨찾기 바로가기"만 생성됨. **완전한 "앱처럼"(주소창 없음)** 실행하려면 mkcert의 루트 CA(`mkcert -CAROOT`로 위치 확인)를 해당 기기에도 설치해야 함(Android: 설정 > 보안 > 암호화 및 사용자 인증 정보 > 인증서 설치 > CA 인증서)
 
 ## 주의

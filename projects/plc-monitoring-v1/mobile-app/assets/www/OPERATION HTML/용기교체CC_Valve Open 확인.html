@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Valve Open 확인 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 용기교체(Status "CC") 6단계 중
+     두 번째, "실린더 확인" 화면의 "확인" 다음. PIV(공통)/PGI_·PGII_(측별) 태그는
+     Operation.js가 progressCurrentSide에 맞춰 id="cylReplaceValveOpenTagsLabel"의 텍스트를
+     동적으로 바꾼다(기본값은 A측 표시). 실제 밸브 개폐는 화면 진입 시 Operation.js의
+     applyCcStepValves가 CylReplace_v1.json Step2를 읽어 SVG 배관도에 반영한다(PIV→PGII→PGI
+     순서로 2초 간격 Open, 텍스트 배지 아님) - "확인"은 다음 화면(Auto Guard 확인)으로,
+     "취소"는 용기교체를 그만두고 Status를 2P로 되돌린 뒤 실린더 잠금 check로 나간다.
+     스타일은 ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressCylReplaceValveOpenBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylReplaceValveOpenBody">
+    <div class="barcode-check-title">[ Valve Open 확인 ]</div>
+    <div class="progress-menu-desc">실린더 교체용 Valve가<br>순차적으로 Open 됩니다.</div>
+    <div class="barcode-check-desc" id="cylReplaceValveOpenTagsLabel">PIV, PGII_A, PGI_A<br>2초 간격으로 순차 Open<br>진행 하시기 바랍니다.</div>
+    <div class="barcode-check-warn">단, HPIV는 Close 입니다.</div>
+    <div class="progress-btn-group">
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="cylReplaceValveOpenConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceValveOpenCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

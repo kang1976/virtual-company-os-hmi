@@ -1,13 +1,11 @@
-﻿@echo off
+@echo off
 chcp 65001 > nul
-title [가상 기업 OS] 프론트엔드 서버 (:5173)
-cd /d %~dp0
+title [가상 기업 OS] 프론트엔드 React/Vite 서버 (:5173)
+cd /d "%~dp0"
 
 echo ======================================================================
 echo    [가상 기업 OS] 프론트엔드 React/Vite 서버 (:5173) 시작
 echo ======================================================================
 echo.
-echo Vite 개발 서버를 실행합니다...
 npm --prefix frontend run dev
-
 pause

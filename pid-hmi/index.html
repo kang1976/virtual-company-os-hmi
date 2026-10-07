@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>반도체 가스 공급 시스템 P&ID HMI 모니터링</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 상단 헤더 바 -->
+  <header id="topbar">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h1>SEMICONDUCTOR GAS SUPPLY P&ID HMI</h1>
+      <span class="status" style="background: rgba(0, 229, 255, 0.15); border: 1px solid #00e5ff; color: #00e5ff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+        A/B DUAL SIDE
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span class="status">● REALTIME FLOW SYSTEM ACTIVE</span>
+      <span class="clock" id="clock-tick">2026-09-24 00:00:00</span>
+    </div>
+  </header>
+
+  <!-- 조작 및 시뮬레이션 제어 바 -->
+  <nav id="controls">
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <button class="btn" id="btn-sim" onclick="toggleSim()">▶ 실시간 변동 시뮬레이션</button>
+      <button class="btn" onclick="resetValues()">🔄 기본값 리셋</button>
+    </div>
+
+    <div style="width: 1px; height: 22px; background: #00e5ff33; margin: 0 4px;"></div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <button class="btn" onclick="setSideValves('A', true)">🟢 A-Side 밸브 전체 열림 (가스 공급)</button>
+      <button class="btn danger" onclick="setSideValves('A', false)">🔴 A-Side 밸브 전체 닫힘 (가스 차단)</button>
+    </div>
+
+    <div style="width: 1px; height: 22px; background: #00e5ff33; margin: 0 4px;"></div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <button class="btn" onclick="setSideValves('B', true)">🟢 B-Side 밸브 전체 열림 (가스 공급)</button>
+      <button class="btn danger" onclick="setSideValves('B', false)">🔴 B-Side 밸브 전체 닫힘 (가스 차단)</button>
+    </div>
+
+    <div style="margin-left: auto; color: #79a8d9; font-size: 11px; display: flex; align-items: center; gap: 6px;">
+      <span>💡 <strong>실시간 연동:</strong> 밸브 개폐에 따라 <strong>배관 가스 충진/흐름(적색 네온 플라즈마)</strong>이 실시간으로 차오르고 차단됩니다.</span>
+    </div>
+  </nav>
+
+  <!-- 메인 P&ID 다이어그램 및 동적 오버레이 -->
+  <main>
+    <div id="pid-container">
+      <img id="pid-bg" src="pid_background.jpg?v=vent2" alt="P&ID Diagram">
+      <!-- 스마트 배관 가스 유동 SVG 레이어 -->
+      <svg id="pipe-layer" viewBox="0 0 1128 1264"></svg>
+    </div>
+  </main>
+
+  <!-- 하단 상태 표시 바 -->
+  <div id="ws-status">
+    <span id="ws-dot" class="connected"></span>
+    <span id="ws-text">PLC 백엔드 실시간 동기화 중</span>
+  </div>
+
+  <!-- 스크립트 로드 -->
+  <script src="tags.js"></script>
+  <script src="app.js"></script>
+  <script>
+    function toggleSim() {
+      if (simRunning) {
+        stopMock();
+        document.getElementById('btn-sim').textContent = '▶ 실시간 변동 시뮬레이션';
+      } else {
+        startMock();
+        document.getElementById('btn-sim').textContent = '⏹ 시뮬레이션 일시정지';
+      }
+    }
+
+    function setSideValves(side, isOpen) {
+      const updates = {};
+      ['HPI', 'LPI', 'FPV'].forEach(v => {
+        updates[`${side}_${v}`] = isOpen;
+      });
+      updateDisplay(updates);
+      // 서버로도 전송
+      Object.entries(updates).forEach(([k, v]) => sendWsTag(k, v));
+    }
+  </script>
+</body>
+</html>

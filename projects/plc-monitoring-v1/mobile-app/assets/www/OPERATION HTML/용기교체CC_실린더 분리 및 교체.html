@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>실린더 분리 및 교체 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 용기교체(Status "CC") 6단계 중
+     네 번째, "Auto Guard 확인(Open)" 다음. 실제 Torque Wrench/Load Cell 연동은 아직
+     없음(뼈대) - "Load Cell Offset Zero Setting"은 토스트만, 사용 압력 값은 참고값(550)
+     고정 표시. "확인"은 다음 화면(Gas name 확인)으로, "취소"는 용기교체를 그만두고
+     Status를 2P로 되돌린 뒤 실린더 잠금 check로 나간다. 스타일은 ../gms.css를 그대로
+     참조(복사 아님). gms.js가 fetch해서 id="progressCylReplaceSwapBody" 컨테이너에
+     주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylReplaceSwapBody">
+    <div class="barcode-check-title">[ 실린더 분리 및 교체 ]</div>
+    <div class="progress-menu-desc">이전 실린더를 분리하고,<br>새로운 실린더를<br>장착하십시오.<br>CGA Connector에<br>연결시 Torque Wrench<br>사용 압력을 확인하시기<br>바랍니다.</div>
+    <div class="purge-count-panel">
+      <div class="purge-count-row">
+        <span class="purge-count-label">Torque Wrench<br>사용 압력 :</span>
+        <span class="purge-count-box">[ <input type="number" id="cylReplaceSwapTorqueValue" class="purge-count-input" style="width:56px;color:var(--error);" min="0" step="1" value="550" /> ]Kgf</span>
+      </div>
+    </div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-aux-btn" id="cylReplaceSwapZeroBtn" style="margin-bottom:22px;">Load Cell Offset<br>Zero Setting</button>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="cylReplaceSwapConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceSwapCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

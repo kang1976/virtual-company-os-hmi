@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Omron Corporation Vendor ID: 0x0590 (1424) -->
+    <!-- CJ2H / CJ1 / CS1 USB Peripheral Port Product ID: 0x005B (91) -->
+    <usb-device vendor-id="1424" product-id="91" />
+    <!-- Fallback generic Omron USB peripheral ports -->
+    <usb-device vendor-id="1424" />
+</resources>

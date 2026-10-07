@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수동 가압 시험 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 수동 가압 시험" 화면 분리 파일 - 누출 시험 화면의
+     "가압 시험" 버튼으로 들어온다. "수동 감압 시험.html"과 구조는 거의 동일하고(HPT
+     4점 초기압력/현재압력 표 재사용), 안내문과 상태 표시줄만 다르다. 스타일은 ../gms.css를
+     그대로 참조(복사 아님). gms.js가 fetch해서 id="progressPressureTestBody" 컨테이너에
+     주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <!-- 수동 가압 시험 - 설정/진행 시간(분)과 HPT 4점의 초기압력/현재압력을 보여준다.
+       실제 시퀀스/측정 로직은 아직 없음(뼈대) - 확인은 "준비 중" 토스트만, 진행시간·
+       압력값은 0 고정 표시. 취소는 누출 시험 화면으로 되돌아간다. -->
+  <div class="progress-menu-body" id="progressPressureTestBody">
+    <div class="progress-menu-desc">수동 가압 시험<br>모드입니다.</div>
+    <div class="progress-menu-desc pt-test-running">수동 가압 시험중</div>
+    <div class="progress-btn-group">
+      <div class="purge-count-panel">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정 :</span>
+          <span class="purge-count-box">[ <input type="number" id="pressureTestSetMinutes" class="purge-count-input" min="0" step="1" value="0" /> ]분</span>
+          <span class="purge-count-label">진행 :</span>
+          <span class="purge-count-box">[ <span id="pressureTestProgressMinutes" class="purge-count-value">0</span> ]분</span>
+        </div>
+      </div>
+      <table class="pt-test-table">
+        <thead><tr><th></th><th>초기압력</th><th>현재압력</th></tr></thead>
+        <tbody id="pressureTestRows"></tbody>
+      </table>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-btn" id="pressureTestConfirmBtn" style="flex:1;margin-bottom:0;">확인</button>
+        <button type="button" class="progress-aux-btn" id="pressureTestCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

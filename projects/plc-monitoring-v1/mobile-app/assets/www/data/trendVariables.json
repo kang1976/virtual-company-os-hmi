@@ -1,0 +1,109 @@
+{
+  "variables": [
+    {
+      "area": "D",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT1",
+      "tolerance": 10,
+      "chart": true,
+      "startValue": 1574,
+      "endValue": 1616,
+      "compareValue": ""
+    },
+    {
+      "area": "H",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT2",
+      "tolerance": 10,
+      "chart": true,
+      "startValue": 24768,
+      "endValue": 24810,
+      "compareValue": ""
+    },
+    {
+      "area": "W",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT3",
+      "tolerance": 10,
+      "chart": true,
+      "startValue": 7496,
+      "endValue": 7538,
+      "compareValue": ""
+    },
+    {
+      "area": "CIO",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT4",
+      "tolerance": 10,
+      "chart": true,
+      "startValue": 7496,
+      "endValue": 7538,
+      "compareValue": ""
+    },
+    {
+      "area": "E0",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT5",
+      "tolerance": 3,
+      "chart": true,
+      "startValue": 24680,
+      "endValue": 24722,
+      "compareValue": ""
+    },
+    {
+      "area": "E1",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT6",
+      "tolerance": 3,
+      "chart": true,
+      "startValue": -20623,
+      "endValue": -20581,
+      "compareValue": ""
+    },
+    {
+      "area": "E2",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT7",
+      "tolerance": 3,
+      "chart": true,
+      "startValue": -20624,
+      "endValue": -20582,
+      "compareValue": ""
+    },
+    {
+      "area": "E3",
+      "address": 0,
+      "bit": 0,
+      "dataType": "INT",
+      "length": 1,
+      "description": "PT8",
+      "tolerance": 3,
+      "chart": true,
+      "startValue": -18611,
+      "endValue": -18569,
+      "compareValue": ""
+    }
+  ],
+  "savedAt": "2026-07-17T04:18:51.577Z"
+}

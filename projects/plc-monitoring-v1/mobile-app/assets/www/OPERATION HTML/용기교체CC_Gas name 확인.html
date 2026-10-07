@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gas name 확인 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 용기교체(Status "CC") 6단계 중
+     다섯 번째, "실린더 분리 및 교체" 다음. "수동 바코드 체크" 화면과 같은 barcode-check-*
+     스타일을 재사용하되 id는 전부 별도로 둔다(같은 페이지에 두 화면이 동시에 존재하므로
+     겹치면 안 됨). 제목의 측/번호(A1 등)는 Operation.js가 progressCurrentSide에 맞춰
+     id="cylReplaceGasNameTitle" 텍스트를 동적으로 바꾼다. 실제 바코드 검증/Lot No. 로직은
+     아직 없음(뼈대) - "Lot No. Skip"/"바코드 수동입력"/"바코드 확인"은 토스트만, "실행"은
+     다음 화면(Auto Guard 확인(Close))으로, "취소"는 용기교체를 그만두고 Status를 2P로
+     되돌린 뒤 실린더 잠금 check로 나간다. 스타일은 ../gms.css를 그대로 참조(복사 아님).
+     gms.js가 fetch해서 id="progressCylReplaceGasNameBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylReplaceGasNameBody">
+    <div class="barcode-check-title" id="cylReplaceGasNameTitle">[A1 실린더 Gas name 확인]</div>
+    <div class="barcode-check-desc">바코드 스캐너를 이용하여<br>실린더 바코드를 읽어 주시기 바랍니다.</div>
+    <div class="progress-btn-group">
+      <div class="barcode-input-row">
+        <span class="purge-count-label">1</span>
+        <input type="text" id="cylReplaceGasNameInput1" class="barcode-input" placeholder="바코드 스캔" />
+      </div>
+      <div class="barcode-input-row">
+        <span class="purge-count-label">2</span>
+        <input type="text" id="cylReplaceGasNameInput2" class="barcode-input" placeholder="바코드 스캔" />
+      </div>
+      <div class="barcode-check-warn">N.G시 담당자에게<br>연락 하시기 바랍니다.</div>
+      <button type="button" class="progress-aux-btn" id="cylReplaceGasNameLotSkipBtn" style="margin-bottom:16px;">Lot No. Skip</button>
+      <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <button type="button" class="progress-btn" id="cylReplaceGasNameRunBtn" style="flex:1;margin-bottom:0;">실행</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceGasNameCancelBtn" style="flex:1;margin-top:0;">취소</button>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="progress-aux-btn" id="cylReplaceGasNameManualBtn" style="flex:1;">바코드 수동입력</button>
+        <button type="button" class="progress-aux-btn" id="cylReplaceGasNameCheckBtn" style="flex:1;">바코드 확인</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

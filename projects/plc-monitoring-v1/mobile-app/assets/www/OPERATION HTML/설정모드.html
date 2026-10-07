@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>설정모드 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 설정모드" 화면 분리 파일. 보조 메뉴의 "설정모드 A"/"설정모드 B"
+     버튼으로 들어온다(Operation.js의 auxMenuConfigModeABtn/BBtn → requestConfigMode(side) →
+     showProgressConfigMode(side), "조정모드 A/B"와 동일한 패턴 - 버튼 2개가 화면 1개를 공유하고
+     side를 명시적으로 넘긴다). CONFIG 탭(엔지니어용, data/gmsSubSequenceConfig.json 전체 편집)과
+     같은 데이터를 보되, 이 화면은 side(A/B/공통)와 OPTION 표시여부로 걸러서 조작자가 키패드로
+     빠르게 값만 바꾸는 용도다. 그리드는 gms-configmode-widget.js(Univer, 값이 많을 때 2/3/4단
+     레이아웃으로 나눠 보임), 키패드/저장/A값복사/단수전환은 gms-configmode-tab.js가 전담한다
+     (gms-pt-calibration.js와 같은 관심사 분리 패턴). 스타일은 ../gms.css를 그대로 참조. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressConfigModeBody">
+    <div class="progress-menu-desc">설정값을 확인하고 우측 키패드로 값을 바꿉니다. 변경한 행은 빨간색으로 표시되며, "저장"을 눌러야 실제 반영됩니다.</div>
+    <div class="config-mode-toolbar">
+      <div class="config-mode-cols-group">
+        <span>보기</span>
+        <button type="button" class="config-mode-cols-btn" id="configModeCols1Btn">1단</button>
+        <button type="button" class="config-mode-cols-btn" id="configModeCols2Btn">2단</button>
+        <button type="button" class="config-mode-cols-btn" id="configModeCols3Btn">3단</button>
+        <button type="button" class="config-mode-cols-btn" id="configModeCols4Btn">4단</button>
+      </div>
+      <button type="button" id="configModeRefreshBtn">🔄 새로고침</button>
+      <button type="button" id="configModeCopyBtn" style="display:none;">⇄ A값 전체 복사</button>
+      <button type="button" class="primary" id="configModeSaveBtn" style="margin-left:auto;">저장</button>
+      <button type="button" id="configModeCloseBtn">✕ 닫기</button>
+    </div>
+    <div class="config-mode-body">
+      <div id="gmsConfigModeGridContainer"></div>
+      <div class="config-mode-keypad-wrap" id="configModeKeypadWrap" style="display:none;">
+        <div class="pt-calib-keypad-title" id="configModeKeypadTitle"></div>
+        <div class="password-display" id="configModeKeypadDisplay"></div>
+        <div class="config-mode-keypad-range" id="configModeKeypadRange"></div>
+        <div class="config-mode-nav-pad">
+          <span></span>
+          <button type="button" class="keypad-btn keypad-aux" data-key="up">▲</button>
+          <span></span>
+          <button type="button" class="keypad-btn keypad-aux" data-key="left">◀</button>
+          <span></span>
+          <button type="button" class="keypad-btn keypad-aux" data-key="right">▶</button>
+          <span></span>
+          <button type="button" class="keypad-btn keypad-aux" data-key="down">▼</button>
+          <span></span>
+        </div>
+        <div class="password-keypad config-mode-keypad">
+          <button type="button" class="keypad-btn" data-key="7">7</button>
+          <button type="button" class="keypad-btn" data-key="8">8</button>
+          <button type="button" class="keypad-btn" data-key="9">9</button>
+          <button type="button" class="keypad-btn keypad-aux" data-key="bs">BS</button>
+          <button type="button" class="keypad-btn" data-key="4">4</button>
+          <button type="button" class="keypad-btn" data-key="5">5</button>
+          <button type="button" class="keypad-btn" data-key="6">6</button>
+          <button type="button" class="keypad-btn keypad-aux" data-key="clear">CLEAR</button>
+          <button type="button" class="keypad-btn" data-key="1">1</button>
+          <button type="button" class="keypad-btn" data-key="2">2</button>
+          <button type="button" class="keypad-btn" data-key="3">3</button>
+          <button type="button" class="keypad-btn keypad-aux" data-key="esc">ESC</button>
+          <button type="button" class="keypad-btn" data-key="0">0</button>
+          <button type="button" class="keypad-btn" data-key=".">.</button>
+          <button type="button" class="keypad-btn" data-key="-">-</button>
+          <button type="button" class="keypad-btn keypad-aux primary" data-key="enter">ENTER</button>
+        </div>
+      </div>
+    </div>
+    <div class="h-splitter" id="gmsConfigModeGridResizeHandle" title="드래그해서 그리드 높이 조절"></div>
+  </div>
+</body>
+</html>

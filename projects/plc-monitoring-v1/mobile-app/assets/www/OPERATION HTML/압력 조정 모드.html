@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>압력 조정 모드 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 압력 조정 모드" 화면 분리 파일. 스타일은 ../gms.css를 그대로
+     참조(복사 아님). gms.js가 fetch해서 id="progressAdjustModeBody" 컨테이너에 주입한다.
+     보조 메뉴의 "조정모드 A/B" → PASSWORD 게이트(adjustMode) 통과 후 들어오는 화면(참고
+     이미지: 실제 장비 HMI를 그대로 재현했던 팝업을 유지보수 메뉴와 동일하게 진짜 화면
+     전환으로 바꿨다 - Operation.js의 requestAdjustMode/showProgressAdjustMode 참고).
+     가스공급 중(Status=Service)인 side는 인터락으로 아예 진입 자체가 막힌다(요청사항) -
+     requestAdjustMode에서 화면 전환 전에 미리 걸러진다.
+
+     "실행" 버튼은 서브시퀀스 실행 엔진(public/gms-sub-sequence-runner.js,
+     window.startSubSequenceRunner('AdjustMode', side))을 시작한다 - 어떤 서브시퀀스를
+     쓸지는 data/gmsSubSequenceSelection.json의 "AdjustMode" 매핑(기본값 AdjustMode_v1
+     샘플)을 그대로 따른다. 진행 중에는 #adjustModeSeqPanel이 #adjustModeSeqIdle을
+     대신해서 보인다(런너가 직접 토글). -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressAdjustModeBody">
+    <div id="adjustModeSeqIdle">
+      <div class="progress-menu-desc">PT Sensor 압력 조정을<br>진행하는 모드입니다.</div>
+      <!-- 알람으로 초기화되면 여기 idle로 돌아오는데, 예전엔 메시지 없이 조용히 돌아와서
+           운영자가 원인을 알 수 없었다(Puls/1P와 같은 문제 - 사용자 요청으로 조정모드도
+           함께 확인해 맞춤). "실행"을 다시 누르면 지워진다. -->
+      <div class="sub-seq-last-alarm" id="subSeqLastAlarm"></div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="adjustModeExecuteBtn" style="margin:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="adjustModeCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-btn" id="adjustModePressureBtn" style="margin:0;">압력조정</button>
+        </div>
+        <!-- 조정모드에 연결된 서브시퀀스(AdjustMode_v1)를 엑셀로 내보내서 편집하고, 편집한
+             파일을 다시 불러와 그대로 반영한다(public/gms-sub-sequence-runner.js). -->
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="subSeqExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="subSeqExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="subSeqExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="adjustModeSeqPanel" style="display:none;">
+      <div class="sub-seq-step-label" id="subSeqStepLabel">Main 1 - Sub 1</div>
+      <div class="sub-seq-operation" id="subSeqOperation">-</div>
+      <div class="sub-seq-message" id="subSeqMessage">-</div>
+      <div class="sub-seq-valve-diff" id="subSeqValveDiff"></div>
+      <div class="sub-seq-timer" id="subSeqTimer">-</div>
+      <div class="sub-seq-acc-time" id="subSeqAccTime">누적 경과시간: 0초</div>
+      <!-- Cycle(엑셀 E열 "LOOP:되돌아갈Step:반복횟수" 지시문)이 있는 서브시퀀스에서만 보인다
+           (gms-sub-sequence-runner.js의 subSeqRenderCycleStatus) - 반복 구간이 없는 서브시퀀스는
+           숨겨진 채로 유지된다. -->
+      <div class="sub-seq-cycle-info" id="subSeqCycleInfo" style="display:none;">설정 횟수: <span id="subSeqCycleTarget">-</span>회 / 진행 횟수: <span id="subSeqCycleCurrent">-</span>회</div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="subSeqAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="subSeqStopBtn" style="margin:0;">중지</button>
+        </div>
+        <!-- 실제 알람 신호가 아직 없어(다른 화면들과 동일한 임시 상태) Alarm Seq. 1/2/3
+             대응 동작을 가상으로 검증하는 테스트 컨트롤(public/gms-sub-sequence-runner.js
+             subSeqHandleAlarm). 1=초기화, 2=이어서 재진행 대기, 3=SHUTDOWN(메인 화면 이동). -->
+        <div class="adjust-mode-actions sub-seq-alarm-test" style="margin-top:8px;">
+          <select id="subSeqAlarmTestSelect">
+            <option value="1">Alarm Seq. 1 - 초기화</option>
+            <option value="2">Alarm Seq. 2 - 이어서 재진행</option>
+            <option value="3">Alarm Seq. 3 - SHUTDOWN</option>
+          </select>
+          <button type="button" class="progress-aux-btn" id="subSeqAlarmTestBtn" style="margin:0;">알람 발생(TEST)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

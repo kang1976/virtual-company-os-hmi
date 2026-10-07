@@ -152,12 +152,10 @@ function applyDropdowns(sheet) {
     console.warn('데이터 유효성 검사(드롭다운) 적용 실패:', e);
   }
   try {
-    // 두 열에 같은 규칙 객체를 재사용하면 두 번째 setDataValidation 호출이 앞서 적용된
-    // 범위를 덮어써서 첫 번째 열(선택)의 체크박스가 사라지므로, 열마다 별도 인스턴스를 만든다.
-    const selectCheckboxRule = univerAPI.newDataValidation().requireCheckbox('1', '0').build();
-    sheet.getRange(1, SELECT_COL, MAX_ROWS - 1, 1).setDataValidation(selectCheckboxRule);
-    const chartCheckboxRule = univerAPI.newDataValidation().requireCheckbox('1', '0').build();
-    sheet.getRange(1, CHART_COL, MAX_ROWS - 1, 1).setDataValidation(chartCheckboxRule);
+    // A열(선택)과 B열(차트) 2개 열 전체에 체크박스 유효성 검사 규칙을 적용한다.
+    // 체크=1, 해제=0 으로 저장된다.
+    const checkboxRule = univerAPI.newDataValidation().requireCheckbox('1', '0').build();
+    sheet.getRange(1, 0, MAX_ROWS - 1, 2).setDataValidation(checkboxRule);
   } catch (e) {
     console.warn('체크박스 열 적용 실패:', e);
   }
@@ -235,7 +233,7 @@ function loadVariablesIntoSheet(variables) {
   }
   if (variables && variables.length > 0) {
     const rows = variables.map((v) => [
-      '', v.chart !== false ? '1' : '0', v.area, formatAddress(v.address, v.bit, v.dataType), v.dataType,
+      '0', v.chart !== false ? '1' : '0', v.area, formatAddress(v.address, v.bit, v.dataType), v.dataType,
       // 예전(기준최대값/기준최소값 두 컬럼) 형식으로 저장된 파일을 불러올 때는 기준최대값을
       // 허용오차 값으로 이어받는다(완전히 동일하진 않지만 값을 그냥 잃는 것보단 낫다).
       v.length || 1, v.description || '', v.tolerance ?? v.maxRef ?? '', '',
@@ -390,7 +388,7 @@ function bindToolbarButtons() {
   document.getElementById('monAddRowBtn')?.addEventListener('click', () => {
     const sheet = getSheet();
     const newRowIndex = sheet.getLastRow() + 1;
-    sheet.getRange(newRowIndex, 0, 1, COL_COUNT).setValues([['', '1', 'D', '0', 'WORD', 1, '', '', '', '', '', '']]);
+    sheet.getRange(newRowIndex, 0, 1, COL_COUNT).setValues([['0', '1', 'D', '0', 'WORD', 1, '', '', '', '', '', '']]);
   });
 
   document.getElementById('monDeleteSelectedBtn')?.addEventListener('click', () => {
@@ -632,12 +630,28 @@ async function mountTrendGrid(containerId) {
   // 있었다 - 불러오기가 끝난 뒤에야 API를 공개하고 'trendGridReady'를 알린다.
   await fetchVariables();
 
+  function setZoom(ratio) {
+    try {
+      const sheet = getSheet();
+      if (sheet && typeof sheet.setZoomRatio === 'function') {
+        sheet.setZoomRatio(ratio);
+      }
+    } catch (e) {
+      console.warn('그리드 줌 적용 실패:', e);
+    }
+  }
+
+  window.addEventListener('setGridZoom', (e) => {
+    if (e.detail && e.detail.zoom) setZoom(e.detail.zoom);
+  });
+
   window.trendGridApi = {
     applyValues,
     captureStart: () => captureSnapshot('start'),
     captureEnd: () => captureSnapshot('end'),
     getVariables,
     labelFor,
+    setZoomRatio: setZoom,
   };
   window.dispatchEvent(new CustomEvent('trendGridReady', { detail: window.trendGridApi }));
   return window.trendGridApi;

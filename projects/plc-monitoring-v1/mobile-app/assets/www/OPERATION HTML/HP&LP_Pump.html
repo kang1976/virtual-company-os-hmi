@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>HP&LP Pump 자동진행 - GMS 조작화면</title>
+  <link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressHpLpPumpBody">
+    <div class="step-badges-lg">
+      <span class="step-badge-lg blinking">HP&LP Pump</span>
+    </div>
+
+    <div id="hpLpPumpIdle">
+      <div class="progress-menu-desc">HP&LP Pump 구간을 준비하는 중입니다...</div>
+      <div class="sub-seq-last-alarm" id="hpLpPumpLastAlarm"></div>
+      <div class="purge-count-panel" id="hpLpPumpIdleCycleInfo" style="display:none;">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정시간(분) :</span>
+          <span class="purge-count-box">[ <span id="hpLpPumpIdleCycleTarget" class="purge-count-value">-</span> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행시간(분) :</span>
+          <span class="purge-count-box">[ <span id="hpLpPumpIdleCycleCurrent" class="purge-count-value">-</span> ]</span>
+        </div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="hpLpPumpExecuteBtn" style="margin:0;">실행</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpIdleCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpIdleTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="hpLpPumpIdleExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpIdleExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="hpLpPumpIdleExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+
+    <div id="hpLpPumpPanel" style="display:none;">
+      <div class="sub-seq-step-label" id="hpLpPumpStepLabel">Main 15 - Sub 1</div>
+      <div class="sub-seq-operation" id="hpLpPumpOperation">-</div>
+      <div class="sub-seq-message" id="hpLpPumpMessage">-</div>
+      <div class="sub-seq-valve-diff" id="hpLpPumpValveDiff"></div>
+      <div class="sub-seq-timer" id="hpLpPumpTimer">-</div>
+      <div class="sub-seq-acc-time" id="hpLpPumpAccTime">누적 경과시간: 0초</div>
+      <div class="sub-seq-alarm-banner" id="hpLpPumpAlarmBanner" style="display:none;">
+        <div class="sub-seq-last-alarm" id="hpLpPumpPanelAlarmMsg"></div>
+      </div>
+      <div class="progress-btn-group">
+        <div class="purge-count-panel" id="hpLpPumpCycleInfo" style="display:none;">
+          <div class="purge-count-row">
+            <span class="purge-count-label">초기값(HPT) :</span>
+            <span class="purge-count-box">[ <span id="hpLpPumpCaptureInitial" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">현재값(HPT) :</span>
+            <span class="purge-count-box">[ <span id="hpLpPumpCaptureCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">설정시간(분) :</span>
+            <span class="purge-count-box">[ <span id="hpLpPumpCycleTarget" class="purge-count-value">-</span> ]</span>
+          </div>
+          <div class="purge-count-row">
+            <span class="purge-count-label">진행시간(분) :</span>
+            <span class="purge-count-box">[ <span id="hpLpPumpCycleCurrent" class="purge-count-value">-</span> ]</span>
+          </div>
+        </div>
+        <div class="adjust-mode-actions">
+          <button type="button" class="progress-btn" id="hpLpPumpAckBtn" style="margin:0; display:none;">확인</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpPauseBtn" style="margin:0;">일시정지</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpResetBtn" style="margin:0;">초기화</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpCancelBtn" style="margin:0;">취소</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpTrendBtn" style="margin:0;">TREND</button>
+        </div>
+        <div class="adjust-mode-actions" style="margin-top:8px;">
+          <button type="button" class="progress-aux-btn" id="hpLpPumpExcelExportBtn" style="margin:0;">서브시퀀스 엑셀 내보내기</button>
+          <button type="button" class="progress-aux-btn" id="hpLpPumpExcelImportBtn" style="margin:0;">서브시퀀스 엑셀 불러오기</button>
+        </div>
+        <input type="file" id="hpLpPumpExcelFileInput" accept=".xlsx" style="display:none;" />
+      </div>
+    </div>
+  </div>
+</body>
+</html>

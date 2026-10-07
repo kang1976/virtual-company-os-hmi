@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>퍼지완료 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 가스 공급" 화면 분리 파일 - 4차 배관청소 "실행" → PASSWORD
+     통과 후 들어오는 "교환후" 자동 진행의 마지막 화면(Status "4P"→"PC", 퍼지 완료). 실린더
+     교환이 끝났으니 다음 메뉴(가스공급/B 선택/유지 보수/TREND)를 고르는 메인 메뉴와 같은
+     구성으로 보여준다(참고 사진 기준 - 메인 메뉴와 달리 첫 버튼이 "실린더 교환"이 아니라
+     "가스공급"). "가스공급"/"B" 선택은 아직 실제 로직 없음(뼈대, 토스트만) - "유지 보수"는
+     메인 메뉴와 동일하게 PASSWORD 게이트(mainMenu)를 거쳐 유지보수 메뉴로 간다. "취소"는
+     한 번 누르면 경고 토스트만 뜨고, 다시 한 번 눌러야 실제로 Status를 IDLE(준비 전)로
+     되돌리고 메인 메뉴로 나간다(Operation.js의 exchangePurgeCompleteCancelBtn 참고 - 실수로
+     한 번 누른 것만으로 전체 시퀀스가 초기화되지 않도록 하는 2단 확인). 스타일은
+     ../gms.css를 그대로 참조(복사 아님). gms.js가 fetch해서
+     id="progressExchangePurgeCompleteBody" 컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressExchangePurgeCompleteBody">
+    <div class="progress-menu-desc">진행할 메뉴를 선택 하십시오!</div>
+    <div class="progress-btn-group">
+      <button type="button" class="progress-btn" id="exchangePurgeCompleteGasSupplyBtn">가스공급</button>
+      <button type="button" class="progress-btn" id="exchangePurgeCompleteSwitchSideBtn">"B" 선택</button>
+      <button type="button" class="progress-btn" id="exchangePurgeCompleteMaintenanceBtn">유지 보수</button>
+      <button type="button" class="progress-btn" id="exchangePurgeCompleteTrendBtn">TREND</button>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button type="button" class="progress-aux-btn" id="exchangePurgeCompleteAuxBtn" style="flex:1;">보조 메뉴</button>
+        <button type="button" class="progress-aux-btn" id="exchangePurgeCompleteCancelBtn" style="flex:1;">취소</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

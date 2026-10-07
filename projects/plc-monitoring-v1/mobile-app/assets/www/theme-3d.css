@@ -1,0 +1,624 @@
+﻿/* ==========================================================================
+   PLC Monitoring System - Premium 3D Modern HMI & Cyber Dark Stylesheet (theme-3d.css)
+   ========================================================================== */
+
+/* 🌌 사이버네틱 다크 (Velocity Grid / Cyber Dark) 테마 */
+:root[data-theme='cyber'] {
+  --bg: #0b0f19;
+  --panel: #131b2e;
+  --panel-border: rgba(56, 189, 248, 0.22);
+  --panel-border-strong: #0284c7;
+  --text: #f1f5f9;
+  --muted: #8493a8;
+  --accent: #00f0ff;
+  --accent-dim: rgba(0, 240, 255, 0.16);
+  --primary-text: #00f0ff;
+  --warn: #fbbf24;
+  --warn-bg: rgba(251, 191, 36, 0.16);
+  --warn-text: #fbbf24;
+  --error: #f43f5e;
+  --danger-bg: rgba(244, 63, 94, 0.16);
+  --danger-text: #f43f5e;
+  --input-bg: #0f172a;
+  --bg-alt: #182235;
+  --flash-bg: rgba(0, 240, 255, 0.2);
+  --send-tag: #a855f7;
+  --hex-text: #38bdf8;
+
+  --3d-bevel-light: rgba(0, 240, 255, 0.2);
+  --3d-bevel-shadow: rgba(0, 0, 0, 0.6);
+  --3d-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --3d-input-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(0, 240, 255, 0.1);
+  --3d-slot-bg: rgba(11, 15, 25, 0.85);
+  --3d-slot-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(0, 240, 255, 0.1);
+}
+
+:root {
+  /* 3D Depth & Elevation Tokens */
+  --3d-bevel-light: rgba(255, 255, 255, 0.45);
+  --3d-bevel-shadow: rgba(0, 0, 0, 0.16);
+  --3d-btn-radius: 6px;
+  --3d-card-shadow: 0 4px 10px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --3d-input-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.07), 0 1px 0 rgba(255, 255, 255, 0.8);
+  --3d-slot-bg: rgba(0, 0, 0, 0.05);
+  --3d-slot-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+:root[data-theme='dark'] {
+  --3d-bevel-light: rgba(255, 255, 255, 0.12);
+  --3d-bevel-shadow: rgba(0, 0, 0, 0.45);
+  --3d-card-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --3d-input-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.05);
+  --3d-slot-bg: rgba(0, 0, 0, 0.35);
+  --3d-slot-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ================= 1. Header & Global Alignment (세로 가운데 맞춤 & 높이 통일) ================= */
+header {
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  min-height: 48px !important;
+  padding: 8px 18px !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06), inset 0 -1px 0 var(--panel-border);
+}
+
+header > div,
+header .header-right {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+  height: 32px !important;
+}
+
+/* 상단 헤더 컨트롤 일괄 32px 높이 통일 및 정렬 */
+.ui-zoom,
+.fullscreen-btn,
+header button,
+header select:not(#uiZoomSelect),
+.page-tabs {
+  height: 32px !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+/* ================= 2. 3D 물리적 촉각 버튼 (Tactile 3D Buttons) ================= */
+header button,
+.toolbar button,
+.conn-toolbar button,
+.chart-toolbar button,
+.trend-toolbar button,
+.sidebar-panel button,
+.settings-wrap button,
+.help-modal button,
+.gm-modal button:not(.gm-choice-btn),
+.preset-bar button,
+.progress-btn,
+.progress-aux-btn,
+.valve-side-btn,
+.keypad-btn,
+.leak-test-btn,
+.trend-toolbar-btn,
+.fullscreen-btn,
+.mode-modal-cancel,
+.btn-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: var(--3d-btn-radius);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  text-decoration: none;
+  background: linear-gradient(180deg, #ffffff 0%, var(--input-bg, #eef1f5) 100%);
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 3px 0 var(--panel-border-strong, #b0bcc8),
+              0 4px 6px var(--3d-bevel-shadow),
+              inset 0 1px 0 var(--3d-bevel-light);
+  transition: transform 0.08s ease-in-out, box-shadow 0.08s ease-in-out, filter 0.12s ease-in-out;
+}
+
+header button,
+.fullscreen-btn {
+  height: 32px !important;
+}
+
+header button:hover:not(:disabled),
+.toolbar button:hover:not(:disabled),
+.conn-toolbar button:hover:not(:disabled),
+.chart-toolbar button:hover:not(:disabled),
+.trend-toolbar button:hover:not(:disabled),
+.sidebar-panel button:hover:not(:disabled),
+.settings-wrap button:hover:not(:disabled),
+.help-modal button:hover:not(:disabled),
+.gm-modal button:not(.gm-choice-btn):hover:not(:disabled),
+.progress-btn:hover:not(:disabled),
+.progress-aux-btn:hover:not(:disabled),
+.valve-side-btn:hover:not(:disabled),
+.keypad-btn:hover:not(:disabled),
+.leak-test-btn:hover:not(:disabled),
+.trend-toolbar-btn:hover:not(:disabled),
+.fullscreen-btn:hover:not(:disabled),
+.mode-modal-cancel:hover:not(:disabled),
+.btn-3d:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--panel-border-strong, #a0acba),
+              0 6px 10px var(--3d-bevel-shadow),
+              inset 0 1px 0 var(--3d-bevel-light);
+}
+
+header button:active:not(:disabled),
+.toolbar button:active:not(:disabled),
+.conn-toolbar button:active:not(:disabled),
+.chart-toolbar button:active:not(:disabled),
+.trend-toolbar button:active:not(:disabled),
+.sidebar-panel button:active:not(:disabled),
+.settings-wrap button:active:not(:disabled),
+.help-modal button:active:not(:disabled),
+.gm-modal button:not(.gm-choice-btn):active:not(:disabled),
+.progress-btn:active:not(:disabled),
+.progress-aux-btn:active:not(:disabled),
+.valve-side-btn:active:not(:disabled),
+.keypad-btn:active:not(:disabled),
+.leak-test-btn:active:not(:disabled),
+.trend-toolbar-btn:active:not(:disabled),
+.fullscreen-btn:active:not(:disabled),
+.mode-modal-cancel:active:not(:disabled),
+.btn-3d:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--panel-border-strong, #a0acba),
+              0 2px 4px var(--3d-bevel-shadow),
+              inset 0 1px 0 var(--3d-bevel-light);
+}
+
+button:disabled,
+.btn-3d:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 0 1px 0 var(--panel-border) !important;
+}
+
+/* 🔵 Primary 3D (시작, 주요 액션) */
+button.primary:not(.mode-choice-btn),
+.valve-side-btn.primary,
+.btn-3d.primary {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%) !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 0 #0369a1, 0 5px 10px rgba(2, 132, 199, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+button.primary:not(.mode-choice-btn):hover:not(:disabled),
+.valve-side-btn.primary:hover:not(:disabled),
+.btn-3d.primary:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 4px 0 #0369a1, 0 7px 12px rgba(2, 132, 199, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+button.primary:not(.mode-choice-btn):active:not(:disabled),
+.valve-side-btn.primary:active:not(:disabled),
+.btn-3d.primary:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 #0369a1, 0 2px 4px rgba(2, 132, 199, 0.3) !important;
+}
+
+/* 🟢 Success 3D (저장, 내보내기, 연결) */
+button.success,
+.btn-3d.success {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%) !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 0 #047857, 0 5px 10px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+button.success:hover:not(:disabled),
+.btn-3d.success:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 4px 0 #047857, 0 7px 12px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+button.success:active:not(:disabled),
+.btn-3d.success:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 #047857, 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* 🔴 Danger 3D (정지, 알람 리셋, 삭제) */
+button.danger,
+.btn-3d.danger {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 100%) !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 0 #b91c1c, 0 5px 10px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+button.danger:hover:not(:disabled),
+.btn-3d.danger:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 4px 0 #b91c1c, 0 7px 12px rgba(239, 68, 68, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+button.danger:active:not(:disabled),
+.btn-3d.danger:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 #b91c1c, 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* 🟡 Warning & Paused 3D (일시정지, 주의) */
+button.warn,
+button.paused,
+.btn-3d.warn {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%) !important;
+  border-color: #d97706 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 0 #b45309, 0 5px 10px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+button.warn:hover:not(:disabled),
+button.paused:hover:not(:disabled),
+.btn-3d.warn:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 4px 0 #b45309, 0 7px 12px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+button.warn:active:not(:disabled),
+button.paused:active:not(:disabled),
+.btn-3d.warn:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 #b45309, 0 2px 4px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* ================= 3. 3D 배율 컨트롤러 (UI Zoom 3D Bezel) ================= */
+.ui-zoom {
+  display: inline-flex !important;
+  align-items: stretch !important;
+  border: 1px solid var(--panel-border) !important;
+  border-radius: var(--3d-btn-radius) !important;
+  overflow: hidden !important;
+  height: 32px !important;
+  box-shadow: 0 3px 0 var(--panel-border-strong, #b0bcc8),
+              0 4px 6px rgba(0, 0, 0, 0.06),
+              inset 0 1px 0 var(--3d-bevel-light);
+  background: var(--panel);
+}
+
+.ui-zoom button {
+  height: 100% !important;
+  border: none !important;
+  background: linear-gradient(180deg, #ffffff 0%, var(--input-bg, #eef1f5) 100%) !important;
+  padding: 0 10px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  color: var(--text) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.ui-zoom button:hover {
+  background: var(--bg-alt) !important;
+  color: var(--accent) !important;
+}
+
+.ui-zoom button:active {
+  background: var(--panel-border) !important;
+}
+
+.ui-zoom select {
+  height: 100% !important;
+  border: none !important;
+  border-left: 1px solid var(--panel-border) !important;
+  border-right: 1px solid var(--panel-border) !important;
+  background: var(--panel) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  font-family: var(--mono, monospace) !important;
+  color: var(--text) !important;
+  padding: 0 6px !important;
+  cursor: pointer !important;
+  border-radius: 0 !important;
+  text-align: center !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ================= 4. 3D 음각 슬롯형 상단 탭 (Slot Tabs) ================= */
+.page-tabs {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 32px !important;
+  box-sizing: border-box !important;
+  background: var(--3d-slot-bg) !important;
+  padding: 2px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--panel-border) !important;
+  box-shadow: var(--3d-slot-shadow) !important;
+  gap: 3px !important;
+}
+
+.page-tabs .page-tab,
+.page-tab {
+  position: static !important;
+  top: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  color: var(--muted) !important;
+  border-radius: 6px !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  border: 1px solid transparent !important;
+  margin: 0 !important;
+  background: transparent !important;
+  white-space: nowrap !important;
+}
+
+.page-tabs .page-tab:hover,
+.page-tab:hover {
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+.page-tabs .page-tab.active,
+.page-tab.active {
+  background: var(--panel) !important;
+  color: var(--accent, #0284c7) !important;
+  border-color: var(--panel-border) !important;
+  box-shadow: 0 2px 0 var(--panel-border-strong, #b0bcc8),
+              0 3px 5px rgba(0, 0, 0, 0.08),
+              inset 0 1px 0 var(--3d-bevel-light) !important;
+}
+
+/* ================= 5. 3D 돔형 LED 램프 & 상태 인디케이터 ================= */
+.status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 30px !important;
+  box-sizing: border-box !important;
+  background: var(--panel) !important;
+  padding: 0 12px !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--panel-border) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 1px 0 var(--3d-bevel-light) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.status-pill .dot,
+.led-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.status-pill .dot::after,
+.led-dot::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* 정상 연결 (초록 돔 LED + 부드러운 펄스) */
+.status-pill.connected .dot,
+.status-pill.ok .dot,
+.led-dot.green {
+  background: radial-gradient(circle at 35% 35%, #86efac, #10b981 60%, #047857) !important;
+  box-shadow: 0 0 8px #10b981, 0 0 16px rgba(16, 185, 129, 0.45) !important;
+  animation: ledPulse 2s infinite ease-in-out !important;
+}
+
+/* 에러 / 단절 (빨강 돔 LED) */
+.status-pill.disconnected .dot,
+.status-pill.err .dot,
+.led-dot.red {
+  background: radial-gradient(circle at 35% 35%, #fca5a5, #ef4444 60%, #b91c1c) !important;
+  box-shadow: 0 0 8px #ef4444, 0 0 16px rgba(239, 68, 68, 0.45) !important;
+}
+
+/* 경고 / 수신 중 (파랑/노랑 돔 LED) */
+.status-pill.warning .dot,
+.led-dot.yellow {
+  background: radial-gradient(circle at 35% 35%, #fde68a, #f59e0b 60%, #b45309) !important;
+  box-shadow: 0 0 8px #f59e0b, 0 0 16px rgba(245, 158, 11, 0.45) !important;
+}
+.led-dot.blue {
+  background: radial-gradient(circle at 35% 35%, #bae6fd, #0284c7 60%, #0369a1) !important;
+  box-shadow: 0 0 8px #0284c7, 0 0 16px rgba(2, 132, 199, 0.45) !important;
+}
+
+@keyframes ledPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.88; filter: brightness(1.2); }
+}
+
+/* ================= 6. 3D 카드형 다중행 버튼 (Multi-line Card Choice Buttons) ================= */
+.mode-choice-btn,
+.gm-choice-btn {
+  height: auto !important;
+  min-height: 88px !important;
+  flex: 1 1 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 14px 16px !important;
+  border-radius: 12px !important;
+  text-align: center !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--panel-border) !important;
+  background: linear-gradient(180deg, #ffffff 0%, var(--input-bg, #eef1f5) 100%) !important;
+  box-shadow: 0 4px 0 var(--panel-border-strong, #b0bcc8),
+              0 6px 12px var(--3d-bevel-shadow),
+              inset 0 1px 0 var(--3d-bevel-light) !important;
+  transition: transform 0.08s ease-in-out, box-shadow 0.08s ease-in-out, filter 0.12s ease-in-out !important;
+}
+
+.mode-choice-btn:hover,
+.gm-choice-btn:hover {
+  filter: brightness(1.04) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 0 var(--panel-border-strong, #a0acba),
+              0 8px 16px var(--3d-bevel-shadow),
+              inset 0 1px 0 var(--3d-bevel-light) !important;
+}
+
+.mode-choice-btn:active,
+.gm-choice-btn:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--panel-border-strong, #a0acba),
+              0 2px 4px var(--3d-bevel-shadow),
+              inset 0 1px 0 var(--3d-bevel-light) !important;
+}
+
+.mode-choice-btn .mode-choice-title,
+.gm-choice-btn span {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: var(--text) !important;
+  display: block !important;
+}
+
+.mode-choice-btn .mode-choice-desc,
+.gm-choice-btn small {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+  line-height: 1.45 !important;
+  display: block !important;
+}
+
+/* Primary Mode Choice Button */
+.mode-choice-btn.primary {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%) !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 4px 0 #0369a1, 0 6px 14px rgba(2, 132, 199, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.mode-choice-btn.primary .mode-choice-title {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+.mode-choice-btn.primary .mode-choice-desc {
+  color: rgba(255, 255, 255, 0.95) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mode-modal-box {
+  width: 440px !important;
+  max-width: 94vw !important;
+  padding: 24px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+}
+
+/* ================= 7. 3D 인셋 입력 필드 (Inset Form Controls) ================= */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select:not(#uiZoomSelect) {
+  height: 30px;
+  box-sizing: border-box;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--3d-btn-radius);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--3d-input-shadow);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+select:not(#uiZoomSelect):focus {
+  border-color: var(--accent, #0284c7);
+  box-shadow: var(--3d-input-shadow), 0 0 0 3px rgba(2, 132, 199, 0.22);
+}
+
+/* ================= 8. Toolbars & Panels ================= */
+.toolbar,
+.conn-toolbar,
+.chart-toolbar,
+.trend-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), inset 0 1px 0 var(--3d-bevel-light);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.toolbar .sep,
+.conn-toolbar .sep,
+.chart-toolbar .sep,
+.trend-toolbar .sep {
+  height: 18px !important;
+  align-self: center !important;
+  width: 2px !important;
+  background: var(--panel-border-strong, #b0bcc8) !important;
+  margin: 0 4px !important;
+}
+
+.help-modal-box,
+.gm-modal-box,
+.trend-popup,
+.chart-popup {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 4px 12px rgba(0, 0, 0, 0.18), inset 0 1px 0 var(--3d-bevel-light) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--panel-border-strong, #8e9ca8) !important;
+}
+
+.settings-wrap fieldset {
+  box-shadow: var(--3d-card-shadow);
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+}
+
+/* GMS & Common Univer Grid Containers Standard Coordinate Isolation */
+#gmsTrendGridContainer,
+#gmsUserGridContainer,
+#gmsWorkLogGridContainer,
+#gmsWorklogGridContainer,
+#gmsErrorLogGridContainer,
+#gmsErrorlogGridContainer,
+#gmsConfigModeGridContainer,
+#gmsConfigmodeGridContainer,
+#trendGridContainer,
+#univer-container {
+  zoom: calc(1 / var(--ui-zoom, 1));
+}

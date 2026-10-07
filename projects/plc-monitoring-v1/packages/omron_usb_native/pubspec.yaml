@@ -1,0 +1,27 @@
+name: omron_usb_native
+description: Android USB Host API integration for Omron PLC USB Peripheral Ports.
+version: 1.0.0
+publish_to: 'none'
+homepage: https://github.com/iconnmake/omron_usb_native
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  omron_fins_protocol:
+    path: ../omron_fins_protocol
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.iconnmake.omron_usb_native
+        pluginClass: OmronUsbNativePlugin

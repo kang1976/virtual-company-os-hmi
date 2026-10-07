@@ -12,6 +12,7 @@ const { nowLocalIso } = require('./timeUtils');
 const { UdpFinsClient, DEFAULT_PORT: UDP_DEFAULT_PORT, DEFAULT_PLC_NODE, DEFAULT_PC_NODE } = require('./udpFinsClient');
 const { TcpFinsClient } = require('./tcpFinsClient');
 const { NxCipClient, DEFAULT_PORT: NX_DEFAULT_PORT } = require('./nxCipClient');
+const { VirtualFinsClient } = require('./virtualFinsClient');
 
 /**
  * @param {object} opts
@@ -24,6 +25,9 @@ const { NxCipClient, DEFAULT_PORT: NX_DEFAULT_PORT } = require('./nxCipClient');
 function createPlcSession({ broadcast, logFile, wsTypes, maxLogEntries = 500, stopDependents }) {
   function makeClient(type, series) {
     if (series === 'NX') return new NxCipClient(pushLog);
+    if (type === 'VIRTUAL' || type === 'VIRTUAL_SIM' || type === 'MOCK' || type === 'SIMULATOR') {
+      return new VirtualFinsClient(pushLog);
+    }
     if (type === 'UDP') return new UdpFinsClient(pushLog);
     if (type === 'TCP') return new TcpFinsClient(pushLog);
     return new UsbFinsClient(pushLog);

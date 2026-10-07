@@ -4,6 +4,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
 
+    <!-- [OMRON USB OTG] USB Host 기능 활성화 -->
+    <uses-feature android:name="android.hardware.usb.host" />
+
     <application
         android:label="PLC 원격 제어"
         android:name="${applicationName}"
@@ -26,6 +29,14 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- [OMRON USB OTG] PLC USB 케이블 연결 시 자동 감지 및 권한 연결 -->
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
         <meta-data
             android:name="flutterEmbedding"

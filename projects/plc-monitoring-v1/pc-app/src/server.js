@@ -72,7 +72,6 @@ const {
   resolveSnapshotDir,
   filePrefix,
 } = require('./settingsManager');
-const { securityHeaders, writeSecurityGuard, writeAuditLog } = require('./securityGuard');
 
 const PORT = process.env.PORT || 3000;
 const MAX_LOG_ENTRIES = 500;
@@ -231,15 +230,7 @@ function broadcast(obj) {
   if (!wss) return;
   const data = JSON.stringify(obj);
   for (const ws of wss.clients) {
-    if (ws.readyState === 1) {
-      try {
-        ws.send(data, (err) => {
-          if (err) console.error('WebSocket send error:', err.message);
-        });
-      } catch (err) {
-        console.error('WebSocket send exception:', err.message);
-      }
-    }
+    if (ws.readyState === 1) ws.send(data);
   }
 }
 
@@ -453,6 +444,11 @@ function getStatus() {
 // ── HTTP API ──
 const app = express();
 
+// 기본 첫 화면 접속 시 GMS 장비 선택 화면(gms-select.html)을 먼저 서빙
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'gms-select.html'));
+});
+
 // GMS 배관도(P&ID)를 public/gms.html에 하드코딩하지 않고 public/gms-diagram.svg로 분리해서,
 // 매 요청마다 그 파일을 새로 읽어 gms.html의 <!--GMS_DIAGRAM_SVG--> 자리에 그대로 끼워
 // 넣는다. Boxy SVG 등 외부 에디터로 gms-diagram.svg만 열어 고쳐 저장하면(서버 재시작 없이)
@@ -470,26 +466,21 @@ app.get('/gms.html', (req, res) => {
   }
 });
 
-app.use(securityHeaders);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 // 기본 100kb 제한으로는 base64로 인코딩한 Excel 파일 업로드(/api/*/variables/import)가
 // 잘릴 수 있어서 넉넉히 늘림.
 app.use(express.json({ limit: '10mb' }));
-app.use(writeSecurityGuard());
 
-// 보안 감사 로그 조회 API
-app.get('/api/security/audit', (req, res) => {
-  const auditPath = path.join(__dirname, '..', 'logs', 'security_audit.log');
-  if (!fs.existsSync(auditPath)) {
-    return res.json({ ok: true, logs: [] });
-  }
+// ── 실시간 사용자 클릭 이벤트 추적 엔드포인트 ──
+app.post('/api/debug/click', (req, res) => {
+  const b = req.body || {};
+  const clickLog = `🖱️ [USER CLICK] ${b.time || ''} | 페이지: ${b.page || ''} | 대상: ${b.target || ''} (x:${b.x}, y:${b.y})`;
+  console.log(clickLog);
   try {
-    const lines = fs.readFileSync(auditPath, 'utf8').trim().split('\n').filter(Boolean);
-    const recent = lines.slice(-200); // 최근 200개 반환
-    res.json({ ok: true, count: recent.length, logs: recent });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
+    const logPath = path.join(__dirname, '..', 'logs', 'user_clicks.log');
+    fs.appendFile(logPath, JSON.stringify(b) + '\n', () => {});
+  } catch (e) {}
+  res.json({ ok: true });
 });
 
 app.post('/api/connect', async (req, res) => {
@@ -2591,6 +2582,46 @@ app.post('/api/settings/reset', (req, res) => {
   res.json({ ok: true, settings: resetSettings() });
 });
 
+// ngrok 원격 터널 상태 조회 (ngrok 로컬 API 127.0.0.1:4040/api/tunnels 질의)
+app.get('/api/tunnel/status', async (req, res) => {
+  try {
+    const http = require('http');
+    const options = {
+      hostname: '127.0.0.1',
+      port: 4040,
+      path: '/api/tunnels',
+      method: 'GET',
+      timeout: 1000,
+    };
+    const reqTunnel = http.request(options, (resp) => {
+      let data = '';
+      resp.on('data', (chunk) => { data += chunk; });
+      resp.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          const tunnel = json.tunnels && json.tunnels.find((t) => t.proto === 'https' || t.proto === 'http');
+          if (tunnel && tunnel.public_url) {
+            return res.json({ ok: true, active: true, url: tunnel.public_url });
+          }
+          res.json({ ok: true, active: false });
+        } catch (e) {
+          res.json({ ok: true, active: false });
+        }
+      });
+    });
+    reqTunnel.on('error', () => {
+      res.json({ ok: true, active: false });
+    });
+    reqTunnel.on('timeout', () => {
+      reqTunnel.destroy();
+      res.json({ ok: true, active: false });
+    });
+    reqTunnel.end();
+  } catch (err) {
+    res.json({ ok: true, active: false, error: err.message });
+  }
+});
+
 // PC 상태 확인: 이 앱은 Omron CX-Server가 아니라 자체 FINS 스택으로 통신하므로,
 // 예시 화면의 "CX-Server 검출" 대신 이 앱에 실제로 의미 있는 항목(서버 실행/USB 드라이버)을 점검한다.
 app.get('/api/settings/check', (req, res) => {
@@ -2717,49 +2748,32 @@ registerPlcInfoRoutes('/api/gms', () => gmsSession);
 
 gmsHistory.init(); // GMS 데이터 이력 DB(data/gms-history.db) 준비 - 테이블 생성/보존 정리 타이머 시작
 
-const server = app.listen(PORT, () => {
-  console.log(`PLC 모니터링 서버 실행 중: http://localhost:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`PLC 모니터링 서버 실행 중: http://localhost:${PORT} (0.0.0.0:${PORT})`);
   console.log(`로그 파일: ${mainLogFile} / ${gridLogFile}`);
 });
 
 wss = new WebSocketServer({ server });
-wss.on('error', (err) => {
-  console.error('[WSS ERROR]', err.message);
-});
 wss.on('connection', (ws) => {
-  ws.on('error', (err) => {
-    console.error('[WS CLIENT ERROR]', err.message);
-  });
-  try {
-    ws.send(JSON.stringify({ type: 'status', payload: getStatus() }));
-    ws.send(JSON.stringify({
-      type: 'memoryValues',
-      payload: { area: getActiveView().area, startAddr: getActiveView().startAddr, dataType: getActiveView().dataType, cells: state.cells, lastUpdate: state.lastUpdate },
-    }));
-    ws.send(JSON.stringify({ type: 'logHistory', payload: mainSession.getRecentLogs(100) }));
-    ws.send(JSON.stringify({ type: 'gridStatus', payload: gridManager.getStatus() }));
-    ws.send(JSON.stringify({ type: 'gridConnStatus', payload: gridSession.getStatus() }));
-    ws.send(JSON.stringify({ type: 'gridConnLogHistory', payload: gridSession.getRecentLogs(100) }));
-    ws.send(JSON.stringify({ type: 'trendStatus', payload: trendManager.getStatus() }));
-    ws.send(JSON.stringify({ type: 'trendConnStatus', payload: trendSession.getStatus() }));
-    ws.send(JSON.stringify({ type: 'trendConnLogHistory', payload: trendSession.getRecentLogs(100) }));
-    // 트렌드 화면을 다른 화면으로 옮겼다 돌아와도 그동안 쌓인 그래프가 그대로 보이도록,
-    // 서버가 들고 있던 최근 값 기록을 새로 접속한 클라이언트에게 통째로 넘겨준다.
-    ws.send(JSON.stringify({ type: 'trendValuesHistory', payload: trendManager.getValueHistory() }));
-    ws.send(JSON.stringify({ type: 'gmsStatus', payload: gmsManager.getStatus() }));
-    ws.send(JSON.stringify({ type: 'gmsConnStatus', payload: gmsSession.getStatus() }));
-    ws.send(JSON.stringify({ type: 'gmsConnLogHistory', payload: gmsSession.getRecentLogs(100) }));
-    ws.send(JSON.stringify({ type: 'gmsValues', payload: { values: gmsManager.getValues(), pts: gmsManager.getPtValues(), lastUpdate: null } }));
-  } catch (err) {
-    console.error('[WS INITIAL SEND ERROR]', err.message);
-  }
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('[UNCAUGHT EXCEPTION]', err);
-});
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('[UNHANDLED REJECTION]', reason);
+  ws.send(JSON.stringify({ type: 'status', payload: getStatus() }));
+  ws.send(JSON.stringify({
+    type: 'memoryValues',
+    payload: { area: getActiveView().area, startAddr: getActiveView().startAddr, dataType: getActiveView().dataType, cells: state.cells, lastUpdate: state.lastUpdate },
+  }));
+  ws.send(JSON.stringify({ type: 'logHistory', payload: mainSession.getRecentLogs(100) }));
+  ws.send(JSON.stringify({ type: 'gridStatus', payload: gridManager.getStatus() }));
+  ws.send(JSON.stringify({ type: 'gridConnStatus', payload: gridSession.getStatus() }));
+  ws.send(JSON.stringify({ type: 'gridConnLogHistory', payload: gridSession.getRecentLogs(100) }));
+  ws.send(JSON.stringify({ type: 'trendStatus', payload: trendManager.getStatus() }));
+  ws.send(JSON.stringify({ type: 'trendConnStatus', payload: trendSession.getStatus() }));
+  ws.send(JSON.stringify({ type: 'trendConnLogHistory', payload: trendSession.getRecentLogs(100) }));
+  // 트렌드 화면을 다른 화면으로 옮겼다 돌아와도 그동안 쌓인 그래프가 그대로 보이도록,
+  // 서버가 들고 있던 최근 값 기록을 새로 접속한 클라이언트에게 통째로 넘겨준다.
+  ws.send(JSON.stringify({ type: 'trendValuesHistory', payload: trendManager.getValueHistory() }));
+  ws.send(JSON.stringify({ type: 'gmsStatus', payload: gmsManager.getStatus() }));
+  ws.send(JSON.stringify({ type: 'gmsConnStatus', payload: gmsSession.getStatus() }));
+  ws.send(JSON.stringify({ type: 'gmsConnLogHistory', payload: gmsSession.getRecentLogs(100) }));
+  ws.send(JSON.stringify({ type: 'gmsValues', payload: { values: gmsManager.getValues(), pts: gmsManager.getPtValues(), lastUpdate: null } }));
 });
 
 process.on('SIGINT', () => {

@@ -22,17 +22,10 @@ const trendLog = require('./trendLog');
 const finsCommands = require('./plcClient/finsCommands');
 const config = require('./config');
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 // PLC 접속 대상/폴링 주기는 config(data/config.json)에서 관리 — ADMIN이 /api/config로 변경 가능
 
 const app = express();
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  next();
-});
 app.use(express.json());
 
 // HTTP(S) 선택은 인증서 유무로 결정 — 세션 쿠키 secure 플래그도 이 값을 그대로 따름(아래 참고)

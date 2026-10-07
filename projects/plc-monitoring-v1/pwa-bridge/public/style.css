@@ -1,51 +1,89 @@
 /* PLC 원격 제어 — 모바일 우선(휴대폰/PDA) 스타일
-   Design Ref: 가상 오피스 VS Code Light Modern & Cyber Dark 디자인 시스템 동기화
+   Design Ref: docs/01-plan/mobile-screen-plan.md §4 공통 반응형 기준
    테마/글자크기: S5 설정에서 <html data-theme> + --fs-base 로 제어 */
 
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #0f172a;
-  --border: rgba(255, 255, 255, 0.25);
-  --border-strong: rgba(255, 255, 255, 0.35);
-  --text: #f8fafc;
-  --text-dim: #94a3b8;
+  --bg: #0b0f19;
+  --surface: #131b2e;
+  --surface-2: #182235;
+  --border: rgba(56, 189, 248, 0.22);
+  --border-strong: #0284c7;
+  --text: #f1f5f9;
+  --text-dim: #8493a8;
   --primary: #0284c7;
-  --primary-accent: #38bdf8;
+  --primary-accent: #00f0ff;
+  --accent: #00f0ff;
+  --danger: #f43f5e;
+  --danger-strong: #fb7185;
+  --ok: #10b981;
+  --warn: #fbbf24;
+  --write: #b45309;
+  --fs-base: 16px;
+
+  --3d-bevel-light: rgba(0, 240, 255, 0.25);
+  --3d-bevel-shadow: rgba(0, 0, 0, 0.6);
+  --3d-card-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --3d-btn-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  --3d-btn-active: inset 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+:root[data-theme="cyber"] {
+  --bg: #0b0f19;
+  --surface: #131b2e;
+  --surface-2: #182235;
+  --border: rgba(56, 189, 248, 0.25);
+  --border-strong: #0284c7;
+  --text: #f1f5f9;
+  --text-dim: #8493a8;
+  --primary: #0284c7;
+  --primary-accent: #00f0ff;
+  --accent: #00f0ff;
+  --danger: #f43f5e;
+  --danger-strong: #fb7185;
+  --ok: #10b981;
+  --warn: #fbbf24;
+  --write: #d97706;
+}
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --surface: #111827;
+  --surface-2: #0f1626;
+  --border: #1f2937;
+  --border-strong: #374151;
+  --text: #e5e7eb;
+  --text-dim: #9ca3af;
+  --primary: #2563eb;
+  --primary-accent: #60a5fa;
+  --accent: #3b82f6;
   --danger: #dc2626;
   --danger-strong: #ef4444;
-  --ok: #10b981;
-  --warn: #f59e0b;
-  --write: #d97706;
-  --fs-base: 16px;
+  --ok: #22c55e;
+  --warn: #fbbf24;
+  --write: #b45309;
+  --3d-bevel-light: rgba(255, 255, 255, 0.12);
+  --3d-bevel-shadow: rgba(0, 0, 0, 0.45);
+  --3d-card-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --3d-btn-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 :root[data-theme="light"] {
-  --bg: #f8f9fa;
+  --bg: #f3f4f6;
   --surface: #ffffff;
-  --surface-2: #f3f4f6;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
+  --surface-2: #e5e7eb;
+  --border: #d1d5db;
+  --border-strong: #9ca3af;
   --text: #111827;
-  --text-dim: #4b5563;
-  --primary: #0066b8;
-  --primary-accent: #007acc;
+  --text-dim: #6b7280;
+  --primary: #2563eb;
+  --primary-accent: #2563eb;
+  --accent: #2563eb;
   --danger: #dc2626;
   --danger-strong: #ef4444;
-  --ok: #059669;
-  --warn: #d97706;
+  --ok: #16a34a;
+  --warn: #b45309;
   --write: #b45309;
-}
-:root[data-theme="oled-black"],
-:root[data-theme="oled"] {
-  --bg: #000000;
-  --surface: #0a0a0a;
-  --surface-2: #050505;
-  --border: rgba(255, 255, 255, 0.25);
-  --border-strong: rgba(255, 255, 255, 0.35);
-  --text: #f8fafc;
-  --text-dim: #737373;
-  --primary: #0284c7;
-  --primary-accent: #10b981;
+  --3d-bevel-light: rgba(255, 255, 255, 0.6);
+  --3d-bevel-shadow: rgba(0, 0, 0, 0.1);
+  --3d-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --3d-btn-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(0, 0, 0, 0.15);
 }
 
 * { box-sizing: border-box; }
@@ -53,7 +91,7 @@ html, body { margin: 0; }
 /* 글자 크기(S5 설정)는 여기서 rem의 기준이 되는 html font-size를 바꿔 전체에 반영한다 */
 html { font-size: var(--fs-base); }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
   font-size: 1rem;
   background: var(--bg);
   color: var(--text);
@@ -71,15 +109,15 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
+  box-shadow: var(--3d-card-shadow);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 }
-.login-card h1 { font-size: 1.2rem; margin: 0 0 8px; text-align: center; color: var(--text); font-weight: 700; }
+.login-card h1 { font-size: 1.2rem; margin: 0 0 8px; text-align: center; color: var(--text); }
 .error { color: var(--danger-strong); min-height: 1.2em; margin: 0; font-size: 0.85rem; }
 
-/* ── 공통 입력/버튼 (터치 타깃 ≥ 44px, 초고대비 텍스트 섀도우) ── */
+/* ── 공통 입력/버튼 (3D 촉각 터치 타깃 ≥ 44px) ── */
 input, button, select {
   font-size: 1rem;
   font-family: inherit;
@@ -87,41 +125,41 @@ input, button, select {
   border-radius: 9px;
   border: 1px solid var(--border);
   min-height: 44px;
-  transition: border-color .15s, box-shadow .15s;
+  box-sizing: border-box;
 }
-input:focus-visible, select:focus-visible, button:focus-visible {
-  outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+input, select {
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
-input, select { background: var(--surface); color: var(--text); width: 100%; }
-:root[data-theme="light"] input, :root[data-theme="light"] select { background: #ffffff; border-color: var(--border-strong); }
 button {
   cursor: pointer;
-  border: none;
-  background: var(--primary);
-  color: #ffffff !important;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--primary) 0%, #0369a1 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: var(--3d-btn-shadow);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s;
+}
+button:active {
+  transform: translateY(1px);
+  box-shadow: var(--3d-btn-active);
 }
 .btn-primary {
-  background: var(--primary);
-  color: #ffffff !important;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #38bdf8;
+  color: #fff;
 }
 .btn-secondary {
-  background: var(--surface-2);
-  color: var(--text) !important;
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+  color: var(--text);
   border: 1px solid var(--border);
-  text-shadow: none;
-  font-weight: 600;
 }
 .btn-danger {
-  background: var(--danger);
-  color: #ffffff !important;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  background: linear-gradient(180deg, #f43f5e 0%, #be123c 100%);
+  border-color: #fb7185;
+  color: #fff;
 }
 
 /* ── 앱 바 ── */
@@ -131,7 +169,7 @@ button {
   padding: calc(env(safe-area-inset-top) + 12px) 16px 12px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 .appbar-title { font-size: 1rem; font-weight: 600; }
 .appbar-ver {
@@ -164,17 +202,15 @@ button {
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  transition: transform .15s, box-shadow .15s;
 }
-.card-title { margin: 0 0 12px; font-size: 0.95rem; color: var(--text); font-weight: 700; }
+.card-title { margin: 0 0 12px; font-size: 0.95rem; color: var(--text-dim); font-weight: 600; }
 .stat-row {
   display: flex; justify-content: space-between; align-items: center;
   gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border);
 }
 .stat-row:last-of-type { border-bottom: none; }
-.stat-label { color: var(--text-dim); font-size: 0.85rem; flex: 0 0 auto; font-weight: 500; }
-.stat-value { text-align: right; font-size: 0.95rem; word-break: break-all; font-weight: 600; color: var(--text); }
+.stat-label { color: var(--text-dim); font-size: 0.85rem; flex: 0 0 auto; }
+.stat-value { text-align: right; font-size: 0.95rem; word-break: break-all; }
 .card > button { width: 100%; margin-top: 12px; }
 
 /* ── 링크형 행 / 상세 화면 ── */
@@ -249,16 +285,15 @@ button {
 .tag-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
   padding: 12px 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.tag-card-symbol { font-weight: 700; font-size: 0.95rem; word-break: break-all; color: var(--text); }
+.tag-card-symbol { font-weight: 600; font-size: 0.95rem; word-break: break-all; }
 .tag-card-desc { color: var(--text-dim); font-size: 0.82rem; margin-top: 2px; word-break: break-all; }
 .tag-card-foot {
   display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;
 }
 .tag-card-value {
-  font-family: "SFMono-Regular", Consolas, Menlo, monospace; font-size: 1rem; font-weight: 700;
-  min-width: 2.5ch; text-align: right; color: var(--text);
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace; font-size: 1rem; font-weight: 600;
+  min-width: 2.5ch; text-align: right;
 }
 .tag-card-value.stale { color: var(--text-dim); font-weight: 400; }
 .tag-card-value.flash { animation: valFlash 0.6s ease-out; }
@@ -269,9 +304,7 @@ button {
 .tag-card-addr { font-size: 0.75rem; color: var(--text-dim); font-family: "SFMono-Regular", Consolas, Menlo, monospace; }
 .tag-card-addr.editable { color: var(--primary-accent); text-decoration: underline; cursor: pointer; }
 .tag-card-foot .write-btn {
-  margin-left: auto; min-height: 40px; padding: 8px 16px; background: var(--write);
-  color: #ffffff !important; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-  border-radius: 8px;
+  margin-left: auto; min-height: 40px; padding: 8px 16px; background: var(--write); color: #fff;
 }
 
 .risk-badge {

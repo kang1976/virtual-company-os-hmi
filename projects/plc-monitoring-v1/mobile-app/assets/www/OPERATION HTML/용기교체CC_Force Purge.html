@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Force Purge - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "[A/B] 자동 진행" 화면 분리 파일 - 용기교체(CC)의 "실린더 확인"
+     화면 "Force Purge" 버튼으로 들어온다. Status는 계속 CC로 그대로 둔다(다른 CC 단계들과
+     마찬가지로 배지 없음). "수동 배관 청소" 화면과 같은 설정/진행 횟수 구성을 재사용하되,
+     이미 자동으로 진행 중인 화면이라 "확인" 없이 "취소"만 있다. 실제 시퀀스/횟수 로직은
+     아직 없음(뼈대) - "취소"는 실린더 확인 화면으로 되돌아간다. 스타일은 ../gms.css를
+     그대로 참조(복사 아님). gms.js가 fetch해서 id="progressCylReplaceForcePurgeBody"
+     컨테이너에 주입한다. -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressCylReplaceForcePurgeBody">
+    <div class="progress-menu-desc">수동 배관 청소<br>모드입니다.</div>
+    <div class="progress-menu-desc" style="margin-top: 22px;">Out Gassing 제거 중</div>
+    <div class="progress-btn-group">
+      <div class="purge-count-panel">
+        <div class="purge-count-row">
+          <span class="purge-count-label">설정 횟수 :</span>
+          <span class="purge-count-box">[ <input type="number" id="cylReplaceForcePurgeSetCount" class="purge-count-input" min="0" step="1" value="1" /> ]</span>
+        </div>
+        <div class="purge-count-row">
+          <span class="purge-count-label">진행 횟수 :</span>
+          <span class="purge-count-box">[ <span id="cylReplaceForcePurgeProgressCount" class="purge-count-value">0</span> ]</span>
+        </div>
+      </div>
+      <button type="button" class="progress-aux-btn" id="cylReplaceForcePurgeCancelBtn" style="width:100%;">취소</button>
+    </div>
+  </div>
+</body>
+</html>

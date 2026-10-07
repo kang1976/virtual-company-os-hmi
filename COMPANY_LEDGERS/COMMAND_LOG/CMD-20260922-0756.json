@@ -1,0 +1,9 @@
+{
+  "id": "CMD-20260922-0756",
+  "project_id": "PRJ-20260922-0756",
+  "sender": "CEO",
+  "recipient": "COO",
+  "instruction": "최신 지시 조회 테스트",
+  "priority": "P0",
+  "status": "PROCESSING"
+}

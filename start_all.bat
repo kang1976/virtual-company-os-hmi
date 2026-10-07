@@ -1,19 +1,21 @@
-﻿@echo off
+@echo off
 chcp 65001 > nul
-title [가상 기업 OS] 전사 서버 1-Click 통합 기동기
+title [가상 기업 OS] 전사 서버 통합 기동기
+
+cd /d "%~dp0"
 
 echo ======================================================================
 echo    [가상 기업 자율 운영 OS - CEO 관제실] 전사 서버 통합 기동
 echo ======================================================================
 echo.
-echo  [1/3] 백엔드 FastAPI 서버(:8000) 기동 중...
-start "CEO_OS_BACKEND_8000" cmd /k "chcp 65001 > nul && title [백엔드 API 서버 :8000] && cd /d %~dp0 && python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload"
+echo  [1/3] 백엔드 FastAPI 서버 (:8000) 기동 중...
+start "CEO_BACKEND_8000" cmd /c "%~dp0run_backend.bat"
 
-echo  [2/3] 프론트엔드 React/Vite 서버(:5173) 기동 중...
-start "CEO_OS_FRONTEND_5173" cmd /k "chcp 65001 > nul && title [프론트엔드 콘솔 :5173] && cd /d %~dp0 && npm --prefix frontend run dev"
+echo  [2/3] 프론트엔드 Vite 서버 (:5173) 기동 중...
+start "CEO_FRONTEND_5173" cmd /c "%~dp0run_frontend.bat"
 
 echo.
-echo  [3/3] 잠시 후(약 3초 뒤) 기본 웹 브라우저에서 관제 화면이 자동으로 열립니다.
+echo  [3/3] 브라우저 관제 화면 자동 연결 중...
 timeout /t 3 > nul
 start http://localhost:5173
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>작업이력 - GMS 조작화면</title>
+<!-- gms.html 조작화면 중 "작업이력" 화면 분리 파일. 보조 메뉴의 "작업이력" 버튼으로 들어온다
+     (Operation.js의 auxMenuWorkLogBtn/showProgressWorkLog). 조작화면에서 실행/확인류 버튼을
+     누를 때마다 Operation.js의 logWorkAction()이 서버(src/gmsHistory.js work_log 테이블)에
+     기록한 내용과, public/gms-sub-sequence-runner.js가 서브시퀀스 Step이 바뀔 때마다 남기는
+     자동진행 이력을 같은 표에 시간순으로 함께 보여준다(별도 DB 없이 work_log 확장 - "터치키
+     이력 + 자동진행 이력을 한 화면에서 보고 싶다" 요청에 따른 설계). 열 구성(왼쪽부터):
+     구분(터치키/자동진행) / HTML화면(제목) / 조작 Key / 측(그 순간 그 측의 Status 상태 메시지,
+     예 "[A] 실린더 교체") / 시각 / 조작자 / 권한 / 자동진행 Step / 자동진행 누적(초) /
+     PT·Weight 센서 개별 열(VT/VPT/FPT/LPT_x/NPT_x/HPT_x/WI_x) - 조작자는 PASSWORD로 확인된
+     사람, 비번 없이 누른 키는 마지막 확인자를 그대로 이어받는다(자동진행 행은 조작자 없이
+     기록됨). A/B 탭으로 나뉘고 공통(양측 공용) 조작은 두 탭 모두에 표시되며, 전체/자동진행만/
+     터치조작만 라디오 그룹으로 둘 중 하나만 걸러 볼 수 있다. 이 화면만 배관도(.diagram-panel)를 숨기고
+     그리드가 화면 전체 폭을 쓴다(14개 안팎의 열이라 좁은 우측 패널만으론 비좁음 -
+     Operation.js의 setWorkLogFullWidth 참고) - "닫기"를 눌러야 배관도가 돌아온다. 스타일은
+     ../gms.css를 그대로 참조. gms.js가 fetch해서 id="progressWorkLogBody" 컨테이너에
+     주입하고, public/gms-worklog-widget.js가 표 렌더링/탭 전환/열너비+행높이 조절/엑셀
+     내보내기/행별 "복귀"를 전담한다(gms-user-widget.js와 같은 관심사 분리 패턴). -->
+<link rel="stylesheet" href="../gms.css">
+</head>
+<body>
+  <div class="progress-menu-body" id="progressWorkLogBody">
+    <div class="progress-menu-desc">조작화면에서 실행/확인 버튼을 누를 때마다 자동으로 기록됩니다.</div>
+    <div class="pt-calib-tabs">
+      <button type="button" class="pt-calib-tab" id="workLogTabABtn">작업이력 A</button>
+      <button type="button" class="pt-calib-tab" id="workLogTabBBtn">작업이력 B</button>
+    </div>
+    <div class="trend-range-row">
+      <label>시작 <input type="datetime-local" id="workLogFromInput" step="1" /></label>
+      <label>종료 <input type="datetime-local" id="workLogToInput" step="1" /></label>
+      <button type="button" class="trend-toolbar-btn" id="workLogFilterBtn">🔍 기간 조회</button>
+      <button type="button" class="trend-toolbar-btn" id="workLogFilterResetBtn">전체보기</button>
+      <!-- 터치키 조작이력과 서브시퀀스(자동진행) Step 이력이 같은 표에 함께 기록되므로,
+           둘 중 하나만 걸러 보고 싶을 때 쓴다(gms-worklog-widget.js) - 셋 중 하나만 켜지는
+           라디오 그룹(전체/자동진행만/터치조작만), 체크박스 2개를 따로 두면 둘 다 켜졌을 때
+           의미가 모호해지므로 상호배타로 만들었다. -->
+      <span style="display:flex; align-items:center; gap:10px;">
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="workLogKindFilter" id="workLogKindFilterAll" value="all" checked /> 전체</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="workLogKindFilter" id="workLogKindFilterAuto" value="auto" /> 자동진행만</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="workLogKindFilter" id="workLogKindFilterTouch" value="touch" /> 터치조작만</label>
+      </span>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+      <button type="button" id="workLogRefreshBtn">🔄 새로고침</button>
+      <button type="button" id="workLogReturnBtn" class="primary">↩ 선택한 행 화면으로 복귀</button>
+      <button type="button" id="workLogDataClearBtn" title="PASSWORD 확인 후 지금 탭(A/B)의 화면만 지웁니다. 서버 DB 기록은 지워지지 않고, 새로고침/기간조회로 언제든 다시 불러올 수 있습니다.">🧹 Data Clear</button>
+      <button type="button" id="workLogExcelExportBtn">📤 엑셀로 내보내기</button>
+      <button type="button" id="workLogMsgExportBtn">📤 메시지 설정 내보내기</button>
+      <button type="button" id="workLogMsgImportBtn">📥 메시지 설정 불러오기</button>
+      <input type="file" id="workLogMsgImportFile" accept=".xlsx" hidden />
+      <button type="button" id="workLogTitleExportBtn" title="A열(HTML화면)에 찍히는 화면 제목을 엑셀로 내보냅니다">📤 화면 제목 내보내기</button>
+      <button type="button" id="workLogTitleImportBtn" title="엑셀로 편집한 화면 제목을 불러와 반영합니다">📥 화면 제목 불러오기</button>
+      <input type="file" id="workLogTitleImportFile" accept=".xlsx" hidden />
+      <button type="button" id="workLogCloseBtn" style="margin-left:auto;">✕ 닫기</button>
+    </div>
+    <div id="gmsWorkLogGridContainer" style="flex:1 1 400px; min-height:400px; width:100%; position:relative; overflow:hidden; background:#fff;"></div>
+    <div class="h-splitter" id="gmsWorkLogGridResizeHandle" title="드래그해서 그리드 높이 조절"></div>
+  </div>
+</body>
+</html>
