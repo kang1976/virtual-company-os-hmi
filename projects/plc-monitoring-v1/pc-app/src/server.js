@@ -285,10 +285,14 @@ const gmsSession = createPlcSession({
  * 이번에 USB로 연결하려는 경우에 한해 "다른 화면 중 USB로 연결된 것"만 먼저 끊는다.
  * (UDP/TCP는 서로 다른 화면이 각자 네트워크 소켓을 열 뿐이라 동시 연결에 아무 문제 없음)
  */
-/** plcSession.connect()와 동일한 규칙으로 body.type을 'USB'/'UDP'/'TCP'로 정규화한다. */
+/** plcSession.connect()와 동일한 규칙으로 body.type을 'USB'/'UDP'/'TCP'/'VIRTUAL_SIM'으로 정규화한다. */
 function normalizeConnType(body) {
   const rawType = String((body && body.type) || 'USB').toUpperCase();
-  return rawType === 'UDP' || rawType === 'TCP' ? rawType : 'USB';
+  if (rawType === 'UDP' || rawType === 'TCP') return rawType;
+  if (rawType === 'VIRTUAL' || rawType === 'VIRTUAL_SIM' || rawType === 'MOCK' || rawType === 'SIMULATOR') {
+    return 'VIRTUAL_SIM';
+  }
+  return 'USB';
 }
 
 function disconnectOtherSessions(except, requestedType) {

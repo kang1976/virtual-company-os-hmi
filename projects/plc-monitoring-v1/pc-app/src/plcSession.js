@@ -136,7 +136,12 @@ function createPlcSession({ broadcast, logFile, wsTypes, maxLogEntries = 500, st
     state.connecting = true;
 
     const rawType = String(body.type || 'USB').toUpperCase();
-    const requestedType = rawType === 'UDP' || rawType === 'TCP' ? rawType : 'USB';
+    let requestedType = 'USB';
+    if (rawType === 'UDP' || rawType === 'TCP') {
+      requestedType = rawType;
+    } else if (rawType === 'VIRTUAL' || rawType === 'VIRTUAL_SIM' || rawType === 'MOCK' || rawType === 'SIMULATOR') {
+      requestedType = 'VIRTUAL_SIM';
+    }
     const requestedSeries = String(body.series || 'CJ').toUpperCase() === 'NX' ? 'NX' : 'CJ';
 
     try {
