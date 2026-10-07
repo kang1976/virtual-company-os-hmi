@@ -2557,6 +2557,30 @@ app.get('/api/gms/history/export', async (req, res) => {
   }
 });
 
+// ── 시퀀스 알람 전수 자동 검증 및 체크시트 생성/다운로드 API ──
+app.post('/api/gms/sequence/verify-alarms', async (req, res) => {
+  try {
+    const { exec } = require('child_process');
+    const scriptPath = path.join(__dirname, '..', '..', 'verify_sequence_alarms.py');
+    exec(`python "${scriptPath}"`, (error, stdout, stderr) => {
+      if (error) {
+        return res.status(500).json({ ok: false, error: error.message, stderr });
+      }
+      res.json({ ok: true, message: '알람 전수 검증 및 체크시트 생성 완료', output: stdout });
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/api/gms/sequence/alarm-checksheet', (req, res) => {
+  const checkSheetPath = path.join(__dirname, '..', '..', 'GMS_시퀀스_알람_검증_체크시트.xlsx');
+  if (!fs.existsSync(checkSheetPath)) {
+    return res.status(404).json({ ok: false, error: '체크시트 파일이 아직 생성되지 않았습니다.' });
+  }
+  res.download(checkSheetPath, 'GMS_시퀀스_알람_검증_체크시트.xlsx');
+});
+
 app.get('/api/status', (req, res) => {
   res.json({ status: getStatus(), view: getActiveView(), cells: state.cells, logs: mainSession.getRecentLogs(100) });
 });

@@ -111,7 +111,7 @@ class AuthUser {
 }
 
 // ── 통신 모드 Enum ──
-enum ConnectionMode { bridge, direct, directUsb }
+enum ConnectionMode { bridge, direct, directUsb, mock }
 
 // ── PLC 데이터 타입 목록 (PWA 100% 동등) ──
 const List<Map<String, String>> plcDataTypes = [
@@ -369,6 +369,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => setState(() => _connMode = ConnectionMode.mock),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: _connMode == ConnectionMode.mock ? const Color(0xFF9333EA) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text('🧪 Mock', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -510,6 +523,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
 
   late OmronFinsUdpService _finsService;
   late OmronUsbService _usbService;
+  late OmronMockFinsService _mockService;
   Timer? _pollingTimer;
   bool _isConnected = false;
   int _latencyMs = 0;
@@ -654,6 +668,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
 
     _initFinsService();
     _initUsbService();
+    _initMockService();
     _initWebViewController();
     _startPolling();
   }
@@ -693,7 +708,12 @@ class _PwaMainShellState extends State<PwaMainShell> {
     _pollingTimer?.cancel();
     _finsService.dispose();
     _usbService.dispose();
+    _mockService.dispose();
     super.dispose();
+  }
+
+  void _initMockService() {
+    _mockService = OmronMockFinsService();
   }
 
   void _initUsbService() {
@@ -761,6 +781,19 @@ class _PwaMainShellState extends State<PwaMainShell> {
             });
           }
         }
+      } else if (_connMode == ConnectionMode.mock) {
+        // 🧪 모바일 단독 가상 시뮬레이터 모드 (Mock FINS)
+        final res = await _mockService.readCpuInfo();
+        if (mounted) {
+          setState(() {
+            _isConnected = true;
+            _latencyMs = 2; // 가상 로컬 통신 지연시간 2ms
+            if (res != null) {
+              _cpuMode = res.modeText;
+              _cpuModel = res.model;
+            }
+          });
+        }
       } else {
         // ⚡ PLC 직접통신 모드 (P2P FINS UDP)
         final sw = Stopwatch()..start();
@@ -815,12 +848,14 @@ class _PwaMainShellState extends State<PwaMainShell> {
           double numericVal = 0.0;
           String displayVal = '0';
 
-          if (_isConnected && (_connMode == ConnectionMode.direct || _connMode == ConnectionMode.directUsb)) {
+          if (_isConnected && (_connMode == ConnectionMode.direct || _connMode == ConnectionMode.directUsb || _connMode == ConnectionMode.mock)) {
             try {
-              // 실제 PLC FINS 워드 데이터 읽기
-              final wordsRes = _connMode == ConnectionMode.directUsb
-                  ? await _usbService.readWords(area: area, startAddress: addr, count: 2)
-                  : await _finsService.readWords(area: area, startAddress: addr, count: 2);
+              // 실제 PLC 또는 Mock 가상 FINS 워드 데이터 읽기
+              final wordsRes = _connMode == ConnectionMode.mock
+                  ? await _mockService.readWords(area: area, address: addr, count: 2)
+                  : (_connMode == ConnectionMode.directUsb
+                      ? await _usbService.readWords(area: area, startAddress: addr, count: 2)
+                      : await _finsService.readWords(area: area, startAddress: addr, count: 2));
               if (wordsRes.isSuccess && wordsRes.data.isNotEmpty) {
                 final parsed = parsePlcBytes(wordsRes.data, type, bit);
                 if (parsed is num) {
@@ -1659,6 +1694,22 @@ class _PwaMainShellState extends State<PwaMainShell> {
                     words: [int.tryParse(newVal) ?? 0],
                   );
                 }
+              } else if (_connMode == ConnectionMode.mock) {
+                // 🧪 가상 시뮬레이터 Mock 메모리 쓰기
+                if (isBool) {
+                  await _mockService.writeBit(
+                    area: tag['area'] as FinsArea,
+                    wordAddress: tag['addr'] as int,
+                    bitAddress: tag['bit'] as int,
+                    isOn: newVal == 'ON' || newVal == '1',
+                  );
+                } else {
+                  await _mockService.writeWord(
+                    area: tag['area'] as FinsArea,
+                    address: tag['addr'] as int,
+                    value: int.tryParse(newVal) ?? 0,
+                  );
+                }
               } else {
                 // Wi-Fi UDP 직결 FINS 쓰기
                 if (isBool) {
@@ -1776,11 +1827,13 @@ class _PwaMainShellState extends State<PwaMainShell> {
                   ],
                 ),
                 Text(
-                  _connMode == ConnectionMode.bridge
-                      ? '🌐 브릿지 (${_bridgeUrlCtrl.text})'
-                      : _connMode == ConnectionMode.directUsb
-                          ? '🔌 USB (OTG 직결)'
-                          : '⚡ Wi-Fi (${_plcIpCtrl.text})',
+                  _connMode == ConnectionMode.mock
+                      ? '🧪 Mock (가상 시뮬레이터)'
+                      : (_connMode == ConnectionMode.bridge
+                          ? '🌐 브릿지 (${_bridgeUrlCtrl.text})'
+                          : _connMode == ConnectionMode.directUsb
+                              ? '🔌 USB (OTG 직결)'
+                              : '⚡ Wi-Fi (${_plcIpCtrl.text})'),
                   style: const TextStyle(fontSize: 9.5, color: Color(0xFF60A5FA), fontFamily: 'monospace'),
                 ),
               ],
@@ -3210,6 +3263,23 @@ class _PwaMainShellState extends State<PwaMainShell> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text('🔌 USB 직결', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              setState(() => _connMode = ConnectionMode.mock);
+                              _initMockService();
+                              _startPolling();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: BoxDecoration(
+                                color: _connMode == ConnectionMode.mock ? const Color(0xFF9333EA) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text('🧪 Mock', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                             ),
                           ),
                         ),

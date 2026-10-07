@@ -497,4 +497,134 @@ class OmronUsbService {
   }
 }
 
+// ── 🧪 모바일 단독 가상 시뮬레이터 (Mock FINS Service) ──
+class OmronMockFinsService {
+  final Map<int, int> _dm = {};
+  final Map<int, int> _cio = {};
+  final Map<int, int> _wr = {};
+  final Map<int, int> _hr = {};
+
+  bool _isRunning = true;
+  double _simTime = 0.0;
+  Timer? _simPhysicsTimer;
+
+  OmronMockFinsService() {
+    _initDefaultMemory();
+    _startPhysicsLoop();
+  }
+
+  void _initDefaultMemory() {
+    _dm[0] = 9577; // Program Ver
+    _setReal(FinsArea.dm, 100, 2.34); // PT1 고압 (2.34 MPa)
+    _setReal(FinsArea.dm, 102, 0.15); // PT2 저압 (0.15 MPa)
+    _setReal(FinsArea.dm, 110, 2.31); // B 라인 PT1
+    _setReal(FinsArea.dm, 112, 0.00); // B 라인 PT2
+    _dm[200] = 7; // Step A Status (READY)
+    _setReal(FinsArea.dm, 300, 45.8); // LoadCell A (45.8 kg)
+    _setReal(FinsArea.dm, 302, 46.2); // LoadCell B (46.2 kg)
+
+    _cio[0] = 0x0002; // bit 1 = 1 (AV1 ON)
+    _wr[10] = 0x0004; // bit 2 = 1 (FPV ON)
+  }
+
+  void _startPhysicsLoop() {
+    _simPhysicsTimer?.cancel();
+    _simPhysicsTimer = Timer.periodic(const Duration(milliseconds: 500), (t) {
+      if (!_isRunning) return;
+      _simTime += 0.5;
+
+      final currentPt1 = _getReal(FinsArea.dm, 100);
+      final noise = (0.002 * (_simTime % 2 == 0 ? 1 : -1));
+      _setReal(FinsArea.dm, 100, (currentPt1 + noise).clamp(0.0, 3.5));
+
+      final currentPt2 = _getReal(FinsArea.dm, 102);
+      _setReal(FinsArea.dm, 102, (currentPt2 + noise * 0.5).clamp(0.0, 1.0));
+    });
+  }
+
+  Map<int, int> _getAreaMap(FinsArea area) {
+    switch (area) {
+      case FinsArea.dm: return _dm;
+      case FinsArea.cio: return _cio;
+      case FinsArea.wr: return _wr;
+      case FinsArea.hr: return _hr;
+      default: return _dm;
+    }
+  }
+
+  void _setReal(FinsArea area, int addr, double val) {
+    final map = _getAreaMap(area);
+    final bd = ByteData(4)..setFloat32(0, val, Endian.big);
+    map[addr] = bd.getUint16(0, Endian.big);
+    map[addr + 1] = bd.getUint16(2, Endian.big);
+  }
+
+  double _getReal(FinsArea area, int addr) {
+    final map = _getAreaMap(area);
+    final w1 = map[addr] ?? 0;
+    final w2 = map[addr + 1] ?? 0;
+    final bd = ByteData(4)
+      ..setUint16(0, w1, Endian.big)
+      ..setUint16(2, w2, Endian.big);
+    return bd.getFloat32(0, Endian.big);
+  }
+
+  Future<FinsResponse> readWords({
+    required FinsArea area,
+    required int address,
+    required int count,
+  }) async {
+    final map = _getAreaMap(area);
+    final data = <int>[];
+    for (int i = 0; i < count; i++) {
+      final w = map[address + i] ?? 0;
+      data.add((w >> 8) & 0xFF);
+      data.add(w & 0xFF);
+    }
+    return FinsResponse(isSuccess: true, data: data);
+  }
+
+  Future<FinsResponse> writeWord({
+    required FinsArea area,
+    required int address,
+    required int value,
+  }) async {
+    final map = _getAreaMap(area);
+    map[address] = value & 0xFFFF;
+    return FinsResponse(isSuccess: true);
+  }
+
+  Future<FinsResponse> writeBit({
+    required FinsArea area,
+    required int wordAddress,
+    required int bitAddress,
+    required bool isOn,
+  }) async {
+    final map = _getAreaMap(area);
+    final current = map[wordAddress] ?? 0;
+    final mask = 1 << bitAddress;
+    map[wordAddress] = isOn ? (current | mask) : (current & ~mask);
+    return FinsResponse(isSuccess: true);
+  }
+
+  Future<CpuStatusInfo?> readCpuInfo() async {
+    return CpuStatusInfo(
+      runText: '가상 시뮬레이션 중',
+      modeText: 'RUN',
+      model: 'CJ2H-CPU65-EIP (MOCK)',
+      version: 'v2.6.0-SIM',
+      dipSwitch: '00000000',
+      hasFatal: false,
+      hasNonFatal: false,
+      fatalHex: '0x0000',
+      nonFatalHex: '0x0000',
+    );
+  }
+
+  void dispose() {
+    _isRunning = false;
+    _simPhysicsTimer?.cancel();
+  }
+}
+
 
