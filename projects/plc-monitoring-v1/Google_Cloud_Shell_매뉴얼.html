@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Cloud Shell & AI 에이전트(Antigravity) 연동 운영 마스터 매뉴얼</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --secondary: #34a853;
+      --accent: #fbbc04;
+      --danger: #ea4335;
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --border: #334155;
+      --code-bg: #090d16;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #1a73e8);
+      padding: 40px 30px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    .badge-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* 목차 네비게이션 */
+    .toc-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 30px;
+    }
+
+    .toc-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toc-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    .toc-list a {
+      color: #93c5fd;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .toc-list a:hover {
+      border-color: var(--primary);
+      background: rgba(26, 115, 232, 0.2);
+      color: #fff;
+      transform: translateX(4px);
+    }
+
+    /* 본문 섹션 */
+    .content {
+      padding: 0 30px 40px;
+    }
+
+    section {
+      margin-top: 40px;
+      scroll-margin-top: 30px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #60a5fa;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #f8fafc;
+      margin: 20px 0 10px;
+    }
+
+    p {
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    /* 다이어그램 / 시각화 박스 */
+    .diagram-container {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .flowchart {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .node {
+      background: #1e293b;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 15px 20px;
+      min-width: 200px;
+      text-align: center;
+      position: relative;
+    }
+
+    .node.active {
+      border-color: var(--secondary);
+      box-shadow: 0 0 15px rgba(52, 168, 83, 0.4);
+    }
+
+    .node .node-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .node .node-desc {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .arrow {
+      font-size: 24px;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* 알림 박스 */
+    .alert {
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .alert-info {
+      background: rgba(26, 115, 232, 0.15);
+      border-left: 4px solid var(--primary);
+      color: #bfdbfe;
+    }
+
+    .alert-success {
+      background: rgba(52, 168, 83, 0.15);
+      border-left: 4px solid var(--secondary);
+      color: #bbf7d0;
+    }
+
+    .alert-warning {
+      background: rgba(251, 188, 4, 0.15);
+      border-left: 4px solid var(--accent);
+      color: #fef08a;
+    }
+
+    /* 코드 블럭 */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: "Fira Code", Consolas, Monaco, monospace;
+      font-size: 14px;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin: 12px 0 20px;
+      position: relative;
+    }
+
+    .code-comment {
+      color: #64748b;
+    }
+
+    /* 테이블 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #1e3a8a;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(15, 23, 42, 0.4);
+    }
+
+    /* 스텝 가이드 카드 */
+    .step-card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.8);
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🚀 Google Cloud Shell & Antigravity 운영 매뉴얼</h1>
+    <p>무료 클라우드 PC 환경 설정, OMRON PLC HMI 모니터링 서버 구동, GitHub 버전 동기화 완벽 가이드</p>
+    <div class="badge-bar">
+      <span class="badge">💰 100% 완전 무료 (주 50시간)</span>
+      <span class="badge">🤖 Google Antigravity & Gemini 연동</span>
+      <span class="badge">🌐 GitHub Remote: virtual-company-os-hmi</span>
+      <span class="badge">⚡ Debian Linux Cloud Shell VM</span>
+    </div>
+  </header>
+
+  <!-- 목차 -->
+  <div class="toc-card">
+    <div class="toc-title">📑 빠른 목차 바로가기</div>
+    <ul class="toc-list">
+      <li><a href="#section-1">1. 전체 아키텍처 및 협업 구조</a></li>
+      <li><a href="#section-2">2. 클라우드 무료 정책 및 혜택</a></li>
+      <li><a href="#section-3">3. Cloud Shell 1분 자동 셋업</a></li>
+      <li><a href="#section-4">4. 웹 HMI 모니터링 화면 열기 (포트 3000)</a></li>
+      <li><a href="#section-5">5. 에디터 계정 로그인 및 프로젝트 연결</a></li>
+      <li><a href="#section-6">6. 클라우드 PC 끄기 (OFF) 및 세션 관리</a></li>
+      <li><a href="#section-7">7. 무료 잔여 시간 및 서버 상태(uptime) 확인</a></li>
+    </ul>
+  </div>
+
+  <div class="content">
+
+    <!-- 1장 -->
+    <section id="section-1">
+      <h2>1. 전체 아키텍처 및 협업 구조</h2>
+      <p>로컬 PC의 차세대 AI 코딩 에이전트 <strong>Antigravity</strong>와 구글의 무료 리눅스 가상머신 <strong>Google Cloud Shell</strong>은 GitHub를 매개체로 완벽히 분업하여 동작합니다.</p>
+      
+      <div class="diagram-container">
+        <div class="flowchart">
+          <div class="node active">
+            <div class="node-title">💻 Antigravity (로컬 PC)</div>
+            <div class="node-desc">차세대 AI 코딩 에이전트<br>배관도 그리기 / 시퀀스 개발</div>
+          </div>
+          <div class="arrow">➔ git push ➔</div>
+          <div class="node">
+            <div class="node-title">🐙 GitHub 저장소</div>
+            <div class="node-desc">virtual-company-os-hmi<br>코드 & 엑셀 시퀀스 형상 관리</div>
+          </div>
+          <div class="arrow">➔ git pull ➔</div>
+          <div class="node active">
+            <div class="node-title">☁️ Google Cloud Shell</div>
+            <div class="node-desc">무료 가상 리눅스 머신 (VM)<br>24시간 원격 HMI 서버 구동</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <strong>💡 핵심 분업 원칙:</strong> 복잡한 코딩과 설계는 로컬의 <strong>Antigravity</strong>에게 지시하고, 완성된 코드는 GitHub를 통해 <strong>Cloud Shell</strong>로 전달하여 외부나 모바일에서 3000번 포트로 HMI 화면을 관제합니다.
+      </div>
+    </section>
+
+    <!-- 2장 -->
+    <section id="section-2">
+      <h2>2. 클라우드 무료 정책 및 혜택</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>제공 스펙 및 혜택</th>
+            <th>특징 및 비용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>사용 시간</strong></td>
+            <td><strong>매주 50시간 무료</strong></td>
+            <td>신용카드 등록 불필요, 과금 0원 (매주 리셋)</td>
+          </tr>
+          <tr>
+            <td><strong>영구 저장 디스크</strong></td>
+            <td><strong>5GB 영구 스토리지 (<code>~</code>)</strong></td>
+            <td>세션이 종료되어도 작업 소스코드 영구 보존</td>
+          </tr>
+          <tr>
+            <td><strong>기본 개발 환경</strong></td>
+            <td>Node.js, npm, Python, Git 사전 탑재</td>
+            <td>별도 환경설정 없이 명령어 즉시 실행 가능</td>
+          </tr>
+          <tr>
+            <td><strong>웹 미리보기</strong></td>
+            <td>임의 포트(3000 등) HTTPS 보안 터널링</td>
+            <td>외부 웹 브라우저에서 HMI 관제 화면 무료 확인</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3장 -->
+    <section id="section-3">
+      <h2>3. Cloud Shell 1분 자동 셋업</h2>
+      <p>Google Cloud Shell 접속 후, 터미널에 아래 한 줄 명령어를 붙여넣으면 프로젝트 다운로드부터 서버 실행까지 자동 완료됩니다.</p>
+
+      <div class="code-block">
+        <span class="code-comment"># 프로젝트 다운로드 및 HMI 모니터링 서버 원클릭 자동 실행 스크립트</span><br>
+        cd ~ &amp;&amp; git clone https://github.com/kang1976/virtual-company-os-hmi.git &amp;&amp; \<br>
+        cd virtual-company-os-hmi/projects/plc-monitoring-v1/pc-app &amp;&amp; \<br>
+        npm install &amp;&amp; \<br>
+        npm start
+      </div>
+
+      <div class="alert alert-success">
+        <strong>✅ 정상 실행 화면:</strong> 터미널 하단에 <code>PLC 모니터링 서버 실행 중: http://localhost:3000 (0.0.0.0:3000)</code> 문구가 뜨면 서버 구동이 100% 성공한 것입니다. (멈춘 것이 아니라 접속 대기 상태)
+      </div>
+    </section>
+
+    <!-- 4장 -->
+    <section id="section-4">
+      <h2>4. 웹 HMI 모니터링 화면 열기 (포트 3000)</h2>
+      <div class="step-card">
+        <h3><span class="step-num">1</span>웹 미리보기 아이콘 클릭</h3>
+        <p>터미널 우측 상단 도구 모음에서 <strong>웹 미리보기</strong> (사각형 창 안에 돋보기/눈 모양 아이콘)을 클릭합니다.</p>
+      </div>
+
+      <div class="step-card">
+        <h3><span class="step-num">2</span>포트 변경 (Change Port) 선택</h3>
+        <p>팝업 메뉴에서 <strong>포트 변경 (Change Port)</strong>을 선택하고 숫자 <strong>3000</strong>을 입력합니다.</p>
+      </div>
+
+      <div class="step-card">
+        <h3><span class="step-num">3</span>화면 확인</h3>
+        <p><strong>[변경 및 미리보기]</strong>를 누르면 새 탭에서 OMRON PLC HMI 제어 화면이 열립니다.</p>
+      </div>
+    </section>
+
+    <!-- 5장 -->
+    <section id="section-5">
+      <h2>5. 에디터 계정 로그인 및 프로젝트 연결</h2>
+      <p>Cloud Shell Editor에서 구글 계정 인증 및 프로젝트를 지정하는 명령어입니다.</p>
+
+      <div class="code-block">
+        <span class="code-comment"># 1. 구글 클라우드 계정 로그인 인증</span><br>
+        gcloud auth login<br><br>
+        <span class="code-comment"># 2. 구글 클라우드 프로젝트 지정 (Default Gemini Project)</span><br>
+        gcloud config set project gen-lang-client-0386942686
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>⚠️ 팝업 차단 주의:</strong> 에디터의 <code>Sign in</code> 또는 <code>Sign into cloud</code> 클릭 시 반응이 없는 경우, 브라우저 상단 주소창 왼쪽의 <strong>자물쇠 아이콘 ➔ 팝업 및 리디렉션 ➔ [허용]</strong>으로 설정해야 합니다.
+      </div>
+    </section>
+
+    <!-- 6장 -->
+    <section id="section-6">
+      <h2>6. 클라우드 PC 끄기 (OFF) 및 세션 관리</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>종료 방법</th>
+            <th>명령어 / 동작</th>
+            <th>특징</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>터미널 명령어로 끄기</strong></td>
+            <td><code>exit</code></td>
+            <td>가장 빠르고 깔끔하게 세션을 즉시 닫음</td>
+          </tr>
+          <tr>
+            <td><strong>브라우저 닫기</strong></td>
+            <td>브라우저 탭(X) 닫기</td>
+            <td>15~20분 뒤 자동으로 가상머신 절전/종료 전환</td>
+          </tr>
+          <tr>
+            <td><strong>서버 프로세스만 멈추기</strong></td>
+            <td><code>Ctrl + C</code></td>
+            <td>실행 중인 Node.js 서버만 중단하고 터미널 유지</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 7장 -->
+    <section id="section-7">
+      <h2>7. 무료 잔여 시간 및 서버 상태(uptime) 확인</h2>
+      <p>가상머신이 켜진 시간과 남은 용량을 터미널에서 즉시 조회할 수 있습니다.</p>
+
+      <div class="code-block">
+        <span class="code-comment"># 가상머신 가동 시간 및 부하 확인</span><br>
+        uptime<br>
+        <span class="code-comment"># 출력 예시: 09:47:37 up 1:14, 0 user, load average: 2.71, 1.00, 0.96</span><br>
+        <span class="code-comment"># ➔ [up 1:14] : 가상머신이 켜진 지 1시간 14분 되었다는 뜻</span><br><br>
+        <span class="code-comment"># 5GB 무료 영구 디스크 남은 용량 확인</span><br>
+        df -h ~
+      </div>
+
+      <div class="alert alert-info">
+        <strong>⏱️ 주간 남은 무료 시간 확인:</strong> 구글 보안 정책상 주간 50시간 중 남은 시간은 터미널 명령어가 아닌, 화면 우측 상단 <strong>더보기(점 3개 ⋮) ➔ [사용량 (Usage)]</strong> 팝업창에서 직접 확인하실 수 있습니다.
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    © 2026 Virtual Company OS &amp; GMS Monitoring Project • Powered by Google Antigravity &amp; Cloud Shell
+  </footer>
+</div>
+
+</body>
+</html>
