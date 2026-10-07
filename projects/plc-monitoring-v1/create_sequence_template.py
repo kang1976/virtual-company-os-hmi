@@ -56,7 +56,7 @@ trail_end = total_cols
 
 
 # ========================================================
-# 1. 메인 시트: "사용 방법" (하이퍼링크 목록 포함)
+# 1. 메인 시트: "사용 방법" (완전 상세 규칙 & 하이퍼링크)
 # ========================================================
 ws_guide = wb.active
 ws_guide.title = "사용 방법"
@@ -64,14 +64,14 @@ ws_guide.views.sheetView[0].showGridLines = True
 
 # 타이틀 배너
 ws_guide.merge_cells("A1:G1")
-ws_guide["A1"] = "📘 GMS 자동진행 시퀀스 엑셀 마스터 매뉴얼 & 상황별 바로가기"
+ws_guide["A1"] = "📘 GMS 자동진행 시퀀스 엑셀 마스터 매뉴얼 & 정밀 컬럼 규칙 총정리"
 ws_guide["A1"].font = font_title
 ws_guide["A1"].fill = fill_title
 ws_guide["A1"].alignment = align_center
 ws_guide.row_dimensions[1].height = 42
 
 ws_guide.merge_cells("A2:G2")
-ws_guide["A2"] = "본 시트는 GMS 시퀀스 규칙 설명과 함께, 아래 5개 상황별 실제 엑셀 시트로 즉시 이동할 수 있는 바로가기 링크를 제공합니다."
+ws_guide["A2"] = "본 시트는 GMS 시퀀스 35개 전체 컬럼의 정밀 문법 규칙과 글씨 깨짐 방지 요령, 그리고 5대 상황별 실제 엑셀 시트 바로가기를 완벽히 제공합니다."
 ws_guide["A2"].font = font_bold
 ws_guide["A2"].alignment = align_left
 ws_guide.row_dimensions[2].height = 24
@@ -108,7 +108,7 @@ for r_idx, cr in enumerate(crash_rules, 6):
         ws_guide.cell(row=r_idx, column=c).border = thin_border
         ws_guide.cell(row=r_idx, column=c).font = font_normal
 
-# 섹션 1: 5가지 상황별 엑셀 예제 시트 바로가기 (★ 핵심 요청 사항: 링크 연결)
+# 섹션 1: 5가지 상황별 엑셀 예제 시트 바로가기 (하이퍼링크)
 ws_guide.merge_cells("A10:G10")
 ws_guide["A10"] = "1. 실무 5대 상황별 엑셀 실제 예제 시트 바로가기 (클릭 시 해당 시트로 이동)"
 ws_guide["A10"].font = font_section
@@ -135,8 +135,6 @@ scenarios = [
 
 for r_idx, sc in enumerate(scenarios, 12):
     ws_guide.cell(row=r_idx, column=1, value=sc[0]).alignment = align_center
-    
-    # 하이퍼링크 생성
     linkCell = ws_guide.cell(row=r_idx, column=2, value=f"👉 [{sc[1]}] 시트 열기")
     linkCell.hyperlink = f"#'{sc[1]}'!A1"
     linkCell.font = font_link
@@ -144,10 +142,8 @@ for r_idx, sc in enumerate(scenarios, 12):
     
     ws_guide.merge_cells(f"C{r_idx}:D{r_idx}")
     ws_guide.cell(row=r_idx, column=3, value=sc[2]).alignment = align_left
-    
     ws_guide.merge_cells(f"E{r_idx}:G{r_idx}")
     ws_guide.cell(row=r_idx, column=5, value=sc[3]).alignment = align_left
-    
     ws_guide.row_dimensions[r_idx].height = 26
     for c in range(1, 8):
         ws_guide.cell(row=r_idx, column=c).border = thin_border
@@ -190,12 +186,71 @@ for r_idx, r in enumerate(rules, 21):
         ws_guide.cell(row=r_idx, column=c).border = thin_border
         ws_guide.cell(row=r_idx, column=c).font = font_normal
 
-ws_guide.column_dimensions['A'].width = 16
-ws_guide.column_dimensions['B'].width = 24
+# 섹션 3: ★ [복원 및 대폭 보강] 전체 엑셀 컬럼(열)별 정밀 규칙 및 사용 방법
+ws_guide.merge_cells("A25:G25")
+ws_guide["A25"] = "3. 전체 엑셀 컬럼(열)별 정밀 규칙 및 사용 방법 (총 35+개 열 완벽 해설)"
+ws_guide["A25"].font = font_section
+ws_guide["A25"].fill = fill_section
+ws_guide.row_dimensions[25].height = 28
+
+col_headers = ["구역", "열 헤더명", "필수여부", "입력 가능 값 / 문법", "상세 설명 및 내부 시스템 동작 방식", "실전 입력 예시", "비고"]
+for col_idx, h in enumerate(col_headers, 1):
+    cell = ws_guide.cell(row=26, column=col_idx, value=h)
+    cell.font = font_header
+    cell.fill = fill_hdr_blue
+    cell.alignment = align_center
+ws_guide.row_dimensions[26].height = 26
+
+col_details = [
+    ("고정 제어 (1)", "S/No.", "필수", "1, 2, 3... (정수)", "스텝 고유 순번(식별자)입니다. 이 번호가 없거나 비어있는 행은 무시됩니다. 분기(Goto) 이동 시 찾아오는 기준 주소 역할을 합니다.", "1", "스텝 식별자"),
+    ("고정 제어 (2)", "Main Step", "선택", "정수 (11, 20 등)", "상위 대공정 번호입니다. HMI 화면 상단 대공정 상태 바에 표시됩니다.", "11", "대공정"),
+    ("고정 제어 (3)", "Sub Step", "선택", "정수 (1, 2, 3 등)", "세부 보조 스텝 번호입니다. 작업자가 현재 몇 번째 세부 공정인지 식별합니다.", "1", "보조 번호"),
+    ("고정 제어 (4)", "Next Step", "선택", "스텝 번호 또는 공백", "현재 스텝 완료 후 다음에 이동할 스텝을 강제 지정합니다.\n• 공백(빈칸): 바로 다음 행(번호)으로 자연 진행\n• 숫자(예: 6): 해당 스텝으로 무조건 점프(루프/분기용)", "6 (또는 빈칸)", "분기 제어"),
+    ("고정 제어 (5)", "Operations", "권장", "문자열 텍스트", "해당 스텝의 공정 명칭입니다. HMI 화면 상단 메인 디스플레이에 현재 작업명으로 큼직하게 표시됩니다.", "[ Bypass 2차 Purge ]", "화면 표시"),
+    ("고정 제어 (6)", "Cycle", "선택", "숫자 / CAPTURE:<태그>", "반복 루프 표시 또는 특수 캡처 지시어입니다.\n• 숫자: 사이클 카운트 표기\n• CAPTURE:HPT_{side}: 해당 스텝 최초 진입 시 실시간 압력을 초기값(P0)으로 메모리에 영구 저장하고 화면에 표시", "CAPTURE:HPT_{side}", "초기값 캡처"),
+    ("고정 제어 (7)", "진행방식", "필수", "자동 / 확인 (또는 ACK)", "스텝 시간 경과 후 다음 단계로 넘어가는 방식입니다.\n• 자동: Time 도달 또는 조기통과 시 자동 진행\n• 확인: 설정 시간이 다 되어도 멈추어 서서 작업자가 화면의 [확인] 버튼을 누를 때까지 무한 대기", "자동 (또는 확인)", "진행 제어"),
+    ("고정 제어 (8)", "Ack Goto", "선택", "스텝 번호 또는 공백", "진행방식이 '확인'일 때 작업자가 [확인] 버튼을 클릭하면 이동할 목적지 스텝 번호입니다. 비워두면 다음 스텝으로 진행합니다.", "4", "확인 후 이동"),
+    ("고정 제어 (9)", "Alarm Goto", "선택", "스텝 번호 또는 공백", "이상 감지 또는 알람 발생 시 비상 조치를 위해 즉시 점프할 스텝 번호입니다 (예: 99번 비상 안전 닫힘 스텝).", "99", "알람 분기"),
+    ("고정 제어 (10)", "Message at Controller", "선택", "문자열 텍스트", "HMI 화면 중앙 안내창에 작업자에게 띄울 안내 팝업 메시지입니다.", "게이지 압력 확인 후 [확인] 클릭", "작업자 가이드"),
+    ("고정 제어 (11)", "Time (Sec)", "필수", "초 단위 숫자", "해당 스텝의 목표 유지 시간입니다. 이 시간 동안 설정된 밸브 상태를 유지하며 실시간 카운트다운합니다.", "30", "시간 카운트"),
+    ("고정 제어 (12)", "Acc,Time (Sec)", "선택", "수식 또는 숫자", "공정 시작부터 현재까지의 누적 시간입니다. 보통 =SUM($K$5:K5) 수식을 넣으며 시스템이 자동 계산하여 읽어옵니다.", "=SUM($K$5:K5)", "누적 시간"),
+    ("밸브 태그 (가변)", "밸브 태그열 (VN1, PNV 등)", "가변", "O, C, O+n, C+n, 공백", "각 열의 헤더명이 PLC 밸브 태그명입니다. {side}는 A/B로 자동 치환됩니다.\n• O: 즉시 열림 (OPEN)\n• C: 즉시 닫힘 (CLOSE)\n• 공백(빈칸): ★이전 스텝 상태 그대로 유지 (불필요한 통신 방지)\n• O+n: n초 뒤 지연 열림 (예: O+2는 2초 뒤 열림)\n• C+n: n초 뒤 지연 닫힘 (시차 제어)", "O (또는 O+2, C)", "PLC 밸브 제어"),
+    ("감시 판정 (1)", "Alarm Monitoring", "선택", "센서태그 / 진행횟수", "감시할 센서 태그명(VPT_{side}, VT, HPT_{side}) 또는 예약어 '진행횟수'를 입력합니다. & 기호로 다중 센서 동시 감시 가능(예: VPT_{side} & VT).", "VPT_{side}", "센서 감시"),
+    ("감시 판정 (2)", "비교연산자", "선택", "<, <=, >, >=, ==, ZERO, ON, OFF", "센서 현재값과 설정값을 비교할 연산자입니다.\n• <, <=, >, >=, == : 수치 비교\n• ON, OFF : 접점/스위치 비트 비교\n• ZERO : 해당 센서 0점 자동 보정 수행", "<=", "조건 판정"),
+    ("감시 판정 (3)", "설정명(비교대상ID)", "선택", "CONFIG ID 또는 숫자", "비교할 기준값입니다. CONFIG 탭에 등록된 설정 ID(예: VAC_LIMIT) 또는 직접 고정 수치(0.5, 3 등)를 입력합니다.", "VAC_LIMIT 또는 0.5", "기준값 지정"),
+    ("감시 판정 (4)", "조기통과", "선택", "Y, O, 1 또는 공백", "★핵심 기능: 설정된 Time(예: 120초)이 다 지나지 않았더라도 비교 조건이 만족되면 즉시 5초 만에 다음 스텝으로 통과합니다. (진공 배기 시간 대폭 단축)", "Y", "시간 단축"),
+    ("감시 판정 (5)", "Alarm Seq.", "선택", "1, 2, 3", "알람 발생 시 시스템 동작 방식입니다.\n• 1: 즉시 비상정지 (전 밸브 Close 및 시퀀스 중단)\n• 2: 일시정지 (현재 상태 유지하며 대기)\n• 3: 경고 배너 유지 (화면에 경고만 표시)", "1", "알람 동작"),
+    ("감시 판정 (6)", "Alarm Message", "선택", "문자열 텍스트", "조건 불만족 또는 시간 초과 시 화면에 빨간색 배너로 띄울 경고 문구입니다.", "120초 내 진공 미도달 (누설 의심)", "경고 메시지"),
+    ("감시 판정 (7)", "Remarks", "선택", "문자열 텍스트", "엔지니어 작업 메모입니다. 공정 이력 작업 로그(work_log)에 함께 기록됩니다.", "1차 배관 진공 배기 구간", "엔지니어 메모")
+]
+
+for r_idx, col_info in enumerate(col_details, 27):
+    area_cell = ws_guide.cell(row=r_idx, column=1, value=col_info[0])
+    area_cell.alignment = align_center
+    if "고정 제어" in col_info[0]:
+        area_cell.fill = fill_zebra
+    elif "밸브 태그" in col_info[0]:
+        area_cell.fill = fill_highlight
+    else:
+        area_cell.fill = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+
+    ws_guide.cell(row=r_idx, column=2, value=col_info[1]).alignment = align_left
+    ws_guide.cell(row=r_idx, column=3, value=col_info[2]).alignment = align_center
+    ws_guide.cell(row=r_idx, column=4, value=col_info[3]).alignment = align_left
+    ws_guide.cell(row=r_idx, column=5, value=col_info[4]).alignment = align_left
+    ws_guide.cell(row=r_idx, column=6, value=col_info[5]).alignment = align_center
+    ws_guide.cell(row=r_idx, column=7, value=col_info[6]).alignment = align_center
+    ws_guide.row_dimensions[r_idx].height = 28
+    for c in range(1, 8):
+        ws_guide.cell(row=r_idx, column=c).border = thin_border
+        ws_guide.cell(row=r_idx, column=c).font = font_normal
+
+ws_guide.column_dimensions['A'].width = 18
+ws_guide.column_dimensions['B'].width = 26
 ws_guide.column_dimensions['C'].width = 14
-ws_guide.column_dimensions['D'].width = 28
-ws_guide.column_dimensions['E'].width = 46
-ws_guide.column_dimensions['F'].width = 24
+ws_guide.column_dimensions['D'].width = 30
+ws_guide.column_dimensions['E'].width = 55
+ws_guide.column_dimensions['F'].width = 26
 ws_guide.column_dimensions['G'].width = 16
 
 
@@ -380,13 +435,7 @@ steps_bypass = [
 ]
 build_scenario_sheet("Bypass_v1", "5대 실전 상황 종합 예제", "5가지 상황이 모두 들어간 완성형 종합 실전 시퀀스입니다. 웹 화면에 즉시 업로드 가능합니다.", steps_bypass)
 
-# 파일 저장 (버전 명시 파일명으로 저장하여 잠금 방지)
-output_path = r"d:\AI_Work\Antigravity\06.CEO\projects\plc-monitoring-v1\GMS_자동진행_시퀀스_표준템플릿_v2.xlsx"
+# 파일 저장 (새로운 v3 파일명으로 저장하여 엑셀 프로그램 열림 잠금 완벽 방지)
+output_path = r"d:\AI_Work\Antigravity\06.CEO\projects\plc-monitoring-v1\GMS_자동진행_시퀀스_표준템플릿_v3.xlsx"
 wb.save(output_path)
-# 이전 파일 덮어쓰기 시도 (닫혀있으면 함께 갱신)
-try:
-    import shutil
-    shutil.copyfile(output_path, r"d:\AI_Work\Antigravity\06.CEO\projects\plc-monitoring-v1\GMS_자동진행_시퀀스_템플릿.xlsx")
-except Exception:
-    pass
-print("상황별 독립 시트 및 하이퍼링크 포함 템플릿 생성 완료:", output_path)
+print("완전 복원 및 대폭 보강 완료:", output_path)
