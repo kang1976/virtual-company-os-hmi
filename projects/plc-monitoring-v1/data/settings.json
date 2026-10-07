@@ -1,0 +1,33 @@
+{
+  "general": {
+    "variablesDir": "C:\\Users\\rokaf\\OneDrive\\바탕 화면\\PLC monitoring_01\\plc-monitoring-usb\\data\\Recipe",
+    "snapshotDir": "C:\\Users\\rokaf\\OneDrive\\바탕 화면\\PLC monitoring_01\\plc-monitoring-usb\\data\\Snapshots",
+    "filePrefix": "DATA"
+  },
+  "connection": {
+    "defaultSeries": "CJ",
+    "finsProtocol": "USB",
+    "finsNode": "auto",
+    "defaultIp": "192.168.0.80",
+    "cjPortMode": "default",
+    "cjPort": 9600,
+    "njPortMode": "default",
+    "njPort": 44818,
+    "reconnectIntervalSec": 5,
+    "maxRetries": 10
+  },
+  "report": {
+    "companyLogo": "",
+    "companyLogoMime": "",
+    "pdfTitlePrefix": "OPVScope_"
+  },
+  "display": {
+    "tableFontSize": 14
+  },
+  "theme": {
+    "base": "gray",
+    "customFallback": "light",
+    "custom": {}
+  },
+  "zoom": 1
+}
