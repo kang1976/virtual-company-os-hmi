@@ -155,6 +155,7 @@
     <span id="cpuInfo" style="display:none;"></span>
   </div>
 </header>
+<div id="topInfoSplitter" class="top-info-splitter" title="드래그해서 최상단 헤더(Gas Name/바코드/IP) 높이 조절 (세로폭 조절)"></div>
 
 <div class="equip-status-bar">
   <div class="cyl-step-box panel-box" style="width:100%;">
@@ -188,8 +189,24 @@
         </div>
       </div>
     </div>
-    <!-- 우측 패널 탭 전환 버튼 - 상단 바 하단 우측 정렬 -->
-    <div class="tab-switch-bar">
+    <!-- 우측 패널 탭 전환 버튼 및 PC 시뮬레이션 제어 바 -->
+    <div class="tab-switch-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <div class="pc-sim-controls" style="display:flex;align-items:center;gap:4px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.4);border-radius:6px;padding:2px 8px;margin-right:auto;">
+        <span style="font-size:11px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:3px;">
+          🎮 <span class="pc-sim-badge-txt">시뮬레이션</span>:
+        </span>
+        <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="background:#0284c7;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;">▶ 시작</button>
+        <button type="button" id="pcSimPauseBtn" class="tab-switch-btn" style="display:none;background:#eab308;color:#000;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏸ 일시정지</button>
+        <button type="button" id="pcSimStopBtn" class="tab-switch-btn" style="display:none;background:#ef4444;color:#fff;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏹ 중지</button>
+        <select id="pcSimSpeedSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
+          <option value="1">1x 배속</option>
+          <option value="2">2x 배속</option>
+          <option value="5">5x 배속</option>
+          <option value="10" selected>10x 배속</option>
+        </select>
+        <span id="pcSimStatusText" style="font-size:11px;color:#94a3b8;margin-left:4px;">대기</span>
+      </div>
+
       <button class="tab-switch-btn active" data-tab="progress">진행 메뉴</button>
       <button class="tab-switch-btn" data-tab="config">CONFIG.</button>
       <button class="tab-switch-btn" data-tab="user">USER</button>
@@ -828,5 +845,6 @@
 <script src="gms-editor.js"></script>
 <script src="gms-option-display.js"></script>
 <script src="clickTracker.js"></script>
+<script src="gms-interactive-sim.js"></script>
 </body>
 </html>

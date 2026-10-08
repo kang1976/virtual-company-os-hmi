@@ -188,17 +188,9 @@
    쪽이 이겨 hidden이 무시되는 문제가 있었다(속성 편집 팝업이 안 닫히는 버그의 원인).
    !important로 hidden이 항상 이기게 한다. */
 [hidden] { display: none !important; }
-html, body {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
+html, body { height: 100%; }
 body {
-  margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden !important;
+  margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
   background: var(--bg); color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px;
 }
@@ -246,16 +238,7 @@ input[type=number] { width: 90px; font-family: var(--mono); }
 
 main { flex: 1 1 auto; display: flex; min-height: 0; }
 
-.diagram-panel {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--bg-alt);
-  position: relative;
-}
+.diagram-panel { flex: 1 1 auto; min-width: 0; overflow: auto; background: var(--bg-alt); position: relative; }
 
 /* ── 맵 에디터 (편집 모드) ── */
 .map-edit-toggle { position: absolute; top: 8px; right: 8px; z-index: 20; font-size: 12px; padding: 4px 10px; opacity: 0.85; }
@@ -492,7 +475,7 @@ g.editor-selected .body, g.editor-selected .gms-pt-box, g.editor-selected .heate
 }
 .seq-chip .seq-chip-remove:hover { color: var(--error); }
 
-#gmsSvg { display: block; flex: 1 1 0; min-height: 0; width: 100%; height: 100%; }
+#gmsSvg { display: block; width: 100%; height: 100%; }
 .gms-pipe { fill: none; stroke: var(--muted); stroke-width: 5; stroke-linecap: round; }
 .gms-label { fill: var(--text); font-size: 15px; font-family: -apple-system, sans-serif; }
 .gms-tag { fill: var(--text); font-size: 12px; font-family: var(--mono); font-weight: 700; }
@@ -642,7 +625,104 @@ g.editor-selected .body, g.editor-selected .gms-pt-box, g.editor-selected .heate
 .step-badge { font-size: 10px; padding: 2px 5px; border-radius: 3px; background: var(--input-bg); border: 1px solid var(--panel-border); font-family: var(--mono); color: var(--muted); white-space: nowrap; flex-shrink: 0; }
 /* 지나온 스텝은 실제 공정 램프처럼 적색으로 켜진 채 유지된다(현재 스텝만 켜는 게 아니라
    IDLE부터 현재까지 전부 active) - 아래 .step-badge-lg(큰 사각형)와 같은 색 규칙. */
-.step-badge.active { background: #d32f2f; border-color: #d32f2f; color: #ffffff; font-weight: 700; }
+.step-badge.active { background: #d32f2f !important; border-color: #ef4444 !important; color: #ffffff !important; font-weight: 700; }
+.step-badge.blinking {
+  background: #e11d48 !important;
+  border-color: #f43f5e !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  animation: badgeBlinkAnim 0.8s infinite alternate !important;
+}
+:root[data-theme='dark'] .step-badge.blinking,
+:root[data-theme='cyber'] .step-badge.blinking {
+  background: #e11d48 !important;
+  border-color: #f43f5e !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  animation: badgeBlinkAnim 0.8s infinite alternate !important;
+}
+
+/* ── 조작화면(Operation Screen) 상단 중간 큰 배지 (.step-badges-lg / .step-badge-lg) ── */
+.step-badges-lg {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 6px 0 16px 0 !important;
+  padding: 4px 0 !important;
+  width: 100% !important;
+}
+
+.step-badge-lg {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 54px !important;
+  height: 38px !important;
+  padding: 0 16px !important;
+  border-radius: 6px !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  font-family: var(--mono) !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 기본 비활성 스텝 */
+.step-badge-lg:not(.done):not(.blinking):not(.active) {
+  background: #e2e8f0 !important;
+  border: 2px solid #94a3b8 !important;
+  color: #334155 !important;
+}
+
+/* 활성화된 스텝 (선명한 적색 램프 점등) */
+.step-badge-lg.active {
+  background: #d32f2f !important;
+  border: 2px solid #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(211, 47, 47, 0.6) !important;
+}
+
+/* 완료된 스텝 (적색 채움 유지) */
+.step-badge-lg.done {
+  background: #dc2626 !important;
+  border: 2px solid #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
+}
+
+/* 현재 진행 중인 스텝 (선명한 적색 점멸 깜빡임 애니메이션) */
+.step-badge-lg.blinking {
+  background: #e11d48 !important;
+  border: 2px solid #f43f5e !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(225, 29, 72, 0.9) !important;
+  animation: badgeBlinkAnim 0.8s infinite alternate !important;
+}
+
+@keyframes badgeBlinkAnim {
+  0% {
+    background-color: #f43f5e;
+    border-color: #fda4af;
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(244, 63, 94, 0.95);
+    opacity: 1;
+  }
+  100% {
+    background-color: #881337;
+    border-color: #9f1239;
+    color: #ffffff;
+    box-shadow: 0 0 4px rgba(136, 19, 55, 0.3);
+    opacity: 0.45;
+  }
+}
+
+:root[data-theme='dark'] .step-badge-lg:not(.done):not(.blinking):not(.active),
+:root[data-theme='cyber'] .step-badge-lg:not(.done):not(.blinking):not(.active) {
+  background: #1e293b !important;
+  border-color: #475569 !important;
+  color: #cbd5e1 !important;
+}
 
 .step-etc-row { margin-top: 1px; }
 .etc-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -1068,163 +1148,3 @@ tr.alarm-cleared .grade-badge { opacity: 0.55; }
 :root[data-theme='dark'] .gsp-readout-unit,
 :root[data-theme='cyber'] .gsp-readout-unit { color: #94a3b8; }
 
-/* ── 최상단 이동 EQ INFO & BAR CODE 2열 분할 헤더 (CEO 지시 사항) ── */
-header.mobile-top-info-header {
-  flex: 0 0 auto !important;
-  padding: 4px 8px !important;
-  background: var(--bg, #f8fafc) !important;
-  border-bottom: 1px solid var(--panel-border, #e2e8f0) !important;
-  display: block !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
-}
-
-.diagram-info-bar {
-  display: grid !important;
-  grid-template-columns: 1.1fr 1.3fr 1.6fr 1.1fr !important;
-  grid-template-rows: auto auto !important;
-  gap: 3px 14px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 5px 12px !important;
-  background: var(--panel, #ffffff) !important;
-  border: 1px solid var(--panel-border, #cbd5e1) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-  overflow: hidden !important;
-}
-
-.diagram-info-bar .info-cell {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 6px !important;
-  white-space: nowrap !important;
-  line-height: 1.25 !important;
-  min-width: 0 !important;
-}
-
-.diagram-info-bar .info-cell .k {
-  color: #475569 !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-}
-
-:root[data-theme='dark'] .diagram-info-bar .info-cell .k,
-:root[data-theme='cyber'] .diagram-info-bar .info-cell .k {
-  color: #94a3b8 !important;
-}
-
-.diagram-info-bar .info-cell .v {
-  color: #0f172a !important;
-  font-family: var(--mono, monospace) !important;
-  font-weight: 800 !important;
-  font-size: 11.5px !important;
-  text-align: right !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-:root[data-theme='dark'] .diagram-info-bar .info-cell .v,
-:root[data-theme='cyber'] .diagram-info-bar .info-cell .v {
-  color: #f8fafc !important;
-}
-
-.diagram-info-bar .info-cell .v.barcode-val {
-  letter-spacing: 0.5px !important;
-}
-
-.diagram-info-bar .info-cell .v.ip-val {
-  letter-spacing: 0.3px !important;
-}
-
-/* ── P&ID 배관도 단독 전면 뷰 모드 (.pid-full-view) ── */
-body.pid-full-view .op-panel,
-body.pid-full-view #rightSplitter {
-  display: none !important;
-}
-body.pid-full-view .diagram-panel {
-  flex: 1 1 100% !important;
-  max-width: 100% !important;
-}
-
-/* ── 모바일 / 좁은 화면 최적화 ── */
-@media (max-width: 900px) {
-  header.mobile-top-info-header {
-    padding: 3px 6px !important;
-  }
-  .ui-zoom,
-  .fullscreen-btn,
-  .map-edit-toggle {
-    display: none !important;
-  }
-  .diagram-info-bar {
-    grid-template-columns: 1fr 1.2fr 1.5fr 1fr !important;
-    gap: 2px 10px !important;
-    padding: 4px 8px !important;
-  }
-  .diagram-info-bar .info-cell .k {
-    font-size: 10px !important;
-  }
-  .diagram-info-bar .info-cell .v {
-    font-size: 10.5px !important;
-  }
-}
-
-/* ── 마스터 P&ID 반투명 글래스 HUD 센서 & 공압 돔 LED 밸브 ── */
-.gms-pt-box {
-  fill: rgba(15, 23, 42, 0.88) !important;
-  stroke: #00f0ff !important;
-  stroke-width: 1.5px !important;
-  rx: 4px !important;
-  ry: 4px !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important;
-}
-
-.gms-pt.alert .gms-pt-box {
-  stroke: #ef4444 !important;
-  fill: rgba(74, 35, 35, 0.9) !important;
-}
-
-.gms-pt-value {
-  fill: #00f0ff !important;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
-  font-size: 10.5px !important;
-  font-weight: bold !important;
-  text-anchor: middle !important;
-}
-
-.gms-pt.alert .gms-pt-value {
-  fill: #ff6b6b !important;
-}
-
-.gms-pt-label {
-  fill: #94a3b8 !important;
-  font-size: 10px !important;
-  font-weight: bold !important;
-}
-
-/* 밸브 상태 - 공압 액추에이터 돔 LED 시각화 */
-.valve-group {
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.valve-group:hover {
-  transform: scale(1.1);
-}
-
-.valve-symbol.valve-open {
-  fill: #10b981 !important;
-  stroke: #34d399 !important;
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.8)) !important;
-}
-
-.valve-symbol.valve-closed {
-  fill: #334155 !important;
-  stroke: #64748b !important;
-}

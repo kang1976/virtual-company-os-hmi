@@ -1,23 +1,33 @@
 {
+  "ok": true,
   "selection": {
     "AdjustMode": "AdjustMode_v1",
     "IdleCheck": "IdleCheck_v1",
     "Puls": "Puls_v1",
     "OneP": "OneP_v1",
+    "1P": "OneP_v1",
     "OneP2": "OneP2_v1",
     "OneP3": "OneP3_v1",
     "OneP4": "OneP4_v1",
     "ExchL": "ExchL_v1",
+    "-L": "ExchL_v1",
     "TwoP": "TwoP_v1",
+    "2P": "TwoP_v1",
     "VtTest": "VtTest_v1",
+    "-VT": "VtTest_v1",
     "AfterVtTest": "AfterVtTest_v1",
     "CylReplace": "CylReplace_v1",
+    "CC": "CylReplace_v1",
     "AfterThreeP": "AfterThreeP_v1",
+    "3P": "AfterThreeP_v1",
     "AfterPlusL": "AfterPlusL_v1",
+    "+L": "AfterPlusL_v1",
     "AfterPuls": "AfterPuls_v1",
+    "Puls 2": "AfterPuls_v1",
     "AfterFourP": "AfterFourP_v1",
+    "4P": "AfterFourP_v1",
     "Bypass": "Bypass_v1",
     "HpLpPump": "HpLpPump_v1"
   },
-  "savedAt": "2026-08-01T00:00:00.000Z"
+  "savedAt": "2026-10-08T00:00:00.000Z"
 }

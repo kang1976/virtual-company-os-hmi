@@ -1628,32 +1628,213 @@ function subSeqHandleAlarm(ns, code, gotoStepNo) {
   if (code === 3) showProgressMainMenu(side);
 }
 
+function subSeqGetDefaultCallbacks(ns) {
+  const side = (typeof progressCurrentSide !== 'undefined' && progressCurrentSide) || 'A';
+  if (ns === 'puls') {
+    return {
+      onFinish: (finishedSide) => {
+        if (typeof window.advanceOnePChain === 'function') window.advanceOnePChain(null, finishedSide || side);
+        else if (typeof window.advanceToNextEnabledStatus === 'function') window.advanceToNextEnabledStatus(finishedSide || side);
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'oneP') {
+    return {
+      onFinish: (finishedSide) => {
+        if (typeof window.advanceOnePChain === 'function') window.advanceOnePChain('onePAutoRun', finishedSide || side);
+        else if (typeof window.advanceToNextEnabledStatus === 'function') window.advanceToNextEnabledStatus(finishedSide || side);
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'onePPurge') {
+    return {
+      onFinish: (finishedSide) => {
+        if (typeof window.advanceOnePChain === 'function') window.advanceOnePChain('onePPurgeAutoRun', finishedSide || side);
+        else if (typeof window.advanceToNextEnabledStatus === 'function') window.advanceToNextEnabledStatus(finishedSide || side);
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'onePPumping') {
+    return {
+      onFinish: (finishedSide) => {
+        if (typeof window.advanceOnePChain === 'function') window.advanceOnePChain('onePPumpingAutoRun', finishedSide || side);
+        else if (typeof window.advanceToNextEnabledStatus === 'function') window.advanceToNextEnabledStatus(finishedSide || side);
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'onePPrimaryPurge') {
+    return {
+      onFinish: (finishedSide) => {
+        if (typeof window.advanceOnePChain === 'function') window.advanceOnePChain('onePPrimaryPurgeAutoRun', finishedSide || side);
+        else if (typeof window.advanceToNextEnabledStatus === 'function') window.advanceToNextEnabledStatus(finishedSide || side);
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'exchangePressureTest' || ns === 'vtTest') {
+    return {
+      onFinish: (finishedSide) => {
+        const s = finishedSide || side;
+        if (typeof markStepComplete === 'function' && typeof cylinderCurrentStepIndex !== 'undefined') markStepComplete(s, cylinderCurrentStepIndex[s]);
+        if (typeof advanceToNextEnabledStatus === 'function') advanceToNextEnabledStatus(s);
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'twoP') {
+    return {
+      onFinish: () => {
+        if (typeof proceedPastPasswordGate === 'function' && window.advanceCylinderExchangeDone) {
+          proceedPastPasswordGate('cylinderExchangeDone', window.advanceCylinderExchangeDone);
+        } else if (typeof advanceToNextEnabledStatus === 'function') {
+          advanceToNextEnabledStatus(side);
+        }
+      },
+      onCancel: () => {
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else {
+          if (typeof resetCylinderStepStatus === 'function') resetCylinderStepStatus(side);
+          if (typeof showProgressMainMenu === 'function') showProgressMainMenu(side);
+        }
+      }
+    };
+  }
+  if (ns === 'bypass' || ns === 'afterThreeP' || ns === 'afterPlusL' || ns === 'afterPuls' || ns === 'afterVtTest' || ns === 'afterFourP') {
+    return {
+      onFinish: (finishedSide) => {
+        const s = finishedSide || side;
+        if (ns === 'afterFourP') {
+          if (typeof proceedPastPasswordGate === 'function' && window.advanceExchangeFourthPurgeDone) {
+            proceedPastPasswordGate('exchangeFourthPurgeDone', window.advanceExchangeFourthPurgeDone);
+            return;
+          }
+        }
+        if (typeof markStepComplete === 'function' && typeof cylinderCurrentStepIndex !== 'undefined') markStepComplete(s, cylinderCurrentStepIndex[s]);
+        if (typeof advanceToNextEnabledStatus === 'function') advanceToNextEnabledStatus(s);
+      },
+      onCancel: () => {
+        if (typeof window.cancelExchangeAfterToPassword === 'function') {
+          window.cancelExchangeAfterToPassword(SUBSEQ_NS[ns].screenKey);
+        } else if (typeof showProgressCylExchangePurgeStep === 'function') {
+          showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((step) => step.key === 'cylReplaceCheck'));
+        }
+      }
+    };
+  }
+  if (ns === 'hpLpPump') {
+    return {
+      onFinish: (finishedSide) => {
+        const s = finishedSide || side;
+        if (typeof markStepComplete === 'function' && typeof cylinderCurrentStepIndex !== 'undefined') markStepComplete(s, cylinderCurrentStepIndex[s]);
+        if (typeof advanceToNextEnabledStatus === 'function') advanceToNextEnabledStatus(s);
+      },
+      onCancel: () => {
+        if (typeof cancelPostPcToPassword === 'function') cancelPostPcToPassword('hpLpPump');
+        else if (typeof cancelGasSupply === 'function') cancelGasSupply();
+      }
+    };
+  }
+  if (ns === 'idleCheck') {
+    return {
+      onFinish: () => {
+        if (typeof advanceCylinderLockCheckExit === 'function') advanceCylinderLockCheckExit();
+      },
+      onCancel: () => {
+        if (typeof advanceCylinderLockCheckExit === 'function') advanceCylinderLockCheckExit();
+      }
+    };
+  }
+  if (ns === 'adjustMode') {
+    return {
+      onFinish: () => {
+        if (typeof exitAdjustMode === 'function') exitAdjustMode();
+      },
+      onCancel: () => {
+        if (typeof exitAdjustMode === 'function') exitAdjustMode();
+      }
+    };
+  }
+  return {
+    onFinish: (finishedSide) => { if (typeof advanceToNextEnabledStatus === 'function') advanceToNextEnabledStatus(finishedSide || side); },
+    onCancel: (cancelledSide) => { if (typeof showProgressMainMenu === 'function') showProgressMainMenu(cancelledSide || side); }
+  };
+}
+
 // 이 화면의 마크업은 Operation.js의 loadOperationScreens()가 페이지 로드 후 fetch로 늦게
 // 주입한다 - 이 스크립트가 로드되는 시점엔 아직 DOM에 없을 수 있어 top-level에서 바로
 // wiring하면 안 된다. 대신 시작/정지 함수가 호출될 때(=이미 주입 완료된 뒤) 매번 호출하되
 // dataset.wired로 중복 바인딩을 막는다.
 function subSeqWireOnce(ns) {
   const cfg = SUBSEQ_NS[ns];
+  if (!cfg) return;
   const ackBtn = el(ns, 'ackBtn');
   const stopBtn = el(ns, 'stopBtn');
   if (stopBtn && !stopBtn.dataset.wired) {
     stopBtn.dataset.wired = '1';
     stopBtn.addEventListener('click', () => {
       const rt = subSeqRunStates[ns];
-      const side = rt ? rt.side : progressCurrentSide;
+      const side = rt ? rt.side : ((typeof progressCurrentSide !== 'undefined' && progressCurrentSide) || 'A');
       // 알람 배너가 떠 있는 동안엔 이 버튼이 "실행"으로 바뀌어 재시작을 담당한다(사용자
       // 요청 - "확인 key를 삭제하시고, 하단 버튼에 취소를 실행으로 변경하여 버튼을 누르면
       // 다시 서브 시퀀스가 동작"). 정상 진행 중일 때의 취소/중지 동작과는 분기된다.
       if (subSeqAlarmActive[ns]) {
         logWorkAction(cfg.stopBtn, side);
-        window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, side, subSeqCallbacks[ns]);
+        const cb = subSeqCallbacks[ns] && subSeqCallbacks[ns].onFinish ? subSeqCallbacks[ns] : subSeqGetDefaultCallbacks(ns);
+        window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, side, cb);
         return;
       }
       logWorkAction(cfg.stopBtn, side);
-      window.stopNamespacedSubSequenceRunner(ns);
       if (cfg.stopBtnMode === 'cancel') {
-        const cb = subSeqCallbacks[ns];
-        if (cb && typeof cb.onCancel === 'function') cb.onCancel(side);
+        const cb = subSeqCallbacks[ns] && typeof subSeqCallbacks[ns].onCancel === 'function' ? subSeqCallbacks[ns] : subSeqGetDefaultCallbacks(ns);
+        if (cb && typeof cb.onCancel === 'function') {
+          // 취소 버튼을 누르면 비밀번호 확인 화면으로 이동하되,
+          // 시퀀스는 강제 종료되지 않고 백그라운드에서 계속 진행된다.
+          cb.onCancel(side);
+        } else {
+          window.stopNamespacedSubSequenceRunner(ns);
+        }
+      } else {
+        window.stopNamespacedSubSequenceRunner(ns);
       }
     });
   }
@@ -1684,28 +1865,31 @@ function subSeqWireOnce(ns) {
   }
 
   // idle 화면의 "실행" 버튼 - 자동 시작(auto-start) 구간(puls/oneP)이 알람으로 초기화된 뒤
-  // 다시 실행할 방법이 없던 문제(사용자 지적)를 조정모드 idle과 동일한 방식으로 고친다.
-  // 콜백(onFinish/onCancel)은 처음 자동 시작될 때 등록된 것을 그대로 재사용한다.
+  // 다시 실행할 방법이 없던 문제를 조정모드 idle과 동일한 방식으로 해결.
+  // 콜백(onFinish/onCancel)은 처음 등록된 콜백 또는 기본 정의 콜백을 사용한다.
   const executeBtn = el(ns, 'executeBtn');
   if (executeBtn && !executeBtn.dataset.wired) {
     executeBtn.dataset.wired = '1';
     executeBtn.addEventListener('click', () => {
-      logWorkAction(cfg.executeBtn, progressCurrentSide);
-      window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, progressCurrentSide, subSeqCallbacks[ns]);
+      const side = (typeof progressCurrentSide !== 'undefined' && progressCurrentSide) || 'A';
+      logWorkAction(cfg.executeBtn, side);
+      const cb = subSeqCallbacks[ns] && subSeqCallbacks[ns].onFinish ? subSeqCallbacks[ns] : subSeqGetDefaultCallbacks(ns);
+      window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, side, cb);
     });
   }
 
-  // idle 화면의 "취소" - 조정모드 idle의 취소/압력조정 버튼과 같은 줄 배치로 통일한다
-  // (사용자 요청 - "실행 key 하나만 있음, 첫번째 아래 버튼처럼 배치"). 아직 아무 것도
-  // 실행 중이 아니므로 정지할 대상이 없다 - 등록된 onCancel 콜백만 그대로 호출한다
-  // (패널의 "취소"가 stopBtnMode:'cancel'일 때 하는 것과 동일한 목적지로 이동).
+  // idle 화면의 "취소" - 조정모드 idle의 취소/압력조정 버튼과 같은 줄 배치.
+  // 등록된 onCancel 콜백 또는 네임스페이스별 기본 취소 동작을 반드시 100% 호출한다.
   const idleCancelBtn = el(ns, 'idleCancelBtn');
   if (idleCancelBtn && !idleCancelBtn.dataset.wired) {
     idleCancelBtn.dataset.wired = '1';
     idleCancelBtn.addEventListener('click', () => {
-      logWorkAction(cfg.idleCancelBtn, progressCurrentSide);
-      const cb = subSeqCallbacks[ns];
-      if (cb && typeof cb.onCancel === 'function') cb.onCancel(progressCurrentSide);
+      const side = (typeof progressCurrentSide !== 'undefined' && progressCurrentSide) || 'A';
+      logWorkAction(cfg.idleCancelBtn, side);
+      const cb = subSeqCallbacks[ns] && typeof subSeqCallbacks[ns].onCancel === 'function' ? subSeqCallbacks[ns] : subSeqGetDefaultCallbacks(ns);
+      if (cb && typeof cb.onCancel === 'function') {
+        cb.onCancel(side);
+      }
     });
   }
 
@@ -1937,6 +2121,25 @@ window.isSubSequenceRunningForSide = function isSubSequenceRunningForSide(side) 
   });
 };
 
+/** 현재 실행 중인 모든 서브시퀀스를 완전히 중단하고 밸브를 CLOSE한다 (비밀번호 확인 통과 시 호출). */
+window.stopAllSubSequences = function stopAllSubSequences() {
+  Object.keys(SUBSEQ_NS).forEach((ns) => {
+    if (subSeqRunStates[ns]) {
+      window.stopNamespacedSubSequenceRunner(ns);
+    }
+  });
+};
+
+/** 비밀번호 화면에서 [취소]하여 이전 화면으로 복귀했을 때, 실행 중인 서브시퀀스 패널을 다시 보이도록 복원한다. */
+window.restoreRunningSubSequencePanel = function restoreRunningSubSequencePanel() {
+  Object.keys(SUBSEQ_NS).forEach((ns) => {
+    const rt = subSeqRunStates[ns];
+    if (rt && rt.running) {
+      subSeqSetPanelVisible(ns, true);
+    }
+  });
+};
+
 // 하위호환 래퍼 - 조정모드 쪽 기존 호출부(Operation.js의 adjustModeExecuteBtn/
 // showProgressAdjustMode)는 시그니처를 그대로 쓴다. 항상 ns='adjustMode'에 바인딩된다.
 window.startSubSequenceRunner = function startSubSequenceRunner(mainStepType, side) {
@@ -1945,3 +2148,25 @@ window.startSubSequenceRunner = function startSubSequenceRunner(mainStepType, si
 window.stopSubSequenceRunner = function stopSubSequenceRunner() {
   return window.stopNamespacedSubSequenceRunner('adjustMode');
 };
+
+/** 모든 서브시퀀스 네임스페이스의 버튼(idle 실행/취소, 패널 취소/확인/일시정지/초기화/엑셀 등)을
+ *  단 한 번의 호출로 안전하게 바인딩한다. DOM 주입 전후 언제든 안심하고 호출 가능. */
+window.wireAllSubSequenceButtons = function wireAllSubSequenceButtons() {
+  Object.keys(SUBSEQ_NS).forEach((ns) => {
+    try {
+      subSeqWireOnce(ns);
+    } catch (e) {
+      console.warn(`[SubSeqRunner] wireOnce failed for ${ns}:`, e);
+    }
+  });
+};
+
+// 스크립트 로드 즉시, DOM 준비 시, 그리고 150ms 후 자동 실행하여
+// 어떤 화면에 복원되거나 새로고침되더라도 버튼이 100% 확실히 바인딩되도록 보장
+window.wireAllSubSequenceButtons();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => window.wireAllSubSequenceButtons());
+} else {
+  setTimeout(() => window.wireAllSubSequenceButtons(), 150);
+}
+

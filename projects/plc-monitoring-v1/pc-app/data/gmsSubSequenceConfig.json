@@ -17,7 +17,7 @@
       "group": "설정값",
       "name": "진공하한치_B",
       "id": "vacuumLowerLimit_B",
-      "value": -12,
+      "value": "-12",
       "unit": "PSI",
       "desc": "[적용 공정] Main 3(OneP), Main 4(OneP2), Main 6(OneP4), Main 8(TwoP), Main 12(AfterThreeP), Main 13(AfterPlusL), Main 15(AfterFourP), Main 16(AdjustMode) 배관 진공 형성 스텝 | [판정 기준] VPT & LPT_B & HPT_B & NPT_B <= 설정값(PSI) (진공 도달 시 통과) | [알람/분기] 미달(진공 불량) 시 Alarm Seq 1 발동(전체 밸브 CLOSE 및 초기화 알람).",
       "side": "B",
@@ -394,7 +394,7 @@
       "group": "설정값",
       "name": "Pulse Vent Stop (psi)_A",
       "id": "pulseVentStopPsi_A",
-      "value": "-15",
+      "value": "-12",
       "unit": "PSI",
       "desc": "[적용 공정] Main 2(Puls_v1 Step 7), Main 13(AfterPlusL_v1 Step 22) 잔류가스 배출 확인 스텝 | [판정 기준] HPT_A <= 설정값(PSI) 도달 시 잔류가스 배출 완료로 보고 다음 공정 직행(Next Step) | [알람/분기] 미도달(압력 잔류) 시 Step 7A로 Alarm Goto(Pulse Vent 반복 진입).",
       "side": "A",
@@ -407,7 +407,7 @@
       "group": "설정값",
       "name": "Pulse Vent Stop (psi)_B",
       "id": "pulseVentStopPsi_B",
-      "value": "-10",
+      "value": "-12",
       "unit": "PSI",
       "desc": "[적용 공정] Main 2(Puls_v1 Step 7), Main 13(AfterPlusL_v1 Step 22) 잔류가스 배출 확인 스텝 | [판정 기준] HPT_B <= 설정값(PSI) 도달 시 잔류가스 배출 완료로 보고 다음 공정 직행(Next Step) | [알람/분기] 미도달(압력 잔류) 시 Step 7A로 Alarm Goto(Pulse Vent 반복 진입).",
       "side": "B",
@@ -807,5 +807,5 @@
       "option": "MPT_B"
     }
   ],
-  "savedAt": "2026-08-23T22:17:09.928+09:00"
+  "savedAt": "2026-10-08T14:57:38.333+09:00"
 }

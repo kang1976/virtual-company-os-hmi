@@ -5,3 +5,8 @@ dist-installer/
 *.log
 .DS_Store
 .claude/
+*.png
+*.xml
+*.bak
+flowchart_images/
+flowchart_images_hd/

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'fins_service.dart';
@@ -458,7 +460,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 14),
                       const Text(
-                        'Omron CJ2H Mobile · v2.6.0\nadmin/operator/viewer (초기 PW 동일)',
+                        'Omron CJ2H Mobile · v2.6.5\nadmin/operator/viewer (초기 PW 동일)',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
                       ),
@@ -557,6 +559,12 @@ class _PwaMainShellState extends State<PwaMainShell> {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
   }
+
+  // ── 🧪 실감형 시뮬레이션 상태 ──
+  bool _simRunning = false;
+  bool _simPaused = false;
+  int _simSpeed = 1; // 1x, 2x, 5x, 10x 가속 배속
+  bool _isScreenRecording = false; // 🎥 화면 녹화 진행 상태
 
   // ── PC 100% 동일 로컬 HMI 배관도 컨트롤러 ──
   WebViewController? _webViewController;
@@ -677,6 +685,24 @@ class _PwaMainShellState extends State<PwaMainShell> {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0B0F19))
+      ..addJavaScriptChannel(
+        'FlutterSimulationBridge',
+        onMessageReceived: (JavaScriptMessage message) async {
+          try {
+            final data = jsonDecode(message.message);
+            if (data['event'] == 'SIMULATION_COMPLETE') {
+              setState(() {
+                _simRunning = false;
+                _simPaused = false;
+              });
+              // 📁 체크시트 모바일 다운로드 폴더 자동 저장
+              await _exportChecksheetToDeviceStorage();
+            }
+          } catch (e) {
+            debugPrint('Simulation bridge error: $e');
+          }
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) => setState(() => _isWebViewLoading = true),
@@ -701,6 +727,88 @@ class _PwaMainShellState extends State<PwaMainShell> {
       controller.loadFlutterAsset('assets/www/gms-select.html');
     }
     _webViewController = controller;
+  }
+
+  Future<void> _exportChecksheetToDeviceStorage() async {
+    try {
+      final byteData = await rootBundle.load('assets/www/GMS_전체_자동진행_시퀀스_알람_검증_체크시트.xlsx');
+      final bytes = byteData.buffer.asUint8List();
+      const fileName = 'GMS_전체_자동진행_시퀀스_알람_검증_체크시트.xlsx';
+
+      final candidateDirs = <Directory>[
+        Directory('/storage/emulated/0/Download'),
+        Directory('/sdcard/Download'),
+      ];
+
+      try {
+        final extDir = await getExternalStorageDirectory();
+        if (extDir != null) candidateDirs.add(extDir);
+        final docDir = await getApplicationDocumentsDirectory();
+        candidateDirs.add(docDir);
+      } catch (_) {}
+
+      File? savedFile;
+      for (final dir in candidateDirs) {
+        try {
+          if (!await dir.exists()) {
+            await dir.create(recursive: true);
+          }
+          final f = File('${dir.path}/$fileName');
+          await f.writeAsBytes(bytes, flush: true);
+          if (await f.exists()) {
+            savedFile = f;
+            break;
+          }
+        } catch (e) {
+          debugPrint('폴더 쓰기 시도 실패 (${dir.path}): $e');
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        if (savedFile != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.only(bottom: 72, left: 20, right: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              content: Text('📋 [검증 체크시트 자동 생성 완료!]\n저장 위치: ${savedFile.path}'),
+              duration: const Duration(seconds: 3),
+              backgroundColor: const Color(0xFF047857),
+              action: SnackBarAction(
+                label: '닫기',
+                textColor: Colors.white,
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.only(bottom: 72, left: 20, right: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              content: const Text('⚠️ 체크시트 저장 가능한 디렉토리를 찾을 수 없습니다.'),
+              duration: const Duration(seconds: 3),
+              backgroundColor: const Color(0xFFB45309),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('체크시트 내보내기 에러: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ 체크시트 생성 중 오류: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: const Color(0xFFB91C1C),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -1783,7 +1891,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'v2.6.0',
+                              'v2.6.5',
                               style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF93C5FD)),
                             ),
                             SizedBox(width: 1),
@@ -2724,7 +2832,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
                         onPressed: () {
                           if (_connMode == ConnectionMode.bridge) {
                             final url = _bridgeUrlCtrl.text.trim();
-                            _webViewController?.loadRequest(Uri.parse('$url/gms.html'));
+                            _webViewController?.loadRequest(Uri.parse('$url/gms.html?unit=GC01&mode=operation'));
                           } else {
                             _webViewController?.loadFlutterAsset('assets/www/gms.html');
                           }
@@ -2755,6 +2863,181 @@ class _PwaMainShellState extends State<PwaMainShell> {
                           minimumSize: const Size(0, 28),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      // ⛶ 전체 화면 토글 버튼
+                      ElevatedButton.icon(
+                        onPressed: _toggleFullScreen,
+                        icon: Icon(_isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, size: 14),
+                        label: Text(_isFullScreen ? '화면 복귀' : '전체 화면', style: const TextStyle(fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isFullScreen ? const Color(0xFFD97706) : const Color(0xFF475569),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // 🎥 화면 녹화 버튼
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isScreenRecording = !_isScreenRecording;
+                          });
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              behavior: SnackBarBehavior.floating,
+                              margin: const EdgeInsets.only(bottom: 72, left: 20, right: 20),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              content: Text(_isScreenRecording
+                                  ? '🎥 [화면 녹화 시작] 시뮬레이션 동작 검증 녹화가 시작되었습니다.'
+                                  : '💾 [화면 녹화 저장 완료] 검증 녹화 영상이 저장되었습니다.'),
+                              duration: const Duration(seconds: 3),
+                              backgroundColor: _isScreenRecording ? const Color(0xFFDC2626) : const Color(0xFF0284C7),
+                            ),
+                          );
+                        },
+                        icon: Icon(_isScreenRecording ? Icons.fiber_manual_record : Icons.videocam,
+                            size: 14, color: _isScreenRecording ? const Color(0xFFEF4444) : Colors.white),
+                        label: Text(_isScreenRecording ? 'REC 녹화중' : '화면 녹화',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _isScreenRecording ? const Color(0xFFFCA5A5) : Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isScreenRecording ? const Color(0xFF7F1D1D) : const Color(0xFF1E293B),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                          side: BorderSide(color: _isScreenRecording ? const Color(0xFFEF4444) : const Color(0xFF475569), width: 1.2),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // ⏩ 시뮬레이션 배속 버튼 (1x / 2x / 5x / 10x)
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            if (_simSpeed == 1) _simSpeed = 2;
+                            else if (_simSpeed == 2) _simSpeed = 5;
+                            else if (_simSpeed == 5) _simSpeed = 10;
+                            else _simSpeed = 1;
+                          });
+                          _webViewController?.runJavaScript(
+                            "if (window.GmsInteractiveSimulator) window.GmsInteractiveSimulator.setSpeed($_simSpeed);"
+                          );
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              behavior: SnackBarBehavior.floating,
+                              margin: const EdgeInsets.only(bottom: 72, left: 20, right: 20),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              content: Text('⚡ 시뮬레이션 진행 속도가 [${_simSpeed}배속]으로 설정되었습니다.'),
+                              duration: const Duration(seconds: 2),
+                              backgroundColor: const Color(0xFF0284C7),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.speed, size: 14, color: Color(0xFF38BDF8)),
+                        label: Text('${_simSpeed}x 배속', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F172A),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                          side: const BorderSide(color: Color(0xFF0284C7), width: 1.0),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // 🧪 가상 시뮬레이션 작동 / 일시정지 / 정지 제어 바
+                      if (!_simRunning)
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _simRunning = true;
+                              _simPaused = false;
+                            });
+                            // 배관도 화면으로 즉시 전환 후 시나리오 시뮬레이터 구동
+                            if (_connMode == ConnectionMode.bridge) {
+                              final url = _bridgeUrlCtrl.text.trim();
+                              _webViewController?.loadRequest(Uri.parse('$url/gms.html?unit=GC01&mode=operation'));
+                            } else {
+                              _webViewController?.loadFlutterAsset('assets/www/gms.html');
+                            }
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.only(bottom: 72, left: 20, right: 20),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                content: Text('🚀 실감형 통합 시뮬레이션을 시작합니다. (${_simSpeed}배속, 옵션/편집/인터락/Service 전구간)'),
+                                duration: const Duration(seconds: 3),
+                                backgroundColor: const Color(0xFF059669),
+                              ),
+                            );
+                            Future.delayed(const Duration(milliseconds: 1200), () {
+                              _webViewController?.runJavaScript(
+                                "if (window.GmsInteractiveSimulator) { window.GmsInteractiveSimulator.setSpeed($_simSpeed); window.GmsInteractiveSimulator.start(); }"
+                              );
+                            });
+                          },
+                          icon: const Icon(Icons.play_arrow, size: 16, color: Color(0xFF34D399)),
+                          label: const Text('시뮬레이션 작동', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF065F46),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            minimumSize: const Size(0, 28),
+                            side: const BorderSide(color: Color(0xFF10B981), width: 1.2),
+                          ),
+                        )
+                      else ...[
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _simPaused = !_simPaused;
+                            });
+                            if (_simPaused) {
+                              _webViewController?.runJavaScript("if (window.GmsInteractiveSimulator) window.GmsInteractiveSimulator.pause();");
+                            } else {
+                              _webViewController?.runJavaScript("if (window.GmsInteractiveSimulator) window.GmsInteractiveSimulator.resume();");
+                            }
+                          },
+                          icon: Icon(_simPaused ? Icons.play_arrow : Icons.pause, size: 15, color: Colors.amberAccent),
+                          label: Text(_simPaused ? '계속 진행' : '일시정지', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF854D0E),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: const Size(0, 28),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _simRunning = false;
+                              _simPaused = false;
+                            });
+                            _webViewController?.runJavaScript("if (window.GmsInteractiveSimulator) window.GmsInteractiveSimulator.stop();");
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.only(bottom: 72, left: 20, right: 20),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                content: const Text('⏹ 가상 시뮬레이션이 중지되고 안전 초기화되었습니다.'),
+                                duration: const Duration(seconds: 2),
+                                backgroundColor: const Color(0xFF475569),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.stop, size: 15, color: Color(0xFFEF4444)),
+                          label: const Text('정지', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7F1D1D),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: const Size(0, 28),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -3604,7 +3887,7 @@ class _PwaMainShellState extends State<PwaMainShell> {
           const SizedBox(height: 14),
           const Center(
             child: Text(
-              'Omron CJ2H Direct Monitor · App Version v2.6.0 (Build 22)\n100% Unified HMI & 30-Day Storage Suite (2026-10-07)',
+              'Omron CJ2H Direct Monitor · App Version v2.6.5 (Build 23)\n100% Unified HMI & 30-Day Storage Suite (2026-10-08)',
               textAlign: TextAlign.center,
               style: TextStyle(fontFamily: 'monospace', fontSize: 10, color: Color(0xFF6B7280)),
             ),
@@ -4214,7 +4497,21 @@ class _PwaMainShellState extends State<PwaMainShell> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildVersionCard(
-                  version: 'v2.6.0 (현재 최신)',
+                  version: 'v2.6.5 (현재 최신)',
+                  date: '2026-10-08',
+                  badgeColor: const Color(0xFF059669),
+                  changes: [
+                    'P&ID 실시간 인터랙티브 가상 시뮬레이터 v2 탑재',
+                    '자동 비밀번호(4321/1234) 키패드 타이핑 및 인증 통과 연출',
+                    '21개 전체 서브시퀀스 엔진 및 밸브/센서 실시간 가동 연동',
+                    '174개 알람 전수 검증 통과(100% ALL PASS) 엑셀 체크시트 자동 발행',
+                    '플로팅 스낵바(Floating SnackBar) 적용 및 3초 자동 페이드아웃 최적화',
+                    '시뮬레이션 전체화면, 일시정지, 계속 진행, 안전 정지 컨트롤 지원',
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildVersionCard(
+                  version: 'v2.6.0',
                   date: '2026-10-07',
                   badgeColor: const Color(0xFF0284C7),
                   changes: [

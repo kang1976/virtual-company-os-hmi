@@ -673,8 +673,15 @@ function logWorkAction(buttonId, side) {
  * PASSWORD 없이 directAction()을 바로 실행한다 - PASSWORD를 여는 모든 지점이 이 함수를
  * 거치도록 해서, gms.js OPTION 탭의 개별 토글이 실제로 전부 반영되게 한다. */
 function proceedPastPasswordGate(gateKey, directAction) {
-  if (passwordGateEnabled(gateKey)) showProgressPassword(gateKey);
-  else directAction();
+  if (passwordGateEnabled(gateKey)) {
+    showProgressPassword(gateKey);
+  } else {
+    // 비밀번호 옵션이 미적용(체크 해제)인 경우: 비밀번호 화면을 띄우지 않고 즉시 취소/실행 처리
+    if (['cylinderLockCheck', 'cylReplace', 'exchangeAfterCancel', 'postPcCancel'].includes(gateKey)) {
+      if (typeof window.stopAllSubSequences === 'function') window.stopAllSubSequences();
+    }
+    directAction();
+  }
 }
 
 // ── 유지보수 메뉴 - PASSWORD 통과 후 화면. 메뉴얼 기준 우선 3개 항목만(수동밸브조작/
@@ -705,7 +712,13 @@ function showProgressBarcodeCheck() {
 function showProgressCylinderLockCheck() {
   if (window.stopNamespacedSubSequenceRunner) window.stopNamespacedSubSequenceRunner('idleCheck');
   showProgressScreen('cylinderLockCheck', sideScreenTitle('cylinderLockCheck', '실린더 잠금 check', progressCurrentSide));
-  if (progressCurrentSide) applyCylinderStepStatus(progressCurrentSide);
+  if (progressCurrentSide) {
+    const pulsIdx = CYLINDER_STEP_ORDER.indexOf('Puls');
+    if (cylinderCurrentStepIndex[progressCurrentSide] === 0 && pulsIdx !== -1) {
+      cylinderCurrentStepIndex[progressCurrentSide] = pulsIdx;
+    }
+    applyCylinderStepStatus(progressCurrentSide);
+  }
 }
 
 // ── IDLE 사전확인 7단계(실린더 잠금 check, ns='idleCheck') 완료 후 Status "Puls"(잔류가스
@@ -1690,7 +1703,11 @@ function applyCylinderStepStatus(side) {
   const idx = cylinderCurrentStepIndex[side];
   const stepKey = CYLINDER_STEP_ORDER[idx];
   const row = document.getElementById(side === 'B' ? 'cylStepBadgesB' : 'cylStepBadgesA');
-  if (row) [...row.children].forEach((badge, i) => badge.classList.toggle('active', i <= idx));
+  if (row) [...row.children].forEach((badge, i) => {
+    badge.classList.toggle('active', i <= idx);
+    // 현재 진행 중인 스텝(IDLE 제외)은 상단 배지도 선명하게 점멸(blinking)
+    badge.classList.toggle('blinking', i === idx && stepKey !== 'IDLE');
+  });
   const statusText = document.getElementById(side === 'B' ? 'progressStatusB' : 'progressStatusA');
   if (statusText) statusText.textContent = CYLINDER_STEP_LABELS[stepKey] || stepKey;
   // 실린더 잠금 check + "교환전 1차 Purge" 5단계 화면 모두 큰 배지가 A/B 공용(화면이
@@ -1698,6 +1715,7 @@ function applyCylinderStepStatus(side) {
   // 덮어써 버린다. 숨겨진 화면의 배지를 건드려도 안 보이니 무해하다.
   if (side === progressCurrentSide) {
     const ccIdx = CYLINDER_STEP_ORDER.indexOf('CC');
+    const isLockCheckScreen = progressScreens && progressScreens['cylinderLockCheck'] && progressScreens['cylinderLockCheck'].style.display !== 'none';
     document.querySelectorAll('.step-badge-lg').forEach((badge) => {
       const label = badge.textContent.trim();
       let labelIdx = -1;
@@ -1718,10 +1736,8 @@ function applyCylinderStepStatus(side) {
 
       // 현재 스텝만 점멸(.blinking). "완료(.done, 적색 채움)"는 앞선 위치라고 무조건
       // 채우지 않고, 그 스텝을 실제로 정상 완료한 경우(completedStatusSteps)에만 채운다.
-      // "1P" 큰 배지는 Puls/1P 두 Status에 걸쳐 공유된다(사용자 확인) - Puls 진행 중에도
-      // 이미 "1P" 배지가 점멸해야 하므로 label==='1P' && stepKey==='Puls'도 매치로 본다.
-      // 마찬가지로 "Bypass" 진행 중에는 "+L" 배지가 점멸해야 한다(사용자 요청 - "바이패스는 가압시험 중간 뱃지가 깜빡이면 됩니다").
-      const isSharedOnePBlink = label === '1P' && stepKey === 'Puls';
+      // "1P" 큰 배지는 Puls/1P 두 Status 및 실린더 잠금 check 화면에 걸쳐 공유된다
+      const isSharedOnePBlink = label === '1P' && (stepKey === 'Puls' || stepKey === '1P' || isLockCheckScreen);
       const isSharedPlusLBlink = label === '+L' && stepKey === 'Bypass';
       badge.classList.toggle('blinking', label === stepKey || isSharedOnePBlink || isSharedPlusLBlink);
       badge.classList.toggle('done', labelIdx !== -1 && labelIdx < idx && completedStatusSteps[side].has(labelIdx));
@@ -2091,20 +2107,21 @@ function wireOperationScreens() {
   // 동일한 이유로 window에 노출해서 스코프를 넘긴다.
   window.advanceExchangeFourthPurgeDone = advanceExchangeFourthPurgeDone;
   function advanceCylinderLockCheckExit() {
-    // 실린더 잠금 check "취소" - 실린더 교환 자체를 끝내고 Status를 IDLE로 되돌린 뒤
-    // 메인 메뉴로 완전히 빠진다.
+    // 실린더 잠금 check "취소" 및 교환전 서브시퀀스 취소 - 실행 중이던 서브시퀀스를 완전히 정지하고
+    // Status를 IDLE로 되돌린 뒤 메인 메뉴로 완전히 빠진다.
+    if (typeof window.stopAllSubSequences === 'function') window.stopAllSubSequences();
     resetCylinderStepStatus(progressCurrentSide);
     showProgressMainMenu(progressCurrentSide);
   }
   function advanceCylReplaceCancelExit() {
     // 용기교체(Status "CC") 6단계 자체의 "취소" 목적지 - Status 램프(CC)는 손대지 않고
-    // 그대로 유지한 채 화면만 메인 메뉴로 이동한다(물리적으로 이미 진행한 작업이 있을 수
-    // 있으므로 되돌리지 않음).
+    // 그대로 유지한 채 화면만 메인 메뉴로 이동한다.
+    if (typeof window.stopAllSubSequences === 'function') window.stopAllSubSequences();
     showProgressMainMenu(progressCurrentSide);
   }
   function advanceExchangeAfterCancelExit() {
-    // 교환후(Bypass~4P) 구간 공통 "취소" 목적지 - CC 첫 번째 스텝(실린더 확인)으로
-    // 되돌아간다(showProgressCylExchangePurgeStep이 Status도 CC로 되돌린다).
+    // 교환후(Bypass~4P) 구간 공통 "취소" 목적지 - CC 첫 번째 스텝(실린더 확인)으로 되돌아간다.
+    if (typeof window.stopAllSubSequences === 'function') window.stopAllSubSequences();
     showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === 'cylReplaceCheck'));
   }
   function advancePostPcCancelExit() {
@@ -2177,71 +2194,57 @@ function wireOperationScreens() {
     renderPasswordDisplay();
   });
   document.getElementById('passwordCancelBtn').addEventListener('click', () => {
-    // PASSWORD를 어디서 들어왔는지에 따라 되돌아갈 화면이 다르다(showProgressPassword()
-    // 호출부마다 지정해둔 passwordCancelTarget 참고) - 수동밸브 조작/히터 조작에서
-    // "취소"로 들어온 경우는 메인 메뉴가 아니라 그 화면으로 돌아가야 한다.
+    // 1. 최우선: 비밀번호 진입 직전 화면 백업 정보(passwordPreviousScreenInfo)가 있으면 해당 원래 화면으로 100% 안전 복귀.
+    // 서브시퀀스 진행 중 "취소"를 눌러 비밀번호 화면으로 들어왔다가 "취소"를 누른 경우,
+    // 시퀀스는 백그라운드에서 멈추지 않고 계속 진행 중이었으므로 원래 서브시퀀스 화면으로 되돌아가고 패널을 다시 보여준다.
+    if (passwordPreviousScreenInfo) {
+      const prev = passwordPreviousScreenInfo;
+      passwordPreviousScreenInfo = null;
+      if (prev.side) progressCurrentSide = prev.side;
+      showProgressScreen(prev.name, prev.header);
+      if (prev.name === 'gasSupplyPressureCheck' && typeof updateGspPressureCheckReadouts === 'function') {
+        updateGspPressureCheckReadouts();
+      }
+      if (typeof window.restoreRunningSubSequencePanel === 'function') {
+        window.restoreRunningSubSequencePanel();
+      }
+      return;
+    }
+
+    // 직전 화면 정보가 없는 경우의 개별 fallback 처리:
     if (passwordCancelTarget === 'manualValve') { showProgressManualValve(); return; }
     if (passwordCancelTarget === 'heater') { showProgressHeater(); return; }
-    // 실린더 잠금 check 화면에서 "취소"로 들어온 경우 - PASSWORD의 "취소"는 실린더 교환을
-    // 그만두는 게 아니라 "잘못 눌렀다"는 뜻이므로 실린더 잠금 check 화면으로 되돌아간다
-    // (실제로 실린더 교환을 그만두려면 PASSWORD를 통과해야 한다 - 아래 확인 버튼 참고).
     if (passwordCancelTarget === 'cylinderLockCheck') { showProgressCylinderLockCheck(); return; }
-    // 교환전 2차 배관청소 완료 후 들어온 경우 - "취소"는 교환 자체를 무르는 게 아니라
-    // 잘못 눌렀다는 뜻이므로 방금 완료한 2차 배관청소 화면으로 되돌아간다.
     if (passwordCancelTarget === 'cylinderExchangeDone') {
       showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === 'exchangeSecondPurge'));
       return;
     }
-    // 용기교체(CC)/교환후(Bypass~4P)/PC 이후(RGV·가스공급준비 7단계) 화면에서 "취소"로
-    // 들어온 경우 - PASSWORD의 "취소"는 그만두는 게 아니라 잘못 눌렀다는 뜻이므로 방금
-    // 있던 그 화면으로 되돌아간다. 가스공급준비 7단계는 CYL_EXCHANGE_PURGE_STEPS가 아니라
-    // 별도 배열(GAS_SUPPLY_STEPS)에 있으므로 거기서도 찾아본다.
     if (['cylReplace', 'exchangeAfterCancel', 'postPcCancel'].includes(passwordCancelTarget)) {
       const gasIdx = GAS_SUPPLY_STEPS.findIndex((s) => s.key === cylReplaceCancelFromKey);
       if (gasIdx !== -1) { showProgressGasSupplyStep(gasIdx); return; }
       showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === cylReplaceCancelFromKey));
       return;
     }
-    // 용기교체 마지막 화면(Auto Guard 확인(Close))의 "확인"으로 들어온 경우도 마찬가지 -
-    // PASSWORD의 "취소"는 방금 있던 그 화면으로 되돌아간다.
     if (passwordCancelTarget === 'cylReplaceDone') {
       showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === 'cylReplaceAutoGuardClose'));
       return;
     }
-    // 4차 배관청소 "실행"으로 들어온 경우도 마찬가지 - PASSWORD의 "취소"는 방금 있던
-    // 4차 배관청소 화면으로 되돌아간다.
     if (passwordCancelTarget === 'exchangeFourthPurgeDone') {
       showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === 'exchangeFourthPurge'));
       return;
     }
-    // 가스공급 "실행"으로 들어온 경우 - PASSWORD의 "취소"는 방금 있던 PC/가스공급
-    // 화면으로 되돌아간다.
     if (passwordCancelTarget === 'gasSupplyEntry') {
       showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === 'exchangePurgeComplete'));
       return;
     }
-    // 가스공급 중 화면의 "일시정지"/"공급중지"/"강제 교체"로 들어온 경우 - PASSWORD의
-    // "취소"는 가스공급 중 화면으로 되돌아간다.
     if (['gasSupplyPauseEntry', 'gasSupplyStopEntry', 'gasSupplyForceChangeEntry'].includes(passwordCancelTarget)) {
       showProgressGasSupplyActive(progressCurrentSide);
       return;
     }
-    // Data Clear를 취소했을 때는 아무것도 지우지 않고 작업이력/에러사항 화면으로 그대로 되돌아간다.
     if (passwordCancelTarget === 'workLogClear') { showProgressWorkLog(); return; }
     if (passwordCancelTarget === 'errorLogClear') { showProgressErrorLog(); return; }
     if (passwordCancelTarget === 'adjustMode') { exitAdjustMode(); return; }
     if (passwordCancelTarget === 'lineVent') { showProgressGasSupplyStep(0); return; }
-
-    // 2. 전체 공통: 비밀번호 진입 직전 화면 백업 정보가 있으면 해당 원래 화면으로 100% 안전 복귀
-    if (passwordPreviousScreenInfo) {
-      if (passwordPreviousScreenInfo.side) progressCurrentSide = passwordPreviousScreenInfo.side;
-      showProgressScreen(passwordPreviousScreenInfo.name, passwordPreviousScreenInfo.header);
-      if (passwordPreviousScreenInfo.name === 'gasSupplyPressureCheck' && typeof updateGspPressureCheckReadouts === 'function') {
-        updateGspPressureCheckReadouts();
-      }
-      passwordPreviousScreenInfo = null;
-      return;
-    }
 
     if (progressCurrentSide) showProgressMainMenu(progressCurrentSide);
     else showProgressRoot();
@@ -3164,4 +3167,7 @@ function wireOperationScreens() {
     });
   });
 }
-loadOperationScreens().then(wireOperationScreens);
+loadOperationScreens().then(() => {
+  wireOperationScreens();
+  window.operationScreensLoaded = true;
+});

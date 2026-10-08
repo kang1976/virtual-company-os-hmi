@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=0.5, maximum-scale=5.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GMS 모니터링</title>
 <script>
   // 저장된 테마를 먼저 적용(FOUC 방지). 사용자 지정 테마도 복원. (다른 페이지와 동일)
@@ -128,156 +128,103 @@
      메뉴의 "설정모드 A/B"를 누를 때 Operation.js가 window.initGmsConfigModeGrid()를 호출해
      마운트한다(A/B가 화면 하나를 공유 - 조정모드 A/B와 동일한 패턴). -->
 <link rel="stylesheet" href="gms-configmode-grid/plc-grid-app.css">
-  <link rel="stylesheet" href="/theme-3d.css" />
+  <link rel="stylesheet" href="theme-3d.css" />
 </head>
 <body>
 
-<header>
-  <h1>GMS 모니터링 <span id="unitLabel"></span> <span id="modeLabel" class="mode-pill"></span>
-    <span class="server-conn-wrap" title="브라우저 ↔ 서버(Node) 연결 상태 - 꺼지면 자동으로 재연결을 시도합니다.">
-      <span id="serverConnLamp" class="server-conn-lamp"></span><span id="serverConnLabel" class="server-conn-label">서버 연결 확인 중</span>
-    </span>
-    <span id="cpuInfo">— 연결 전</span></h1>
-  <div style="display:flex;align-items:center;gap:14px;margin-left:auto;">
-    <div class="ui-zoom" title="화면 배율 조절 (Ctrl+휠, Ctrl+0: 100%로 초기화)">
-      <button type="button" id="uiZoomOut" aria-label="축소">−</button>
-      <select id="uiZoomSelect" aria-label="배율 선택">
-        <option value="40">40%</option>
-        <option value="50">50%</option>
-        <option value="67">67%</option>
-        <option value="75">75%</option>
-        <option value="80">80%</option>
-        <option value="90">90%</option>
-        <option value="100" selected>100%</option>
-        <option value="110">110%</option>
-        <option value="125">125%</option>
-        <option value="150">150%</option>
-        <option value="175">175%</option>
-        <option value="200">200%</option>
-      </select>
-      <button type="button" id="uiZoomIn" aria-label="확대">+</button>
-    </div>
-    <button type="button" id="fullscreenToggleBtn" class="fullscreen-btn" title="전체 화면 전환 (F11)">⛶ 전체 화면</button>
-    <div class="page-tabs">
-      <a class="page-tab active" href="/gms-select.html">⛽ GMS</a>
-      <a class="page-tab" href="/index.html">PLC 모니터링</a>
-      <a class="page-tab" href="/grid/">📊 Recipes &amp; Snapshots</a>
-      <a class="page-tab" href="/monitoring.html">🕒 트렌드 모니터링</a>
-      <a class="page-tab" href="/settings.html">⚙ 설정</a>
-    </div>
+<!-- 최상단 EQ INFO & BAR CODE / IP ADDR 2열 분할 헤더 (CEO 지시 사항 반영) -->
+<header class="mobile-top-info-header">
+  <div class="diagram-info-bar" id="diagramInfoBar">
+    <!-- Row 1 -->
+    <div class="info-cell cell-gas-name"><span class="k">Gas Name</span> <span class="v" id="eqGasName">GAS CABINET</span></div>
+    <div class="info-cell cell-io-ver"><span class="k">GMS Standard IO MAP Version</span> <span class="v" id="eqIoMapVer">-</span></div>
+    <div class="info-cell cell-barcode-a"><span class="k">BAR CODE A</span> <span class="v barcode-val" id="progressBarcodeA">----------------------</span></div>
+    <div class="info-cell cell-ip-addr"><span class="k">ip ADDRESS</span> <span class="v ip-val" id="progressIpAddr">192.168.0.80</span></div>
+
+    <!-- Row 2 -->
+    <div class="info-cell cell-eq-code"><span class="k">Equipment Code</span> <span class="v" id="eqCode">unit1</span></div>
+    <div class="info-cell cell-empty"></div>
+    <div class="info-cell cell-barcode-b"><span class="k">BAR CODE B</span> <span class="v barcode-val" id="progressBarcodeB">----------------------</span></div>
+    <div class="info-cell cell-empty"></div>
+
+    <!-- JS 참조 유지용 숨김 요소 (화면에는 미노출) -->
+    <span id="unitLabel" style="display:none;"></span>
+    <span id="modeLabel" style="display:none;"></span>
+    <span id="serverConnLamp" style="display:none;"></span>
+    <span id="serverConnLabel" style="display:none;"></span>
+    <span id="cpuInfo" style="display:none;"></span>
   </div>
 </header>
+<div id="topInfoSplitter" class="top-info-splitter" title="드래그해서 최상단 헤더(Gas Name/바코드/IP) 높이 조절 (세로폭 조절)"></div>
 
-<!-- 모바일 웹뷰 최적화: 헤더 숨김 & 좌우 3단 커튼 슬라이드 + CYLINDER STEP STATUS 전체 너비 -->
-<!-- ── 자동 숨김 핸들 바: 터치하면 상단 바 펼치기/접기 ── -->
-<div id="equipBarHandle" class="equip-bar-handle" title="상단 정보 바 펼치기/접기">
-  <span class="equip-bar-handle-dots">⠿</span>
-  <span class="equip-bar-handle-label" id="equipBarHandleLabel">▲ 접기</span>
-</div>
-
-<div class="equip-status-bar-v2" id="equipStatusBarV2">
-  <!-- ── 3단 커튼 래퍼: 좌→우 flex 배치 ── -->
-  <div class="curtain-row">
-
-    <!-- 커튼 패널 1: Equipment Info (기본 접힘) -->
-    <div class="curtain-wrap" id="curtainWrap1">
-      <button type="button" class="curtain-toggle-btn" id="curtainBtn1" title="장비 정보 펼치기/접기" aria-expanded="false">
-        <span class="curtain-arrow">▶</span>
-        <span class="curtain-label">EQ<br>Info</span>
-      </button>
-      <div class="curtain-panel" id="curtainPanel1">
-        <div class="curtain-panel-inner">
-          <div class="curtain-box-title">Equipment Info.</div>
-          <div class="info-grid">
-            <div class="info-row"><span class="k">Gas Name</span><span class="v" id="eqGasName">-</span></div>
-            <div class="info-row"><span class="k">Equip. Code</span><span class="v" id="eqCode">-</span></div>
-            <div class="info-row"><span class="k">IO MAP Ver</span><span class="v" id="eqIoMapVer">-</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 커튼 패널 2: BAR CODE / IP ADDR (기본 접힘) -->
-    <div class="curtain-wrap" id="curtainWrap2">
-      <button type="button" class="curtain-toggle-btn" id="curtainBtn2" title="바코드/IP 펼치기/접기" aria-expanded="false">
-        <span class="curtain-arrow">▶</span>
-        <span class="curtain-label">BAR<br>CODE</span>
-      </button>
-      <div class="curtain-panel" id="curtainPanel2">
-        <div class="curtain-panel-inner">
-          <div class="curtain-box-title">BAR CODE / IP ADDR</div>
-          <div class="info-grid">
-            <div class="info-row"><span class="k">BAR CODE A</span><span class="v" id="progressBarcodeA">-</span></div>
-            <div class="info-row"><span class="k">BAR CODE B</span><span class="v" id="progressBarcodeB">-</span></div>
-            <div class="info-row"><span class="k">IP ADDR</span><span class="v" id="progressIpAddr">-</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 우측 고정 영역: CYLINDER STEP STATUS (항상 보임, flex:1) -->
-    <div class="cyl-step-box-full">
-      <div class="cyl-step-header-row">
-        <span class="box-title-main">CYLINDER STEP STATUS</span>
-
-        <!-- ── 화면 확대 유틸 버튼 그룹 (전체화면 + 우측패널 접기) ── -->
-        <div class="screen-util-btns">
-          <button type="button" id="fullscreenToggleBtn2" class="screen-util-btn" title="전체 화면 전환 (F11)">⛶</button>
-          <button type="button" id="opPanelCollapseBtn" class="screen-util-btn" title="우측 진행 메뉴 접기/펼치기" aria-expanded="true">◀ 패널</button>
-        </div>
-
-        <!-- 우측 패널 탭 전환 버튼 -->
-        <div class="tab-switch-bar">
-          <button class="tab-switch-btn active" data-tab="progress">진행 메뉴</button>
-          <button class="tab-switch-btn" data-tab="config">CONFIG.</button>
-          <button class="tab-switch-btn" data-tab="user">USER</button>
-          <button class="tab-switch-btn" data-tab="option">OPTION</button>
-          <button class="tab-switch-btn" data-tab="alarm">ALARM</button>
-          <button class="tab-switch-btn shutdown-tab" data-tab="shutdown">SHUT-DOWN</button>
-          <button class="tab-switch-btn" data-tab="alarmHistory">현재 알람 이력</button>
-          <button class="tab-switch-btn" data-tab="events">Live Events</button>
-          <a class="tab-switch-btn room-link" href="/gms-select.html" title="장비 선택 화면으로 이동">ROOM</a>
-        </div>
-      </div>
-
-      <!-- A Side 뱃지 행 -->
-      <div class="step-row-v2">
-        <span class="step-side-v2">A Side</span>
-        <div class="step-badges-v2" id="cylStepBadgesA">
+<div class="equip-status-bar">
+  <div class="cyl-step-box panel-box" style="width:100%;">
+    <div class="cyl-step-status-group">
+      <div class="box-title">Cylinder Step Status <span style="font-weight:400;text-transform:none;">(A/B Side 공정 단계)</span></div>
+      <div class="step-row">
+        <span class="step-side">A Side</span>
+        <div class="step-badges" id="cylStepBadgesA">
           <span class="step-badge active">IDLE</span><span class="step-badge">Puls</span><span class="step-badge">1P</span><span class="step-badge">-L</span>
           <span class="step-badge">-VT</span><span class="step-badge">2P</span><span class="step-badge">CC</span>
           <span class="step-badge">3P</span><span class="step-badge">Bypass</span><span class="step-badge">+L</span><span class="step-badge">Puls 2</span><span class="step-badge">-VT</span>
           <span class="step-badge">4P</span><span class="step-badge">PC</span><span class="step-badge">HP&LP Pump</span><span class="step-badge">GSP</span><span class="step-badge">RGV</span><span class="step-badge">READY</span><span class="step-badge">Service</span>
         </div>
       </div>
-
-      <!-- B Side 뱃지 행 + etc 제어 버튼 결합 -->
-      <div class="step-row-v2 step-b-and-etc">
-        <span class="step-side-v2">B Side</span>
-        <div class="step-badges-v2" id="cylStepBadgesB">
+      <div class="step-row">
+        <span class="step-side">B Side</span>
+        <div class="step-badges" id="cylStepBadgesB">
           <span class="step-badge active">IDLE</span><span class="step-badge">Puls</span><span class="step-badge">1P</span><span class="step-badge">-L</span>
           <span class="step-badge">-VT</span><span class="step-badge">2P</span><span class="step-badge">CC</span>
           <span class="step-badge">3P</span><span class="step-badge">Bypass</span><span class="step-badge">+L</span><span class="step-badge">Puls 2</span><span class="step-badge">-VT</span>
           <span class="step-badge">4P</span><span class="step-badge">PC</span><span class="step-badge">HP&LP Pump</span><span class="step-badge">GSP</span><span class="step-badge">RGV</span><span class="step-badge">READY</span><span class="step-badge">Service</span>
         </div>
-        <div class="etc-btns-v2">
-          <span class="etc-label">etc:</span>
+      </div>
+      <div class="step-row step-etc-row">
+        <span class="step-side">etc</span>
+        <div class="etc-btns">
           <button class="etc-btn" data-etc="emergency">비상정지</button>
           <button class="etc-btn" data-etc="force">강제</button>
           <button class="etc-btn" id="etcPmBtn" data-etc="pm">PM</button>
           <button class="etc-btn" id="etcSetupBtn" data-etc="setup">SETUP</button>
         </div>
       </div>
-    </div><!-- /cyl-step-box-full -->
+    </div>
+    <!-- 우측 패널 탭 전환 버튼 및 PC 시뮬레이션 제어 바 -->
+    <div class="tab-switch-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <div class="pc-sim-controls" style="display:flex;align-items:center;gap:4px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.4);border-radius:6px;padding:2px 8px;margin-right:auto;">
+        <span style="font-size:11px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:3px;">
+          🎮 <span class="pc-sim-badge-txt">시뮬레이션</span>:
+        </span>
+        <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="background:#0284c7;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;">▶ 시작</button>
+        <button type="button" id="pcSimPauseBtn" class="tab-switch-btn" style="display:none;background:#eab308;color:#000;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏸ 일시정지</button>
+        <button type="button" id="pcSimStopBtn" class="tab-switch-btn" style="display:none;background:#ef4444;color:#fff;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏹ 중지</button>
+        <select id="pcSimSpeedSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
+          <option value="1">1x 배속</option>
+          <option value="2">2x 배속</option>
+          <option value="5">5x 배속</option>
+          <option value="10" selected>10x 배속</option>
+        </select>
+        <span id="pcSimStatusText" style="font-size:11px;color:#94a3b8;margin-left:4px;">대기</span>
+      </div>
 
-  </div><!-- /curtain-row -->
-</div><!-- /equip-status-bar-v2 -->
+      <button class="tab-switch-btn active" data-tab="progress">진행 메뉴</button>
+      <button class="tab-switch-btn" data-tab="config">CONFIG.</button>
+      <button class="tab-switch-btn" data-tab="user">USER</button>
+      <button class="tab-switch-btn" data-tab="option">OPTION</button>
+      <button class="tab-switch-btn" data-tab="alarm">ALARM</button>
+      <button class="tab-switch-btn shutdown-tab" data-tab="shutdown">SHUT-DOWN</button>
+      <button class="tab-switch-btn" data-tab="alarmHistory">현재 알람 이력</button>
+      <button class="tab-switch-btn" data-tab="events">Live Events</button>
+      <a class="tab-switch-btn room-link" href="gms-select.html" title="장비 선택 화면으로 이동">ROOM</a>
+    </div>
+  </div>
+</div>
+<div id="equipStatusSplitter" class="h-splitter" title="드래그해서 Cylinder Step Status 영역 높이 조절"></div>
 
 <main>
   <div class="diagram-panel">
     <button id="mapEditToggle" class="map-edit-toggle" title="맵 편집 모드 - 밸브/PT를 추가·이동·수정합니다">🛠 편집</button>
-    <!-- PM Mode/Set-up Mode 활성화 램프 - 보조 메뉴 "유지보수모드"에서 켜고 끈다(gms.js의
-         applyMaintenanceModeState). 미적용이면 숨김, 적용이면 표시(깜빡임 애니메이션). -->
+    <!-- PM Mode/Set-up Mode 활성화 램프 -->
     <div class="diagram-mode-lamps">
       <span class="mode-lamp" id="pmModeLamp">PM MODE 활성화중</span>
       <span class="mode-lamp" id="setupModeLamp">SET-UP MODE 활성화중</span>
@@ -507,7 +454,7 @@
   </div>
 
   <div id="rightSplitter" class="v-splitter" title="드래그해서 우측 패널 폭 조절"></div>
-  <div id="opPanel" class="op-panel">
+  <div class="op-panel">
     <div class="op-section grow" style="padding:0;">
       <div class="tab-panel" data-tab-panel="progress" style="padding:0;">
         <div class="progress-panel">
@@ -897,6 +844,7 @@
 <script src="gms-sub-sequence-runner.js"></script>
 <script src="gms-editor.js"></script>
 <script src="gms-option-display.js"></script>
-<script src="/clickTracker.js"></script>
+<script src="clickTracker.js"></script>
+<script src="gms-interactive-sim.js"></script>
 </body>
 </html>

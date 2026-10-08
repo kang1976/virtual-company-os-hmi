@@ -1837,9 +1837,9 @@ async function fetchValves() {
     const res = await fetch(`/api/gms/valves?unit=${encodeURIComponent(selectedUnitId)}`);
     if (res.ok) {
       const data = await res.json();
-      if (data.ok && Array.isArray(data.valves)) {
+      if (data.ok && Array.isArray(data.valves) && data.valves.length > 0) {
         valves = data.valves;
-        pts = data.pts || [];
+        pts = (Array.isArray(data.pts) && data.pts.length > 0) ? data.pts : [];
         renderDiagram();
         renderPts();
         return;
@@ -1851,11 +1851,13 @@ async function fetchValves() {
     const res2 = await fetch(`data/gmsValves/${encodeURIComponent(selectedUnitId || 'unit1')}.json`);
     if (res2.ok) {
       const data2 = await res2.json();
-      valves = data2.valves || [];
-      pts = data2.pts || [];
-      renderDiagram();
-      renderPts();
-      return;
+      if (Array.isArray(data2.valves) && data2.valves.length > 0) {
+        valves = data2.valves;
+        pts = data2.pts || [];
+        renderDiagram();
+        renderPts();
+        return;
+      }
     }
   } catch (e2) {}
 
@@ -1867,8 +1869,23 @@ async function fetchValves() {
       pts = data3.pts || [];
       renderDiagram();
       renderPts();
+      return;
     }
   } catch (e3) {}
+
+  // 최후의 안전장치: /api/gms/valves?unit=unit1 호출
+  try {
+    const res4 = await fetch('/api/gms/valves?unit=unit1');
+    if (res4.ok) {
+      const data4 = await res4.json();
+      if (data4.ok && Array.isArray(data4.valves) && data4.valves.length > 0) {
+        valves = data4.valves;
+        pts = data4.pts || [];
+        renderDiagram();
+        renderPts();
+      }
+    }
+  } catch (e4) {}
 }
 fetchValves();
 
@@ -2075,6 +2092,7 @@ PASSWORD_GATE_DEFS.forEach((def) => {
 function passwordGateEnabled(key) {
   return passwordGateOptions[key] !== false;
 }
+window.passwordGateEnabled = passwordGateEnabled;
 
 // ── "GC Type 옵션": 2B2P(적용)면 A/B 양측이 각자 독립적으로 가스공급을 만들 수 있다(기존
 // 동작 - 포트가 두 개라는 뜻). 2B1P(미적용)면 포트가 하나뿐이라는 뜻이라, 가스공급준비
@@ -2779,6 +2797,48 @@ initHSplitter({ splitterId: 'equipRightSplitter', panelSelector: '.equip-io-box'
     box.style.height = newHeight + 'px';
     localStorage.setItem(STORAGE_KEY, String(newHeight));
   });
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    splitter.classList.remove('dragging');
+    document.body.style.userSelect = '';
+  });
+})();
+
+// ── 최상단 헤더(Gas Name/바코드/IP) 세로폭(높이) 조절 스플리터 ──
+(function initTopInfoSplitter() {
+  const splitter = document.getElementById('topInfoSplitter');
+  const header = document.querySelector('header.mobile-top-info-header');
+  if (!splitter || !header) return;
+  const STORAGE_KEY = 'gmsTopInfoBarHeight';
+
+  const MIN_HEIGHT = 28; // 최소 축소 높이 (완전 슬림 한 줄)
+  const MAX_HEIGHT = 180; // 최대 확장 높이
+  const savedHeight = Number(localStorage.getItem(STORAGE_KEY));
+  if (Number.isFinite(savedHeight) && savedHeight >= MIN_HEIGHT) {
+    header.style.height = savedHeight + 'px';
+  }
+
+  let dragging = false;
+  let startY = 0;
+  let startHeight = 0;
+
+  splitter.addEventListener('mousedown', (e) => {
+    dragging = true;
+    splitter.classList.add('dragging');
+    startY = e.clientY;
+    startHeight = header.getBoundingClientRect().height;
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const delta = e.clientY - startY;
+    const newHeight = Math.min(Math.max(startHeight + delta, MIN_HEIGHT), MAX_HEIGHT);
+    header.style.height = newHeight + 'px';
+    localStorage.setItem(STORAGE_KEY, String(newHeight));
+  });
+
   window.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
