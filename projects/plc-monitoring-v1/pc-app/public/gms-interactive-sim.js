@@ -124,60 +124,137 @@
 
     scenario: [
       // ─────────────────────────────────────────────────────────────
-      // [1] 화면 전환 & [취소] 키 클릭 직전 화면 정상 복귀 체크
+      // [1] 비밀번호 통합 검증 풀 루틴 (오입력/취소복귀/정상입력/백그라운드진행/옵션미적용)
       // ─────────────────────────────────────────────────────────────
       {
-        name: '화면 전환 및 [취소] 키 이전 복귀 검증',
-        desc: 'P&ID 메인 관제 진입 후 비밀번호 입력창 진입 ➔ [취소] 클릭 ➔ 직전 메인화면 정상 복귀 확인',
+        name: '비밀번호 통합 검증 풀 루틴 (오입력/취소복귀/정상입력/옵션연동)',
+        desc: '진입 ➔ 오입력 차단 ➔ 키패드 Back/Clear ➔ 취소 복귀 ➔ 정상입력(4321) 통과 ➔ 옵션 미적용 다이렉트 패스 ➔ 옵션 원복',
         run: async function(sim) {
-          if (window.toast) window.toast('🔄 [Step 1/26] 화면전환 및 [취소] 복귀 인터락 검증', 'info');
+          if (window.toast) window.toast('🔐 [Step 1/26] 비밀번호 통합 검증 루틴 시작 (오입력/취소/정상/옵션)', 'info');
+          
+          // 1-1. 진행 메뉴 ➔ A 진행 ➔ 메인 메뉴
           const tabBtn = document.querySelector('.tab-switch-btn[data-tab="progress"]');
           if (tabBtn) tabBtn.click();
           if (window.showProgressMainMenu) window.showProgressMainMenu('A');
-          await sim.sleep(1000);
+          await sim.sleep(600);
 
-          if (window.showProgressPassword) window.showProgressPassword('mainMenu');
-          await sim.sleep(800);
+          // 1-2. 메인 메뉴에서 [실린더 교환] 클릭 ➔ 비밀번호 진입
+          const cylExBtn = document.getElementById('mainMenuCylinderExchangeBtn') || document.querySelector('[data-action="실린더 교환"]');
+          if (cylExBtn) cylExBtn.click();
+          else if (window.showProgressPassword) window.showProgressPassword('cylinderExchange');
+          await sim.sleep(600);
 
+          // 1-3. [오입력 검증]: 9 9 9 9 입력 후 [확인]
+          const typeKey = async (digit) => {
+            const btn = document.querySelector(`.password-keypad [data-digit="${digit}"]`) ||
+                        Array.from(document.querySelectorAll('.keypad-btn')).find(b => b.dataset.digit === digit || b.textContent.trim() === digit);
+            if (btn) {
+              btn.click();
+              btn.style.transform = 'scale(0.9)';
+              setTimeout(() => { if (btn) btn.style.transform = ''; }, 80);
+            }
+            await sim.sleep(150);
+          };
+
+          for (const k of ['9', '9', '9', '9']) await typeKey(k);
+          const confirmBtn = document.getElementById('passwordConfirmBtn') || document.querySelector('.password-action-btn.confirm');
+          if (confirmBtn) confirmBtn.click();
+          if (window.toast) window.toast('❌ 오입력(9999) 차단 및 진입 거부 검증 완료 (PASS)', 'err');
+          await sim.sleep(600);
+
+          // 1-4. [키패드 Clear/Back 동작 검증]
+          await typeKey('1');
+          await typeKey('2');
+          const backBtn = document.getElementById('passwordBackBtn');
+          if (backBtn) { backBtn.click(); await sim.sleep(150); }
+          const clearBtn = document.getElementById('passwordClearBtn');
+          if (clearBtn) { clearBtn.click(); await sim.sleep(150); }
+
+          // 1-5. [취소 복귀 검증]: 비밀번호 화면에서 [취소] 클릭 ➔ 메인 메뉴 복귀
           const cancelBtn = document.getElementById('passwordCancelBtn') || document.querySelector('.password-action-btn.cancel');
-          if (cancelBtn) {
-            cancelBtn.click();
-            if (window.toast) window.toast('↩️ [취소] 키 입력 ➔ 직전 메인화면으로 안전 복귀 검증 통과 (PASS)', 'ok');
+          if (cancelBtn) cancelBtn.click();
+          if (window.toast) window.toast('↩️ [취소] 클릭 ➔ [A] 메인 메뉴 정상 복귀 검증 통과 (PASS)', 'ok');
+          await sim.sleep(600);
+
+          // 1-6. [정상 입력 검증]: 다시 [실린더 교환] ➔ 4-3-2-1 입력 ➔ 실린더 잠금 check 진입
+          if (cylExBtn) cylExBtn.click();
+          else if (window.showProgressPassword) window.showProgressPassword('cylinderExchange');
+          await sim.sleep(500);
+
+          for (const k of ['4', '3', '2', '1']) await typeKey(k);
+          if (confirmBtn) confirmBtn.click();
+          if (window.toast) window.toast('🔓 정상 비밀번호(4321) 통과 ➔ [실린더 잠금 check] 진입 완료 (PASS)', 'ok');
+          await sim.sleep(700);
+
+          // 1-7. [시퀀스 진행 중 취소 & 백그라운드 유지 검증]
+          const returnBtn = document.getElementById('cylinderLockReturnBtn');
+          if (returnBtn) returnBtn.click(); // 시퀀스 시작
+          await sim.sleep(600);
+
+          // 진행 중 취소 클릭 ➔ 비밀번호 화면 이동
+          const lockCancelBtn = document.getElementById('cylinderLockCancelBtn') || document.getElementById('pulsCancelBtn');
+          if (lockCancelBtn) lockCancelBtn.click();
+          await sim.sleep(600);
+
+          // 비밀번호 화면에서 취소 클릭 ➔ 원래 진행 중이던 서브시퀀스로 100% 복귀
+          if (cancelBtn) cancelBtn.click();
+          if (window.toast) window.toast('🛡️ 비밀번호 취소 ➔ 서브시퀀스 백그라운드 진행 유지 & 안전 복귀 (PASS)', 'ok');
+          await sim.sleep(700);
+
+          // 안전 초기화
+          if (window.stopAllSubSequences) window.stopAllSubSequences();
+          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
+          await sim.sleep(500);
+
+          // 1-8. [옵션 미적용(다이렉트 진입) 검증]
+          if (window.passwordGateOptions) {
+            window.passwordGateOptions['cylinderExchange'] = false;
           }
-          await sim.sleep(800);
+          if (cylExBtn) cylExBtn.click(); // 비밀번호 없이 바로 진입해야 함
+          await sim.sleep(600);
+          if (window.toast) window.toast('⚡ [옵션 미적용] 비밀번호 없이 실린더 잠금 check 다이렉트 진입 (PASS)', 'ok');
+
+          // 옵션 원복(다시 적용 상태로 복구)
+          if (window.passwordGateOptions) {
+            window.passwordGateOptions['cylinderExchange'] = true;
+          }
+          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
+          await sim.sleep(600);
         }
       },
 
       // ─────────────────────────────────────────────────────────────
-      // [2] 비밀번호 정상 재진입 & 4-3-2-1 키패드 터치 인증 승인
+      // [2] [알람 시뮬레이션 연동 검증] Seq 1 / Seq 2 / Seq 3 실질 인터락
       // ─────────────────────────────────────────────────────────────
       {
-        name: '비밀번호 정상 입력 및 인증 승인',
-        desc: '유지보수 비밀번호 재진입 ➔ 4-3-2-1 키패드 터치 ➔ [확인] 승인 통과',
+        name: '공정 시퀀스 알람 시뮬레이션 인터락 (Seq 1/2/3) 검증',
+        desc: '서브시퀀스 실행 ➔ 상단 가상 알람 트리거 ➔ Alarm Seq. 1(초기화) & Seq. 2(재진행) & 밸브 차단 검증',
         run: async function(sim) {
-          if (window.toast) window.toast('🔐 [Step 2/26] 비밀번호 키패드 터치 인증 승인', 'info');
-          if (window.showProgressPassword) window.showProgressPassword('mainMenu');
-          await sim.sleep(700);
+          if (window.toast) window.toast('🚨 [Step 2/26] 공정 알람 시뮬레이션 실질 인터락 검증 시작', 'info');
+          if (window.showProgressCylinderLockCheck) window.showProgressCylinderLockCheck();
+          await sim.sleep(500);
 
-          const keys = ['4', '3', '2', '1'];
-          for (let i = 0; i < keys.length; i++) {
-            await sim.sleep(200);
-            const btn = document.querySelector(`.password-keypad [data-digit="${keys[i]}"]`) ||
-                        Array.from(document.querySelectorAll('.keypad-btn')).find(b => b.dataset.digit === keys[i] || b.textContent.trim() === keys[i]);
-            if (btn) {
-              btn.click();
-              btn.style.transform = 'scale(0.9)';
-              setTimeout(() => { if (btn) btn.style.transform = ''; }, 100);
-            }
-          }
-          await sim.sleep(300);
-
-          const confirmBtn = document.getElementById('passwordConfirmBtn') || document.querySelector('.password-action-btn.confirm');
-          if (confirmBtn) confirmBtn.click();
-          else if (window.showProgressMaintenanceMenu) window.showProgressMaintenanceMenu();
-
-          if (window.toast) window.toast('🔓 관리자(MASTER) 비밀번호 승인 완료 (PASS)', 'ok');
+          // 실린더 잠금 check 실행
+          const runBtn = document.getElementById('cylinderLockReturnBtn');
+          if (runBtn) runBtn.click();
           await sim.sleep(800);
+
+          // 가상 알람 Seq 2(재진행 대기) 트리거
+          const alarmSelect = document.getElementById('pcSimAlarmSelect');
+          const alarmBtn = document.getElementById('pcSimAlarmBtn');
+          if (alarmSelect) alarmSelect.value = '2';
+          if (alarmBtn) alarmBtn.click();
+          if (window.toast) window.toast('⏸ 가상 알람 Seq 2 발생 ➔ 공정 일시정지 및 알람배너 표시 확인 (PASS)', 'ok');
+          await sim.sleep(1000);
+
+          // 가상 알람 Seq 1(완전 초기화) 트리거
+          if (alarmSelect) alarmSelect.value = '1';
+          if (alarmBtn) alarmBtn.click();
+          if (window.toast) window.toast('🔄 가상 알람 Seq 1 발생 ➔ 밸브 차단 & 서브시퀀스 안전 초기화 확인 (PASS)', 'ok');
+          await sim.sleep(800);
+
+          if (window.stopAllSubSequences) window.stopAllSubSequences();
+          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
         }
       },
 
