@@ -1777,10 +1777,13 @@ function subSeqGetDefaultCallbacks(ns) {
   if (ns === 'idleCheck') {
     return {
       onFinish: () => {
-        if (typeof advanceCylinderLockCheckExit === 'function') advanceCylinderLockCheckExit();
+        if (typeof showProgressCylExchangePurgeStep === 'function' && typeof CYL_EXCHANGE_PURGE_STEPS !== 'undefined') {
+          showProgressCylExchangePurgeStep(CYL_EXCHANGE_PURGE_STEPS.findIndex((s) => s.key === 'pulsAutoRun'));
+        }
       },
       onCancel: () => {
-        if (typeof advanceCylinderLockCheckExit === 'function') advanceCylinderLockCheckExit();
+        if (typeof window.cancelPreCcToPassword === 'function') window.cancelPreCcToPassword();
+        else if (typeof advanceCylinderLockCheckExit === 'function') advanceCylinderLockCheckExit();
       }
     };
   }
@@ -2080,6 +2083,10 @@ window.startNamespacedSubSequenceRunner = async function startNamespacedSubSeque
         }
       }
     }
+    if (cfg && cfg.screenKey && typeof showProgressScreen === 'function') {
+      const title = (typeof sideScreenTitle === 'function') ? sideScreenTitle(cfg.screenKey, cfg.mainStepType, resolvedSide) : cfg.mainStepType;
+      showProgressScreen(cfg.screenKey, title);
+    }
     subSeqSetPanelVisible(ns, true);
     subSeqStartMasterTimer(ns);
     subSeqRenderCycleStatus(ns);
@@ -2138,6 +2145,47 @@ window.restoreRunningSubSequencePanel = function restoreRunningSubSequencePanel(
       subSeqSetPanelVisible(ns, true);
     }
   });
+};
+
+/** 특정 스텝 인덱스로 서브시퀀스를 강제 재개하거나 복원한다. */
+window.resumeSubSequenceRunnerStepAt = async function resumeSubSequenceRunnerStepAt(ns, stepIndex) {
+  const cfg = SUBSEQ_NS[ns];
+  const side = (typeof progressCurrentSide !== 'undefined' && progressCurrentSide) || 'A';
+  if (cfg && cfg.screenKey && typeof showProgressScreen === 'function') {
+    const title = (typeof sideScreenTitle === 'function') ? sideScreenTitle(cfg.screenKey, cfg.mainStepType, side) : cfg.mainStepType;
+    showProgressScreen(cfg.screenKey, title);
+  }
+  const rt = subSeqRunStates[ns];
+  if (rt) {
+    rt.running = true;
+    rt.stepIndex = stepIndex;
+    subSeqSetPanelVisible(ns, true);
+    subSeqRunStepAt(ns, stepIndex);
+    return true;
+  } else {
+    if (cfg) {
+      subSeqPendingResumes[ns] = {
+        mainStepType: cfg.mainStepType,
+        side: side,
+        stepIndex: stepIndex,
+        valveOpenState: {},
+        elapsedSec: 0,
+        cycleTarget: null,
+        cycleCurrent: 0,
+        cycleCheckStepIndex: null
+      };
+      await window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, subSeqPendingResumes[ns].side, subSeqCallbacks[ns] || subSeqGetDefaultCallbacks(ns));
+      subSeqSetPanelVisible(ns, true);
+      const curRt = subSeqRunStates[ns];
+      if (curRt) {
+        curRt.running = true;
+        curRt.stepIndex = stepIndex;
+        subSeqRunStepAt(ns, stepIndex);
+      }
+      return true;
+    }
+  }
+  return false;
 };
 
 // 하위호환 래퍼 - 조정모드 쪽 기존 호출부(Operation.js의 adjustModeExecuteBtn/

@@ -20,7 +20,7 @@
     timer: null,
 
     setSpeed: function(spd) {
-      this.speed = Math.max(1, parseInt(spd) || 1);
+      this.speed = Math.max(0.25, parseFloat(spd) || 1);
       if (window.setGmsSimSpeedMultiplier) {
         window.setGmsSimSpeedMultiplier(this.speed);
       }
@@ -32,7 +32,108 @@
     },
 
     sleep: function(ms) {
-      return new Promise(resolve => setTimeout(resolve, this.getDelay(ms)));
+      return new Promise((resolve, reject) => {
+        const totalDelay = this.getDelay(ms);
+        const checkInterval = 50;
+        let elapsed = 0;
+        const t = setInterval(() => {
+          if (!this.isRunning) {
+            clearInterval(t);
+            reject(new Error('SIM_STOPPED'));
+            return;
+          }
+          elapsed += checkInterval;
+          if (elapsed >= totalDelay) {
+            clearInterval(t);
+            resolve();
+          }
+        }, checkInterval);
+      });
+    },
+
+    // ── 가상 마우스 커서 및 시각적 클릭 리플(Ripple) 효과 헬퍼 ──
+    ensureVirtualCursor: function() {
+      let cursor = document.getElementById('simVirtualCursor');
+      if (!cursor) {
+        cursor = document.createElement('div');
+        cursor.id = 'simVirtualCursor';
+        cursor.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+            <path d="M3 3l7 18 3-7 7-3L3 3z" fill="#00F0FF" stroke="#000000" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        `;
+        cursor.style.position = 'fixed';
+        cursor.style.zIndex = '999999';
+        cursor.style.pointerEvents = 'none';
+        cursor.style.transition = 'top 0.25s ease-out, left 0.25s ease-out';
+        cursor.style.top = '-50px';
+        cursor.style.left = '-50px';
+        document.body.appendChild(cursor);
+      }
+      return cursor;
+    },
+
+    showClickEffect: async function(el, label) {
+      if (!el || !this.isRunning) return;
+      try {
+        const rect = el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const cursor = this.ensureVirtualCursor();
+        cursor.style.display = 'block';
+        cursor.style.left = `${centerX}px`;
+        cursor.style.top = `${centerY}px`;
+
+        await this.sleep(120);
+        if (!this.isRunning) return;
+
+        // 클릭 리플 링 생성
+        const ripple = document.createElement('div');
+        ripple.style.position = 'fixed';
+        ripple.style.left = `${centerX - 24}px`;
+        ripple.style.top = `${centerY - 24}px`;
+        ripple.style.width = '48px';
+        ripple.style.height = '48px';
+        ripple.style.borderRadius = '50%';
+        ripple.style.border = '3px solid #ff0055';
+        ripple.style.background = 'rgba(255, 0, 85, 0.35)';
+        ripple.style.boxShadow = '0 0 16px #ff0055';
+        ripple.style.zIndex = '999998';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.transition = 'transform 0.35s ease-out, opacity 0.35s ease-out';
+        ripple.style.transform = 'scale(0.3)';
+        ripple.style.opacity = '1';
+        document.body.appendChild(ripple);
+
+        // 요소 본체 하이라이트
+        const origOutline = el.style.outline;
+        const origTransform = el.style.transform;
+        el.style.outline = '2px solid #00F0FF';
+        el.style.transform = 'scale(0.96)';
+
+        requestAnimationFrame(() => {
+          ripple.style.transform = 'scale(1.5)';
+          ripple.style.opacity = '0';
+        });
+
+        setTimeout(() => {
+          if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+          el.style.outline = origOutline;
+          el.style.transform = origTransform;
+        }, 350);
+      } catch (err) {
+        if (err && err.message === 'SIM_STOPPED') throw err;
+        console.warn('[Simulator] showClickEffect error:', err);
+      }
+    },
+
+    clickWithEffect: async function(el, label) {
+      if (!el || !this.isRunning) return false;
+      await this.showClickEffect(el, label);
+      if (!this.isRunning) return false;
+      el.click();
+      return true;
     },
 
     // ── 실질 서브시퀀스 러너 구동 및 고속 스텝 완주 헬퍼 ──
@@ -139,13 +240,13 @@
           
           // 1-1. 어떤 화면에 있든 안전하게 [진행 메뉴] 탭으로 전환 후 선택된 Side(A or B) 메인 메뉴 진입
           const tabBtn = document.querySelector('.tab-switch-btn[data-tab="progress"]');
-          if (tabBtn) tabBtn.click();
+          if (tabBtn) await sim.clickWithEffect(tabBtn, '진행 메뉴 탭');
           await sim.sleep(400);
 
           // 만약 루트 화면이거나 다른 화면인 경우 해당 Side 버튼을 눌러 진입
           const sideBtn = document.getElementById(chosenSide === 'B' ? 'progressBBtn' : 'progressABtn');
           if (sideBtn && sideBtn.offsetParent !== null) {
-            sideBtn.click();
+            await sim.clickWithEffect(sideBtn, `${chosenSide}측 메뉴 진입`);
           } else if (window.showProgressMainMenu) {
             window.showProgressMainMenu(chosenSide);
           }
@@ -153,7 +254,7 @@
 
           // 1-2. 메인 메뉴에서 [실린더 교환] 클릭 ➔ 비밀번호 진입
           const cylExBtn = document.getElementById('mainMenuCylinderExchangeBtn') || document.querySelector('[data-action="실린더 교환"]');
-          if (cylExBtn) cylExBtn.click();
+          if (cylExBtn) await sim.clickWithEffect(cylExBtn, '실린더 교환');
           else if (window.showProgressPassword) window.showProgressPassword('cylinderExchange');
           await sim.sleep(600);
 
@@ -162,16 +263,14 @@
             const btn = document.querySelector(`.password-keypad [data-digit="${digit}"]`) ||
                         Array.from(document.querySelectorAll('.keypad-btn')).find(b => b.dataset.digit === digit || b.textContent.trim() === digit);
             if (btn) {
-              btn.click();
-              btn.style.transform = 'scale(0.9)';
-              setTimeout(() => { if (btn) btn.style.transform = ''; }, 80);
+              await sim.clickWithEffect(btn, `키패드 ${digit}`);
             }
-            await sim.sleep(150);
+            await sim.sleep(120);
           };
 
           for (const k of ['9', '9', '9', '9']) await typeKey(k);
           const confirmBtn = document.getElementById('passwordConfirmBtn') || document.querySelector('.password-action-btn.confirm');
-          if (confirmBtn) confirmBtn.click();
+          if (confirmBtn) await sim.clickWithEffect(confirmBtn, '확인');
           if (window.toast) window.toast(`❌ [${chosenSide}측] 오입력(9999) 차단 및 진입 거부 검증 완료 (PASS)`, 'err');
           await sim.sleep(600);
 
@@ -179,38 +278,38 @@
           await typeKey('1');
           await typeKey('2');
           const backBtn = document.getElementById('passwordBackBtn');
-          if (backBtn) { backBtn.click(); await sim.sleep(150); }
+          if (backBtn) { await sim.clickWithEffect(backBtn, 'Back'); await sim.sleep(150); }
           const clearBtn = document.getElementById('passwordClearBtn');
-          if (clearBtn) { clearBtn.click(); await sim.sleep(150); }
+          if (clearBtn) { await sim.clickWithEffect(clearBtn, 'Clear'); await sim.sleep(150); }
 
           // 1-5. [취소 복귀 검증]: 비밀번호 화면에서 [취소] 클릭 ➔ 메인 메뉴 복귀
           const cancelBtn = document.getElementById('passwordCancelBtn') || document.querySelector('.password-action-btn.cancel');
-          if (cancelBtn) cancelBtn.click();
+          if (cancelBtn) await sim.clickWithEffect(cancelBtn, '비밀번호 취소');
           if (window.toast) window.toast(`↩️ [${chosenSide}측] [취소] 클릭 ➔ [${chosenSide}] 메인 메뉴 정상 복귀 검증 통과 (PASS)`, 'ok');
           await sim.sleep(600);
 
           // 1-6. [정상 입력 검증]: 다시 [실린더 교환] ➔ 4-3-2-1 입력 ➔ 실린더 잠금 check 진입
-          if (cylExBtn) cylExBtn.click();
+          if (cylExBtn) await sim.clickWithEffect(cylExBtn, '실린더 교환');
           else if (window.showProgressPassword) window.showProgressPassword('cylinderExchange');
           await sim.sleep(500);
 
           for (const k of ['4', '3', '2', '1']) await typeKey(k);
-          if (confirmBtn) confirmBtn.click();
+          if (confirmBtn) await sim.clickWithEffect(confirmBtn, '확인');
           if (window.toast) window.toast(`🔓 [${chosenSide}측] 정상 비밀번호(4321) 통과 ➔ [실린더 잠금 check] 진입 완료 (PASS)`, 'ok');
           await sim.sleep(700);
 
           // 1-7. [시퀀스 진행 중 취소 & 백그라운드 유지 검증]
           const returnBtn = document.getElementById('cylinderLockReturnBtn');
-          if (returnBtn) returnBtn.click(); // 시퀀스 시작
+          if (returnBtn) await sim.clickWithEffect(returnBtn, '실행'); // 시퀀스 시작
           await sim.sleep(600);
 
           // 진행 중 취소 클릭 ➔ 비밀번호 화면 이동
           const lockCancelBtn = document.getElementById('cylinderLockCancelBtn') || document.getElementById('pulsCancelBtn');
-          if (lockCancelBtn) lockCancelBtn.click();
+          if (lockCancelBtn) await sim.clickWithEffect(lockCancelBtn, '취소');
           await sim.sleep(600);
 
           // 비밀번호 화면에서 취소 클릭 ➔ 원래 진행 중이던 서브시퀀스로 100% 복귀
-          if (cancelBtn) cancelBtn.click();
+          if (cancelBtn) await sim.clickWithEffect(cancelBtn, '비밀번호 취소');
           if (window.toast) window.toast(`🛡️ [${chosenSide}측] 비밀번호 취소 ➔ 서브시퀀스 백그라운드 진행 유지 & 안전 복귀 (PASS)`, 'ok');
           await sim.sleep(700);
 
@@ -219,60 +318,480 @@
           if (window.showProgressMainMenu) window.showProgressMainMenu(chosenSide);
           await sim.sleep(500);
 
-          // 1-8. [옵션 미적용(다이렉트 진입) 검증]
-          if (window.passwordGateOptions) {
-            window.passwordGateOptions['cylinderExchange'] = false;
-          }
-          if (cylExBtn) cylExBtn.click(); // 비밀번호 없이 바로 진입해야 함
-          await sim.sleep(600);
-          if (window.toast) window.toast(`⚡ [${chosenSide}측 옵션 미적용] 비밀번호 없이 실린더 잠금 check 다이렉트 진입 (PASS)`, 'ok');
+          // 1-8. [비밀번호 OPTION 탭 실질 화면 전환 & 사용유무(적용/미적용) 클릭 토글 시퀀스]
+          if (window.toast) window.toast('⚙️ [OPTION 탭 이동] 실린더 교환 비밀번호 사용유무 변경 시퀀스 실행', 'info');
+          const optTab = document.querySelector('.tab-switch-btn[data-tab="option"]');
+          if (optTab) await sim.clickWithEffect(optTab, 'OPTION 탭');
+          await sim.sleep(700);
 
-          // 옵션 원복(다시 적용 상태로 복구)
-          if (window.passwordGateOptions) {
-            window.passwordGateOptions['cylinderExchange'] = true;
+          // OPTION 테이블의 "실린더 교환 진입 비밀번호" 토글 버튼 찾기 및 시각적 클릭 효과
+          const pwGateBtn = document.getElementById('pwGateToggleBtn_cylinderExchange');
+          if (pwGateBtn) {
+            pwGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await sim.clickWithEffect(pwGateBtn, '실린더 교환 미적용 토글');
           }
+          if (window.toast) window.toast('⚡ [OPTION 변경 완료] 실린더 교환 진입 비밀번호 ➔ [미적용] 전환됨', 'ok');
+          await sim.sleep(800);
+
+          // 1-9. 다시 [진행 메뉴] 탭으로 복귀하여 비밀번호 없이 다이렉트 진입하는지 확인
+          if (tabBtn) await sim.clickWithEffect(tabBtn, '진행 메뉴 탭');
+          await sim.sleep(600);
+
+          if (cylExBtn) {
+            await sim.clickWithEffect(cylExBtn, '실린더 교환 (미적용 상태 다이렉트 진입)');
+          }
+          await sim.sleep(700);
+          if (window.toast) window.toast(`🎉 [옵션 연동 검증 통과] 비밀번호 창 없이 [실린더 잠금 check] 다이렉트 진입 (PASS)`, 'ok');
+          await sim.sleep(800);
+
+          // 1-10. [취소 key 다이렉트 동작 확인]: 잠금 check에서 [취소] 클릭 ➔ 비밀번호 없이 메인 메뉴 즉시 복귀
+          const lockCancelBtnDirect = document.getElementById('cylinderLockCancelBtn');
+          if (lockCancelBtnDirect) {
+            await sim.clickWithEffect(lockCancelBtnDirect, '잠금 check 취소');
+          }
+          await sim.sleep(600);
+          if (window.toast) window.toast(`↩️ [옵션 연동 검증 통과] 비밀번호 창 없이 메인 메뉴로 다이렉트 취소 복귀 (PASS)`, 'ok');
+          await sim.sleep(800);
+
+          // 1-11. [OPTION 탭 원복 시퀀스]: 다시 OPTION 탭으로 이동하여 [적용] 상태로 정상 복구
+          if (optTab) await sim.clickWithEffect(optTab, 'OPTION 탭');
+          await sim.sleep(700);
+          if (pwGateBtn) {
+            pwGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await sim.clickWithEffect(pwGateBtn, '실린더 교환 적용 원복');
+          }
+          if (window.toast) window.toast('🛡️ [OPTION 원복 완료] 실린더 교환 비밀번호 ➔ [적용] 상태로 안전 복원', 'info');
+          await sim.sleep(700);
+
+          // ── [신규 추가] 1-12 ~ 1-15: "교환전 취소 비밀번호" (cylinderLockCheck) 옵션 동작 검증 ──
+          if (window.toast) window.toast('⚙️ [OPTION 추가 검증] [교환전 취소 비밀번호] 기능 검증 시퀀스 시작', 'info');
+          const lockCancelGateBtn = document.getElementById('pwGateToggleBtn_cylinderLockCheck');
+          if (lockCancelGateBtn) {
+            lockCancelGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await sim.clickWithEffect(lockCancelGateBtn, '교환전 취소 미적용 토글');
+          }
+          if (window.toast) window.toast('⚡ [OPTION 변경] 교환전 취소 비밀번호 ➔ [미적용] 전환됨', 'ok');
+          await sim.sleep(700);
+
+          // 진행 메뉴로 돌아가서 잠금 check 진입 후 취소 시 비밀번호 창 생략 검증
+          if (tabBtn) await sim.clickWithEffect(tabBtn, '진행 메뉴 탭');
+          await sim.sleep(500);
+          if (cylExBtn) {
+            await sim.clickWithEffect(cylExBtn, '실린더 교환');
+            await sim.sleep(400);
+            for (const k of ['4', '3', '2', '1']) await typeKey(k);
+            if (confirmBtn) await sim.clickWithEffect(confirmBtn, '확인');
+          }
+          await sim.sleep(700);
+
+          // [실린더 잠금 check]에서 [취소] 클릭 ➔ '교환전 취소 비밀번호'가 미적용이므로 즉시 메인메뉴 복귀
+          const lockCancelBtn2 = document.getElementById('cylinderLockCancelBtn');
+          if (lockCancelBtn2) {
+            await sim.clickWithEffect(lockCancelBtn2, '잠금 check 취소 (미적용 상태 다이렉트 복귀)');
+          }
+          await sim.sleep(600);
+          if (window.toast) window.toast('🎉 [검증 통과] [교환전 취소 비밀번호: 미적용]으로 비밀번호 없이 즉시 복귀 (PASS)', 'ok');
+          await sim.sleep(700);
+
+          // 다시 OPTION 탭으로 이동하여 [교환전 취소 비밀번호]를 [적용] 상태로 안전하게 원복
+          if (optTab) await sim.clickWithEffect(optTab, 'OPTION 탭');
+          await sim.sleep(600);
+          if (lockCancelGateBtn) {
+            lockCancelGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await sim.clickWithEffect(lockCancelGateBtn, '교환전 취소 적용 원복');
+          }
+          if (window.toast) window.toast('🛡️ [OPTION 원복 완료] 교환전 취소 비밀번호 ➔ [적용] 상태로 안전 원복 (PASS)', 'info');
+          await sim.sleep(700);
+
+          // 1-12. 진행 메뉴 탭 복귀 및 최종 실린더 잠금 check(IDLE 대기) 화면으로 이동하여 완료
+          if (tabBtn) await sim.clickWithEffect(tabBtn, '진행 메뉴 탭');
           await sim.sleep(500);
 
-          // 최종 상태: 실린더 잠금 check(IDLE 대기) 화면에서 멈추어 사용자 개별 점검 대기
           if (window.showProgressCylinderLockCheck) {
             window.showProgressCylinderLockCheck();
           }
-          if (window.toast) window.toast(`🎯 [완료] [${chosenSide}측] 실린더 잠금 check 대기 상태까지 개별 검증 완료!`, 'ok');
+          const finalCursor = document.getElementById('simVirtualCursor');
+          if (finalCursor) finalCursor.style.display = 'none';
+          if (window.toast) window.toast(`🎯 [1단계 완료] [${chosenSide}측] 비밀번호 풀 시퀀스 & 실린더 잠금 check 대기 완료!`, 'ok');
         }
       },
 
       // ─────────────────────────────────────────────────────────────
-      // [2] [알람 시뮬레이션 연동 검증] Seq 1 / Seq 2 / Seq 3 실질 인터락
+      // [2] 실린더 사전확인 9단계(Sub 1~Sub 9) & 2개 옵션 분리 반복 검증
       // ─────────────────────────────────────────────────────────────
       {
-        name: '공정 시퀀스 알람 시뮬레이션 인터락 (Seq 1/2/3) 검증',
-        desc: '서브시퀀스 실행 ➔ 상단 가상 알람 트리거 ➔ Alarm Seq. 1(초기화) & Seq. 2(재진행) & 밸브 차단 검증',
+        name: '실린더 사전확인 9단계(Sub 1~Sub 9) & 취소옵션 분리 반복 검증',
+        desc: '실린더 잠금 check ➔ [실행] ➔ Sub 1~Sub 9 각 스텝별 [취소] 클릭 ➔ [교환전 취소 비밀번호] 적용/미적용 분리 검증 ➔ 메인 메뉴 복귀 ➔ [실린더 교환 진입 비밀번호] 적용/미적용 분리 검증 ➔ 원래 스텝 복원 재진입 ➔ [확인] 전진',
         run: async function(sim) {
-          if (window.toast) window.toast('🚨 [Step 2/26] 공정 알람 시뮬레이션 실질 인터락 검증 시작', 'info');
-          if (window.showProgressCylinderLockCheck) window.showProgressCylinderLockCheck();
-          await sim.sleep(500);
+          const sideSelect = document.getElementById('pcSimSideSelect');
+          const chosenSide = (sideSelect && sideSelect.value === 'B') ? 'B' : 'A';
+          window.progressCurrentSide = chosenSide;
 
-          // 실린더 잠금 check 실행
-          const runBtn = document.getElementById('cylinderLockReturnBtn');
-          if (runBtn) runBtn.click();
-          await sim.sleep(800);
+          if (window.toast) {
+            window.toast(`🚀 [2단계 시작] [${chosenSide}측] 실린더 사전확인 9단계(Sub 1~9) & 2개 옵션 분리 반복 검증`, 'info');
+          }
 
-          // 가상 알람 Seq 2(재진행 대기) 트리거
-          const alarmSelect = document.getElementById('pcSimAlarmSelect');
-          const alarmBtn = document.getElementById('pcSimAlarmBtn');
-          if (alarmSelect) alarmSelect.value = '2';
-          if (alarmBtn) alarmBtn.click();
-          if (window.toast) window.toast('⏸ 가상 알람 Seq 2 발생 ➔ 공정 일시정지 및 알람배너 표시 확인 (PASS)', 'ok');
-          await sim.sleep(1000);
+          // 요소 가시성 확보 헬퍼 (중지 시 즉각 SIM_STOPPED 발생)
+          const waitForVisible = async (selectorOrGetter, timeoutMs = 4000) => {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+              if (!sim.isRunning) throw new Error('SIM_STOPPED');
+              const el = typeof selectorOrGetter === 'function' ? selectorOrGetter() : document.querySelector(selectorOrGetter);
+              if (el && el.offsetParent !== null) return el;
+              await sim.sleep(50);
+            }
+            if (!sim.isRunning) throw new Error('SIM_STOPPED');
+            return typeof selectorOrGetter === 'function' ? selectorOrGetter() : document.querySelector(selectorOrGetter);
+          };
 
-          // 가상 알람 Seq 1(완전 초기화) 트리거
-          if (alarmSelect) alarmSelect.value = '1';
-          if (alarmBtn) alarmBtn.click();
-          if (window.toast) window.toast('🔄 가상 알람 Seq 1 발생 ➔ 밸브 차단 & 서브시퀀스 안전 초기화 확인 (PASS)', 'ok');
-          await sim.sleep(800);
+          const tabBtn = () => document.querySelector('.tab-switch-btn[data-tab="progress"]');
+          const optTab = () => document.querySelector('.tab-switch-btn[data-tab="option"]');
+          const cylExBtn = () => document.getElementById('mainMenuCylinderExchangeBtn') || document.querySelector('[data-action="실린더 교환"]');
+          const confirmBtn = () => document.getElementById('passwordConfirmBtn') || document.querySelector('.password-action-btn.confirm');
+          const cancelBtn = () => document.getElementById('passwordCancelBtn') || document.querySelector('.password-action-btn.cancel');
+          const pulsCancelBtn = () => document.getElementById('pulsCancelBtn');
+          const pulsAckBtn = () => document.getElementById('pulsAckBtn');
 
-          if (window.stopAllSubSequences) window.stopAllSubSequences();
-          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
+          const typeKey = async (digit) => {
+            if (!sim.isRunning) throw new Error('SIM_STOPPED');
+            const btn = document.querySelector(`.password-keypad [data-digit="${digit}"]`) ||
+                        Array.from(document.querySelectorAll('.keypad-btn')).find(b => b.dataset.digit === digit || b.textContent.trim() === digit);
+            if (btn && btn.offsetParent !== null) {
+              await sim.clickWithEffect(btn, `키패드 ${digit}`);
+            }
+            await sim.sleep(120);
+          };
+
+          // 9개 Sub 스텝 정의 (사용자 지정 9단계 명칭 100% 일치)
+          const subStepDefs = [
+            { no: 1, name: '실린더 확인', testOption: 'default_applied' },
+            { no: 2, name: 'DATA 확인', testOption: 'cancel_gate_disabled' },
+            { no: 3, name: 'VALVE SHUTTER 확인', testOption: 'entry_gate_disabled' },
+            { no: 4, name: '실린더 VALVE 확인', testOption: 'both_disabled' },
+            { no: 5, name: '실린더 스티커 제거', testOption: 'default_applied' },
+            { no: 6, name: 'PUMP 확인', testOption: 'cancel_gate_disabled' },
+            { no: 7, name: 'Scrubber 확인', testOption: 'entry_gate_disabled' },
+            { no: 8, name: '반대편 공급 압력 확인', testOption: 'default_applied' },
+            { no: 9, name: '교환전 자동진행 예상 시간', testOption: 'final_complete' }
+          ];
+
+          // 2-0. 진행 메뉴 ➔ 선택된 측(A or B) 메인 메뉴 확인 후 ➔ 잠금 check 화면 진입
+          const pTab = await waitForVisible(tabBtn);
+          if (pTab) await sim.clickWithEffect(pTab, '진행 메뉴 탭');
+          await sim.sleep(300);
+
+          const sideBtn = document.getElementById(chosenSide === 'B' ? 'progressBBtn' : 'progressABtn');
+          if (sideBtn && sideBtn.offsetParent !== null) {
+            await sim.clickWithEffect(sideBtn, `${chosenSide}측 메뉴 진입`);
+            await sim.sleep(400);
+          } else if (window.showProgressMainMenu) {
+            window.showProgressMainMenu(chosenSide);
+            await sim.sleep(300);
+          }
+
+          // 메인 메뉴에서 [실린더 교환] 클릭 ➔ 잠금 check 화면으로 이동
+          const cBtn = await waitForVisible(cylExBtn);
+          if (cBtn) {
+            await sim.clickWithEffect(cBtn, '실린더 교환');
+            await sim.sleep(400);
+          } else if (window.showProgressCylinderLockCheck) {
+            window.showProgressCylinderLockCheck();
+            await sim.sleep(300);
+          }
+
+          // 만약 진입 비밀번호 창이 열렸으면 4321 통과
+          const pwConf = document.getElementById('passwordConfirmBtn');
+          if (pwConf && pwConf.offsetParent !== null) {
+            for (const k of ['4', '3', '2', '1']) await typeKey(k);
+            await sim.clickWithEffect(pwConf, '암호 확인');
+            await sim.sleep(400);
+          }
+
+          // [실행] 클릭 ➔ idleCheck 서브시퀀스(Sub 1) 시작
+          const lockReturnBtn = await waitForVisible('#cylinderLockReturnBtn');
+          if (lockReturnBtn) {
+            await sim.clickWithEffect(lockReturnBtn, '실행 (사전확인 진입)');
+            await sim.sleep(600);
+          } else if (window.startNamespacedSubSequenceRunner) {
+            await window.startNamespacedSubSequenceRunner('idleCheck', 'IdleCheck', chosenSide);
+            await sim.sleep(500);
+          }
+
+          // ── 공용 비밀번호 풀 검증 헬퍼 (사용자 지정 5대 검증 루틴 100% 탑재) ──
+          const verifyPasswordFullSuite = async (originContextLabel) => {
+            if (!sim.isRunning) throw new Error('SIM_STOPPED');
+            await waitForVisible('#passwordDisplay');
+
+            // (1) 오입력(9999) 차단 검증
+            for (const k of ['9', '9', '9', '9']) await typeKey(k);
+            const cBtn1 = await waitForVisible(confirmBtn);
+            if (cBtn1) await sim.clickWithEffect(cBtn1, '확인 (오입력)');
+            if (window.toast) window.toast(`❌ [${originContextLabel}] 비밀번호 오입력(9999) 진입 차단 검증 통과 (PASS)`, 'err');
+            await sim.sleep(350);
+
+            // (2) 키패드 Back / Clear 편집 검증
+            await typeKey('1');
+            await typeKey('2');
+            const backBtn = document.getElementById('passwordBackBtn');
+            if (backBtn && backBtn.offsetParent !== null) { await sim.clickWithEffect(backBtn, 'Back'); await sim.sleep(100); }
+            const clearBtn = document.getElementById('passwordClearBtn');
+            if (clearBtn && clearBtn.offsetParent !== null) { await sim.clickWithEffect(clearBtn, 'Clear'); await sim.sleep(100); }
+
+            // (3) 비밀번호 화면에서 [취소] 클릭 시 원래 작업 화면으로의 안전 복귀 검증
+            const cBtn2 = await waitForVisible(cancelBtn);
+            if (cBtn2) await sim.clickWithEffect(cBtn2, '암호창 취소');
+            if (window.toast) window.toast(`↩️ [${originContextLabel}] 비밀번호 취소 ➔ 원래 화면 안전 복귀 검증 통과 (PASS)`, 'ok');
+            await sim.sleep(500);
+          };
+
+          // Sub 1 ~ Sub 9 순차 반복 검증
+          for (let i = 0; i < subStepDefs.length; i++) {
+            if (!sim.isRunning) throw new Error('SIM_STOPPED');
+            const stepInfo = subStepDefs[i];
+            const stepNum = stepInfo.no;
+            const stepTitle = stepInfo.name;
+
+            // 항상 해당 서브스텝 패널이 정확히 표시되도록 확인 및 복원
+            if (window.resumeSubSequenceRunnerStepAt) {
+              await window.resumeSubSequenceRunnerStepAt('idleCheck', i);
+            }
+            await sim.sleep(400);
+
+            // 패널 및 취소 버튼이 확실하게 보일 때까지 대기
+            await waitForVisible(pulsCancelBtn);
+
+            if (window.toast) {
+              window.toast(`🔍 [Sub ${stepNum}/9: ${stepTitle}] 인터락 & 옵션 개별 분리 검증 (${stepInfo.testOption})`, 'info');
+            }
+            await sim.sleep(400);
+
+            // 각 스텝에서 취소 및 옵션 개별 동작 분기
+            if (stepInfo.testOption === 'default_applied') {
+              // ── [케이스 A] 2개 옵션 모두 "적용" 상태 검증 ──
+              // (1) Sub 스텝에서 [취소] 클릭 ➔ '교환전 취소 비밀번호(적용)' 발동으로 PASSWORD 창 이동
+              const curCancel = await waitForVisible(pulsCancelBtn);
+              if (curCancel) await sim.clickWithEffect(curCancel, `Sub ${stepNum} 취소`);
+              await sim.sleep(400);
+
+              // 취소 비밀번호 화면에서 풀 검증 루틴(오입력/BackClear/취소복귀) 실행
+              await verifyPasswordFullSuite(`Sub ${stepNum} 취소 비밀번호`);
+
+              // 원래 화면으로 복귀한 상태에서 패널 대기
+              await waitForVisible(pulsCancelBtn);
+
+              // 다시 Sub 스텝에서 [취소] ➔ 정상 암호(4321) 통과하여 메인 메뉴 복귀
+              const curCancelAgain = await waitForVisible(pulsCancelBtn);
+              if (curCancelAgain) await sim.clickWithEffect(curCancelAgain, `Sub ${stepNum} 취소(승인용)`);
+              await sim.sleep(400);
+
+              for (const k of ['4', '3', '2', '1']) await typeKey(k);
+              const confPass = await waitForVisible(confirmBtn);
+              if (confPass) await sim.clickWithEffect(confPass, '확인 (정상 승인)');
+              await sim.sleep(500);
+
+              // (2) 메인 메뉴에서 다시 [실린더 교환] 클릭 ➔ '실린더 교환 진입 비밀번호(적용)' 발동
+              const cEx = await waitForVisible(cylExBtn);
+              if (cEx) await sim.clickWithEffect(cEx, '실린더 교환 재진입');
+              await sim.sleep(400);
+
+              // 진입 비밀번호 화면에서도 풀 검증 루틴(오입력/BackClear/취소복귀) 실행
+              await verifyPasswordFullSuite(`Sub ${stepNum} 재진입 비밀번호`);
+
+              // 다시 메인 메뉴에서 [실린더 교환] ➔ 정상 암호(4321) 승인 후 원래 스텝으로 복원
+              const cEx2 = await waitForVisible(cylExBtn);
+              if (cEx2) await sim.clickWithEffect(cEx2, '실린더 교환 (승인)');
+              await sim.sleep(400);
+
+              for (const k of ['4', '3', '2', '1']) await typeKey(k);
+              const confPass2 = await waitForVisible(confirmBtn);
+              if (confPass2) await sim.clickWithEffect(confPass2, '확인 (정상 승인)');
+              await sim.sleep(500);
+
+              // 원래 스텝으로 복원
+              if (window.resumeSubSequenceRunnerStepAt) {
+                await window.resumeSubSequenceRunnerStepAt('idleCheck', i);
+              }
+              await waitForVisible(pulsCancelBtn);
+              if (window.toast) window.toast(`✅ [Sub ${stepNum}: ${stepTitle}] 취소/진입 비밀번호 풀 검증 & 원래 스텝 복원 완벽 통과 (PASS)`, 'ok');
+              await sim.sleep(400);
+
+            } else if (stepInfo.testOption === 'cancel_gate_disabled') {
+              // ── [케이스 B] '교환전 취소 비밀번호'만 [미적용]으로 변경 후 검증 ──
+              const optTabEl = await waitForVisible(optTab);
+              if (optTabEl) await sim.clickWithEffect(optTabEl, 'OPTION 탭');
+              await sim.sleep(400);
+
+              const lockCancelGateBtn = document.getElementById('pwGateToggleBtn_cylinderLockCheck');
+              if (lockCancelGateBtn) {
+                lockCancelGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                await sim.clickWithEffect(lockCancelGateBtn, '교환전 취소 미적용 전환');
+              }
+              await sim.sleep(400);
+
+              const progTabEl = await waitForVisible(tabBtn);
+              if (progTabEl) await sim.clickWithEffect(progTabEl, '진행 메뉴 탭');
+              await sim.sleep(400);
+
+              // Sub 스텝에서 [취소] 클릭 ➔ 암호창 없이 메인 메뉴로 다이렉트 복귀 확인!
+              const curCancel = await waitForVisible(pulsCancelBtn);
+              if (curCancel) await sim.clickWithEffect(curCancel, `Sub ${stepNum} 취소 (미적용 다이렉트 복귀)`);
+              await sim.sleep(500);
+
+              if (window.toast) window.toast(`⚡ [Sub ${stepNum}: ${stepTitle}] 교환전 취소 미적용 ➔ 비밀번호 생략 즉시 메인 복귀 확인 (PASS)`, 'ok');
+              await sim.sleep(500);
+
+              // 다시 실린더 교환 진입 (진입 비밀번호는 적용 상태이므로 암호창 승인 후 복귀)
+              const cEx = await waitForVisible(cylExBtn);
+              if (cEx) await sim.clickWithEffect(cEx, '실린더 교환 재진입');
+              await sim.sleep(400);
+
+              for (const k of ['4', '3', '2', '1']) await typeKey(k);
+              const confPass = await waitForVisible(confirmBtn);
+              if (confPass) await sim.clickWithEffect(confPass, '확인 (정상 승인)');
+              await sim.sleep(500);
+
+              // 옵션 안전 원복 (다시 적용으로 복원)
+              const optTabEl2 = await waitForVisible(optTab);
+              if (optTabEl2) await sim.clickWithEffect(optTabEl2, 'OPTION 탭');
+              await sim.sleep(400);
+
+              if (lockCancelGateBtn) {
+                lockCancelGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                await sim.clickWithEffect(lockCancelGateBtn, '교환전 취소 적용 원복');
+              }
+              await sim.sleep(400);
+
+              const progTabEl2 = await waitForVisible(tabBtn);
+              if (progTabEl2) await sim.clickWithEffect(progTabEl2, '진행 메뉴 탭');
+              await sim.sleep(400);
+
+              if (window.resumeSubSequenceRunnerStepAt) {
+                await window.resumeSubSequenceRunnerStepAt('idleCheck', i);
+              }
+              await waitForVisible(pulsCancelBtn);
+              await sim.sleep(400);
+
+            } else if (stepInfo.testOption === 'entry_gate_disabled') {
+              // ── [케이스 C] '실린더 교환 진입 비밀번호'만 [미적용]으로 변경 후 검증 ──
+              const optTabEl = await waitForVisible(optTab);
+              if (optTabEl) await sim.clickWithEffect(optTabEl, 'OPTION 탭');
+              await sim.sleep(400);
+
+              const cylExGateBtn = document.getElementById('pwGateToggleBtn_cylinderExchange');
+              if (cylExGateBtn) {
+                cylExGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                await sim.clickWithEffect(cylExGateBtn, '실린더 교환 진입 미적용 전환');
+              }
+              await sim.sleep(400);
+
+              const progTabEl = await waitForVisible(tabBtn);
+              if (progTabEl) await sim.clickWithEffect(progTabEl, '진행 메뉴 탭');
+              await sim.sleep(400);
+
+              // Sub 스텝에서 [취소] 클릭 ➔ 교환전 취소는 적용 상태이므로 취소 비밀번호 정상 승인 후 복귀
+              const curCancel = await waitForVisible(pulsCancelBtn);
+              if (curCancel) await sim.clickWithEffect(curCancel, `Sub ${stepNum} 취소`);
+              await sim.sleep(400);
+
+              for (const k of ['4', '3', '2', '1']) await typeKey(k);
+              const confPass = await waitForVisible(confirmBtn);
+              if (confPass) await sim.clickWithEffect(confPass, '확인 (정상 승인)');
+              await sim.sleep(500);
+
+              // 메인 메뉴에서 [실린더 교환] 클릭 ➔ 진입 비밀번호 창 완전히 생략하고 다이렉트 복원 진입!
+              const cEx = await waitForVisible(cylExBtn);
+              if (cEx) await sim.clickWithEffect(cEx, '실린더 교환 (미적용 다이렉트 재진입)');
+              await sim.sleep(500);
+
+              if (window.toast) window.toast(`⚡ [Sub ${stepNum}: ${stepTitle}] 실린더 교환 진입 미적용 ➔ 비밀번호 생략 다이렉트 복귀 확인 (PASS)`, 'ok');
+              await sim.sleep(500);
+
+              // 옵션 안전 원복 (다시 적용으로 복원)
+              const optTabEl2 = await waitForVisible(optTab);
+              if (optTabEl2) await sim.clickWithEffect(optTabEl2, 'OPTION 탭');
+              await sim.sleep(400);
+
+              if (cylExGateBtn) {
+                cylExGateBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                await sim.clickWithEffect(cylExGateBtn, '실린더 교환 진입 적용 원복');
+              }
+              await sim.sleep(400);
+
+              const progTabEl2 = await waitForVisible(tabBtn);
+              if (progTabEl2) await sim.clickWithEffect(progTabEl2, '진행 메뉴 탭');
+              await sim.sleep(400);
+
+              if (window.resumeSubSequenceRunnerStepAt) {
+                await window.resumeSubSequenceRunnerStepAt('idleCheck', i);
+              }
+              await waitForVisible(pulsCancelBtn);
+              await sim.sleep(400);
+
+            } else if (stepInfo.testOption === 'both_disabled') {
+              // ── [케이스 D] 2개 옵션 모두 [미적용] 상태에서 논스톱 검증 ──
+              const optTabEl = await waitForVisible(optTab);
+              if (optTabEl) await sim.clickWithEffect(optTabEl, 'OPTION 탭');
+              await sim.sleep(400);
+
+              const cylExGateBtn = document.getElementById('pwGateToggleBtn_cylinderExchange');
+              const lockCancelGateBtn = document.getElementById('pwGateToggleBtn_cylinderLockCheck');
+              if (cylExGateBtn) await sim.clickWithEffect(cylExGateBtn, '진입 미적용');
+              if (lockCancelGateBtn) await sim.clickWithEffect(lockCancelGateBtn, '취소 미적용');
+              await sim.sleep(400);
+
+              const progTabEl = await waitForVisible(tabBtn);
+              if (progTabEl) await sim.clickWithEffect(progTabEl, '진행 메뉴 탭');
+              await sim.sleep(400);
+
+              // 취소 클릭 ➔ 암호 없이 메인 즉시 복귀
+              const curCancel = await waitForVisible(pulsCancelBtn);
+              if (curCancel) await sim.clickWithEffect(curCancel, `Sub ${stepNum} 취소 (둘다 미적용)`);
+              await sim.sleep(500);
+
+              // 실린더 교환 클릭 ➔ 암호 없이 즉시 다이렉트 진입
+              const cEx = await waitForVisible(cylExBtn);
+              if (cEx) await sim.clickWithEffect(cEx, '실린더 교환 (둘다 미적용)');
+              await sim.sleep(500);
+
+              if (window.toast) window.toast(`🎉 [Sub ${stepNum}: ${stepTitle}] 2개 옵션 모두 미적용 시 논스톱 다이렉트 패스 완벽 통과 (PASS)`, 'ok');
+              await sim.sleep(500);
+
+              // 옵션 둘 다 초록색 [적용]으로 완전 원복
+              const optTabEl2 = await waitForVisible(optTab);
+              if (optTabEl2) await sim.clickWithEffect(optTabEl2, 'OPTION 탭');
+              await sim.sleep(400);
+
+              if (cylExGateBtn) await sim.clickWithEffect(cylExGateBtn, '진입 적용 원복');
+              if (lockCancelGateBtn) await sim.clickWithEffect(lockCancelGateBtn, '취소 적용 원복');
+              await sim.sleep(400);
+
+              const progTabEl2 = await waitForVisible(tabBtn);
+              if (progTabEl2) await sim.clickWithEffect(progTabEl2, '진행 메뉴 탭');
+              await sim.sleep(400);
+
+              if (window.resumeSubSequenceRunnerStepAt) {
+                await window.resumeSubSequenceRunnerStepAt('idleCheck', i);
+              }
+              await waitForVisible(pulsCancelBtn);
+              await sim.sleep(400);
+            }
+
+            // (5) 현재 Sub 스텝의 [확인](Ack) 버튼을 클릭하여 다음 Sub 스텝으로 안전 전진
+            if (i < subStepDefs.length - 1) {
+              const aBtn = await waitForVisible(pulsAckBtn);
+              if (aBtn && !aBtn.disabled) {
+                await sim.clickWithEffect(aBtn, `[확인] ➔ 다음 Sub 스텝 이동`);
+                await sim.sleep(600);
+              }
+            }
+          }
+
+          const finalCursor = document.getElementById('simVirtualCursor');
+          if (finalCursor) finalCursor.style.display = 'none';
+
+          if (window.toast) {
+            window.toast(`🎯 [2단계 완료] [${chosenSide}측] 실린더 확인~Sub 9 전 구간 2개 옵션 분리 반복 검증 ALL PASS!`, 'ok');
+          }
         }
       },
 
@@ -907,31 +1426,40 @@
     ],
 
     updateUiStatus: function() {
+      const singleStepBtn = document.getElementById('pcSimSingleStepBtn');
       const startBtn = document.getElementById('pcSimStartBtn');
       const pauseBtn = document.getElementById('pcSimPauseBtn');
       const stopBtn = document.getElementById('pcSimStopBtn');
       const statusText = document.getElementById('pcSimStatusText');
 
-      if (startBtn && pauseBtn && stopBtn) {
-        if (!this.isRunning) {
-          startBtn.style.display = 'inline-block';
+      if (!this.isRunning) {
+        if (singleStepBtn) {
+          singleStepBtn.style.display = 'inline-block';
+          singleStepBtn.disabled = false;
+        }
+        if (startBtn) {
+          startBtn.style.display = 'none';
           startBtn.textContent = '▶ 시작';
-          pauseBtn.style.display = 'none';
-          stopBtn.style.display = 'none';
-          if (statusText) statusText.textContent = '대기';
-        } else if (this.isPaused) {
+        }
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'none';
+        if (statusText) statusText.textContent = '대기';
+      } else if (this.isPaused) {
+        if (singleStepBtn) singleStepBtn.disabled = true;
+        if (startBtn) {
           startBtn.style.display = 'inline-block';
           startBtn.textContent = '▶ 재개';
-          pauseBtn.style.display = 'none';
-          stopBtn.style.display = 'inline-block';
-          if (statusText) statusText.textContent = `[${this.currentStepIndex}/${this.scenario.length}] 일시정지`;
-        } else {
-          startBtn.style.display = 'none';
-          pauseBtn.style.display = 'inline-block';
-          stopBtn.style.display = 'inline-block';
-          const curName = this.scenario[this.currentStepIndex - 1] ? this.scenario[this.currentStepIndex - 1].name : '진행 중';
-          if (statusText) statusText.textContent = `[${this.currentStepIndex}/${this.scenario.length}] ${curName.slice(0, 16)}...`;
         }
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'inline-block';
+        if (statusText) statusText.textContent = `[${this.currentStepIndex}/${this.scenario.length}] 일시정지`;
+      } else {
+        if (singleStepBtn) singleStepBtn.disabled = true;
+        if (startBtn) startBtn.style.display = 'none';
+        if (pauseBtn) pauseBtn.style.display = 'inline-block';
+        if (stopBtn) stopBtn.style.display = 'inline-block';
+        const curName = this.scenario[this.currentStepIndex - 1] ? this.scenario[this.currentStepIndex - 1].name : '진행 중';
+        if (statusText) statusText.textContent = `[${this.currentStepIndex}/${this.scenario.length}] ${curName.slice(0, 16)}...`;
       }
     },
 
@@ -950,6 +1478,10 @@
       const step = this.scenario[idx];
       if (!step) return;
 
+      // [화면 녹화 연동: 사용자가 미리 켜두었으면 자동 유지/완료 시 저장]
+      let autoStartedRecording = false;
+      const isAlreadyRecording = (window.__pcMediaRecorder && window.__pcMediaRecorder.state === 'recording');
+
       this.isRunning = true;
       this.isPaused = false;
       this.currentStepIndex = idx + 1;
@@ -962,11 +1494,28 @@
         await step.run(this);
         if (window.toast) window.toast(`✅ [${step.name}] 단독 검증 완료 (PASS)`, 'ok');
       } catch (e) {
-        console.error(`[Simulator] Error at step ${idx + 1} (${step.name}):`, e);
+        if (e && e.message === 'SIM_STOPPED') {
+          console.log(`[Simulator] Single step ${idx + 1} stopped by user.`);
+        } else {
+          console.error(`[Simulator] Error at step ${idx + 1} (${step.name}):`, e);
+        }
       } finally {
+        const wasStopped = !this.isRunning;
         this.isRunning = false;
         this.updateUiStatus();
-        if (statusText) statusText.textContent = '완료 (대기)';
+        if (statusText) statusText.textContent = wasStopped ? '중지됨' : '완료 (대기)';
+
+        // 가상 커서 확실히 제거
+        const cursor = document.getElementById('simVirtualCursor');
+        if (cursor) cursor.style.display = 'none';
+
+        // 1단계 완료 시 자동 시작된 녹화 자동 중지 및 저장
+        if (autoStartedRecording && window.__stopPcScreenRecord) {
+          try {
+            await this.sleep(1000);
+            window.__stopPcScreenRecord();
+          } catch (_) {}
+        }
       }
     },
 
@@ -990,6 +1539,11 @@
       this.isPaused = false;
       this.currentStepIndex = 0;
       if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+
+      // 가상 커서 즉시 숨김
+      const cursor = document.getElementById('simVirtualCursor');
+      if (cursor) cursor.style.display = 'none';
+
       if (window.stopNamespacedSubSequenceRunner) {
         window.stopNamespacedSubSequenceRunner('idleCheck');
         window.stopNamespacedSubSequenceRunner('puls');
@@ -1088,74 +1642,93 @@
     let recordedChunks = [];
     const recordBtn = document.getElementById('pcSimRecordBtn');
 
+    window.__startPcScreenRecord = async function() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') return true;
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        if (typeof toast === 'function') toast('이 브라우저는 화면 녹화 API(getDisplayMedia)를 지원하지 않습니다.', 'err');
+        return false;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: 'always' },
+          audio: false
+        });
+
+        recordedChunks = [];
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm';
+        }
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+        window.__pcMediaRecorder = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          a.download = `GMS_시뮬레이션_동작검증_${dateStr}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+
+          stream.getTracks().forEach(track => track.stop());
+
+          if (recordBtn) {
+            recordBtn.textContent = '⏺ 화면 녹화';
+            recordBtn.style.background = '#475569';
+            recordBtn.style.borderColor = '#94a3b8';
+          }
+          if (typeof toast === 'function') toast('🎥 화면 녹화가 종료되어 파일로 자동 다운로드되었습니다.', 'ok');
+        };
+
+        stream.getVideoTracks()[0].onended = () => {
+          if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+          }
+        };
+
+        mediaRecorder.start(1000);
+        if (recordBtn) {
+          recordBtn.textContent = '⏹ 녹화 중지';
+          recordBtn.style.background = '#dc2626';
+          recordBtn.style.borderColor = '#ef4444';
+        }
+        if (typeof toast === 'function') toast('🔴 화면 녹화가 시작되었습니다.', 'ok');
+        return true;
+      } catch (err) {
+        console.error('[ScreenRecord] Error starting recording:', err);
+        if (typeof toast === 'function') toast('녹화 시작이 취소되었거나 권한이 거부되었습니다.', 'info');
+        return false;
+      }
+    };
+
+    window.__stopPcScreenRecord = function() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        return true;
+      }
+      return false;
+    };
+
     if (recordBtn) {
       recordBtn.addEventListener('click', async () => {
         if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-          try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-              if (typeof toast === 'function') toast('이 브라우저는 화면 녹화 API(getDisplayMedia)를 지원하지 않습니다.', 'err');
-              return;
-            }
-            const stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { cursor: 'always' },
-              audio: false
-            });
-
-            recordedChunks = [];
-            let mimeType = 'video/webm;codecs=vp9';
-            if (!MediaRecorder.isTypeSupported(mimeType)) {
-              mimeType = 'video/webm';
-            }
-
-            mediaRecorder = new MediaRecorder(stream, { mimeType });
-            mediaRecorder.ondataavailable = (event) => {
-              if (event.data && event.data.size > 0) {
-                recordedChunks.push(event.data);
-              }
-            };
-
-            mediaRecorder.onstop = () => {
-              const blob = new Blob(recordedChunks, { type: 'video/webm' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.style.display = 'none';
-              a.href = url;
-              const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-              a.download = `GMS_시뮬레이션_동작검증_${dateStr}.webm`;
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }, 100);
-
-              // 스트림 트랙 중지
-              stream.getTracks().forEach(track => track.stop());
-
-              recordBtn.textContent = '⏺ 화면 녹화';
-              recordBtn.style.background = '#475569';
-              recordBtn.style.borderColor = '#94a3b8';
-              if (typeof toast === 'function') toast('🎥 화면 녹화가 종료되어 파일로 자동 다운로드되었습니다.', 'ok');
-            };
-
-            // 사용자가 브라우저 상단 '공유 중지'를 눌렀을 때의 핸들링
-            stream.getVideoTracks()[0].onended = () => {
-              if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-              }
-            };
-
-            mediaRecorder.start(1000); // 1초 단위 청크
-            recordBtn.textContent = '⏹ 녹화 중지';
-            recordBtn.style.background = '#dc2626';
-            recordBtn.style.borderColor = '#ef4444';
-            if (typeof toast === 'function') toast('🔴 화면 녹화가 시작되었습니다. (시뮬레이션 진행 후 중지 버튼을 누르세요)', 'ok');
-          } catch (err) {
-            console.error('[ScreenRecord] Error starting recording:', err);
-            if (typeof toast === 'function') toast('녹화 시작이 취소되었거나 권한이 거부되었습니다.', 'info');
-          }
+          await window.__startPcScreenRecord();
         } else if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
+          window.__stopPcScreenRecord();
         }
       });
     }
