@@ -952,6 +952,31 @@
         window.GmsInteractiveSimulator.setSpeed(e.target.value);
       });
     }
+
+    const alarmBtn = document.getElementById('pcSimAlarmBtn');
+    const alarmSelect = document.getElementById('pcSimAlarmSelect');
+    if (alarmBtn) {
+      alarmBtn.addEventListener('click', () => {
+        const code = alarmSelect ? Number(alarmSelect.value) : 1;
+        // 현재 활성화된 서브시퀀스 네임스페이스 탐색
+        let triggered = false;
+        if (typeof subSeqRunStates !== 'undefined') {
+          for (const [ns, rt] of Object.entries(subSeqRunStates)) {
+            if (rt && typeof subSeqHandleAlarm === 'function') {
+              const curStep = (rt.data && rt.data.steps) ? rt.data.steps[rt.stepIndex] : null;
+              subSeqHandleAlarm(ns, code, curStep ? curStep.alarmGoto : null);
+              triggered = true;
+              break;
+            }
+          }
+        }
+        if (!triggered) {
+          if (typeof toast === 'function') {
+            toast(`현재 실행 중인 자동 서브시퀀스가 없습니다. (선택된 Alarm Seq. ${code})`, 'err');
+          }
+        }
+      });
+    }
   }
 
   if (document.readyState === 'loading') {
