@@ -195,12 +195,19 @@
         <span style="font-size:11px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:3px;">
           🎮 <span class="pc-sim-badge-txt">시뮬레이션</span>:
         </span>
+        <!-- A측 / B측 대상 선택 -->
+        <select id="pcSimSideSelect" style="background:#0f172a;color:#a78bfa;border:1px solid #8b5cf6;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
+          <option value="A">A측 검증</option>
+          <option value="B">B측 검증</option>
+        </select>
         <!-- 1단계씩 개별 시뮬레이션 선택 및 실행 -->
         <select id="pcSimStepSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
           <option value="0">1단계: 비밀번호 & 실린더잠금 검증</option>
           <option value="1">2단계: 알람 시뮬레이션(Seq 1/2) 검증</option>
         </select>
         <button type="button" id="pcSimSingleStepBtn" class="tab-switch-btn" style="background:#059669;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;" title="선택한 1개 단계만 시뮬레이션 실행합니다">▶ 1단계 실행</button>
+        <!-- 화면 녹화 제어 버튼 -->
+        <button type="button" id="pcSimRecordBtn" class="tab-switch-btn" style="background:#475569;color:#fff;border:1px solid #94a3b8;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="화면 조작 과정을 동영상(WebM/MP4)으로 녹화 및 저장합니다">⏺ 화면 녹화</button>
         <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="display:none;background:#0284c7;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;">▶ 전체 시작</button>
         <button type="button" id="pcSimPauseBtn" class="tab-switch-btn" style="display:none;background:#eab308;color:#000;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏸ 일시정지</button>
         <button type="button" id="pcSimStopBtn" class="tab-switch-btn" style="display:none;background:#ef4444;color:#fff;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏹ 중지</button>

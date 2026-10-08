@@ -130,12 +130,25 @@
         name: '비밀번호 통합 검증 풀 루틴 (오입력/취소복귀/정상입력/옵션연동)',
         desc: '진입 ➔ 오입력 차단 ➔ 키패드 Back/Clear ➔ 취소 복귀 ➔ 정상입력(4321) 통과 ➔ 옵션 미적용 다이렉트 패스 ➔ 옵션 원복',
         run: async function(sim) {
-          if (window.toast) window.toast('🔐 [Step 1/26] 비밀번호 통합 검증 루틴 시작 (오입력/취소/정상/옵션)', 'info');
+          // 사용자 선택 Side (A측 또는 B측) 반영
+          const sideSelect = document.getElementById('pcSimSideSelect');
+          const chosenSide = (sideSelect && sideSelect.value === 'B') ? 'B' : 'A';
+          window.progressCurrentSide = chosenSide;
+
+          if (window.toast) window.toast(`🔐 [Step 1] [${chosenSide}측] 비밀번호 통합 검증 루틴 시작 (오입력/취소/정상/옵션)`, 'info');
           
-          // 1-1. 진행 메뉴 ➔ A 진행 ➔ 메인 메뉴
+          // 1-1. 어떤 화면에 있든 안전하게 [진행 메뉴] 탭으로 전환 후 선택된 Side(A or B) 메인 메뉴 진입
           const tabBtn = document.querySelector('.tab-switch-btn[data-tab="progress"]');
           if (tabBtn) tabBtn.click();
-          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
+          await sim.sleep(400);
+
+          // 만약 루트 화면이거나 다른 화면인 경우 해당 Side 버튼을 눌러 진입
+          const sideBtn = document.getElementById(chosenSide === 'B' ? 'progressBBtn' : 'progressABtn');
+          if (sideBtn && sideBtn.offsetParent !== null) {
+            sideBtn.click();
+          } else if (window.showProgressMainMenu) {
+            window.showProgressMainMenu(chosenSide);
+          }
           await sim.sleep(600);
 
           // 1-2. 메인 메뉴에서 [실린더 교환] 클릭 ➔ 비밀번호 진입
@@ -159,7 +172,7 @@
           for (const k of ['9', '9', '9', '9']) await typeKey(k);
           const confirmBtn = document.getElementById('passwordConfirmBtn') || document.querySelector('.password-action-btn.confirm');
           if (confirmBtn) confirmBtn.click();
-          if (window.toast) window.toast('❌ 오입력(9999) 차단 및 진입 거부 검증 완료 (PASS)', 'err');
+          if (window.toast) window.toast(`❌ [${chosenSide}측] 오입력(9999) 차단 및 진입 거부 검증 완료 (PASS)`, 'err');
           await sim.sleep(600);
 
           // 1-4. [키패드 Clear/Back 동작 검증]
@@ -173,7 +186,7 @@
           // 1-5. [취소 복귀 검증]: 비밀번호 화면에서 [취소] 클릭 ➔ 메인 메뉴 복귀
           const cancelBtn = document.getElementById('passwordCancelBtn') || document.querySelector('.password-action-btn.cancel');
           if (cancelBtn) cancelBtn.click();
-          if (window.toast) window.toast('↩️ [취소] 클릭 ➔ [A] 메인 메뉴 정상 복귀 검증 통과 (PASS)', 'ok');
+          if (window.toast) window.toast(`↩️ [${chosenSide}측] [취소] 클릭 ➔ [${chosenSide}] 메인 메뉴 정상 복귀 검증 통과 (PASS)`, 'ok');
           await sim.sleep(600);
 
           // 1-6. [정상 입력 검증]: 다시 [실린더 교환] ➔ 4-3-2-1 입력 ➔ 실린더 잠금 check 진입
@@ -183,7 +196,7 @@
 
           for (const k of ['4', '3', '2', '1']) await typeKey(k);
           if (confirmBtn) confirmBtn.click();
-          if (window.toast) window.toast('🔓 정상 비밀번호(4321) 통과 ➔ [실린더 잠금 check] 진입 완료 (PASS)', 'ok');
+          if (window.toast) window.toast(`🔓 [${chosenSide}측] 정상 비밀번호(4321) 통과 ➔ [실린더 잠금 check] 진입 완료 (PASS)`, 'ok');
           await sim.sleep(700);
 
           // 1-7. [시퀀스 진행 중 취소 & 백그라운드 유지 검증]
@@ -198,12 +211,12 @@
 
           // 비밀번호 화면에서 취소 클릭 ➔ 원래 진행 중이던 서브시퀀스로 100% 복귀
           if (cancelBtn) cancelBtn.click();
-          if (window.toast) window.toast('🛡️ 비밀번호 취소 ➔ 서브시퀀스 백그라운드 진행 유지 & 안전 복귀 (PASS)', 'ok');
+          if (window.toast) window.toast(`🛡️ [${chosenSide}측] 비밀번호 취소 ➔ 서브시퀀스 백그라운드 진행 유지 & 안전 복귀 (PASS)`, 'ok');
           await sim.sleep(700);
 
           // 안전 초기화
           if (window.stopAllSubSequences) window.stopAllSubSequences();
-          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
+          if (window.showProgressMainMenu) window.showProgressMainMenu(chosenSide);
           await sim.sleep(500);
 
           // 1-8. [옵션 미적용(다이렉트 진입) 검증]
@@ -212,7 +225,7 @@
           }
           if (cylExBtn) cylExBtn.click(); // 비밀번호 없이 바로 진입해야 함
           await sim.sleep(600);
-          if (window.toast) window.toast('⚡ [옵션 미적용] 비밀번호 없이 실린더 잠금 check 다이렉트 진입 (PASS)', 'ok');
+          if (window.toast) window.toast(`⚡ [${chosenSide}측 옵션 미적용] 비밀번호 없이 실린더 잠금 check 다이렉트 진입 (PASS)`, 'ok');
 
           // 옵션 원복(다시 적용 상태로 복구)
           if (window.passwordGateOptions) {
@@ -224,7 +237,7 @@
           if (window.showProgressCylinderLockCheck) {
             window.showProgressCylinderLockCheck();
           }
-          if (window.toast) window.toast('🎯 [완료] 실린더 잠금 check 대기 상태까지 개별 검증 완료!', 'ok');
+          if (window.toast) window.toast(`🎯 [완료] [${chosenSide}측] 실린더 잠금 check 대기 상태까지 개별 검증 완료!`, 'ok');
         }
       },
 
@@ -1067,6 +1080,83 @@
       window.GmsInteractiveSimulator.setSpeed(speedSelect.value);
       speedSelect.addEventListener('change', (e) => {
         window.GmsInteractiveSimulator.setSpeed(e.target.value);
+      });
+    }
+
+    // ── 화면 동영상 녹화 (Screen Recording) 기능 연동 ──
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    const recordBtn = document.getElementById('pcSimRecordBtn');
+
+    if (recordBtn) {
+      recordBtn.addEventListener('click', async () => {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+          try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+              if (typeof toast === 'function') toast('이 브라우저는 화면 녹화 API(getDisplayMedia)를 지원하지 않습니다.', 'err');
+              return;
+            }
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { cursor: 'always' },
+              audio: false
+            });
+
+            recordedChunks = [];
+            let mimeType = 'video/webm;codecs=vp9';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              mimeType = 'video/webm';
+            }
+
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+            mediaRecorder.ondataavailable = (event) => {
+              if (event.data && event.data.size > 0) {
+                recordedChunks.push(event.data);
+              }
+            };
+
+            mediaRecorder.onstop = () => {
+              const blob = new Blob(recordedChunks, { type: 'video/webm' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+              a.download = `GMS_시뮬레이션_동작검증_${dateStr}.webm`;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+              }, 100);
+
+              // 스트림 트랙 중지
+              stream.getTracks().forEach(track => track.stop());
+
+              recordBtn.textContent = '⏺ 화면 녹화';
+              recordBtn.style.background = '#475569';
+              recordBtn.style.borderColor = '#94a3b8';
+              if (typeof toast === 'function') toast('🎥 화면 녹화가 종료되어 파일로 자동 다운로드되었습니다.', 'ok');
+            };
+
+            // 사용자가 브라우저 상단 '공유 중지'를 눌렀을 때의 핸들링
+            stream.getVideoTracks()[0].onended = () => {
+              if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+              }
+            };
+
+            mediaRecorder.start(1000); // 1초 단위 청크
+            recordBtn.textContent = '⏹ 녹화 중지';
+            recordBtn.style.background = '#dc2626';
+            recordBtn.style.borderColor = '#ef4444';
+            if (typeof toast === 'function') toast('🔴 화면 녹화가 시작되었습니다. (시뮬레이션 진행 후 중지 버튼을 누르세요)', 'ok');
+          } catch (err) {
+            console.error('[ScreenRecord] Error starting recording:', err);
+            if (typeof toast === 'function') toast('녹화 시작이 취소되었거나 권한이 거부되었습니다.', 'info');
+          }
+        } else if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
       });
     }
 
