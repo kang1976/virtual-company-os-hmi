@@ -195,14 +195,20 @@
         <span style="font-size:11px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:3px;">
           🎮 <span class="pc-sim-badge-txt">시뮬레이션</span>:
         </span>
-        <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="background:#0284c7;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;">▶ 시작</button>
+        <!-- 1단계씩 개별 시뮬레이션 선택 및 실행 -->
+        <select id="pcSimStepSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
+          <option value="0">1단계: 비밀번호 & 실린더잠금 검증</option>
+          <option value="1">2단계: 알람 시뮬레이션(Seq 1/2) 검증</option>
+        </select>
+        <button type="button" id="pcSimSingleStepBtn" class="tab-switch-btn" style="background:#059669;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;" title="선택한 1개 단계만 시뮬레이션 실행합니다">▶ 1단계 실행</button>
+        <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="display:none;background:#0284c7;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;">▶ 전체 시작</button>
         <button type="button" id="pcSimPauseBtn" class="tab-switch-btn" style="display:none;background:#eab308;color:#000;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏸ 일시정지</button>
         <button type="button" id="pcSimStopBtn" class="tab-switch-btn" style="display:none;background:#ef4444;color:#fff;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏹ 중지</button>
         <select id="pcSimSpeedSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
           <option value="1">1x 배속</option>
-          <option value="2">2x 배속</option>
+          <option value="2" selected>2x 배속</option>
           <option value="5">5x 배속</option>
-          <option value="10" selected>10x 배속</option>
+          <option value="10">10x 배속</option>
         </select>
         <!-- 알람 시뮬레이션 빠른 테스트 버튼 -->
         <select id="pcSimAlarmSelect" style="background:#2d0606;color:#f87171;border:1px solid #ef4444;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">

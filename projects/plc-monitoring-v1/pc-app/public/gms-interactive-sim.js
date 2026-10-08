@@ -218,8 +218,13 @@
           if (window.passwordGateOptions) {
             window.passwordGateOptions['cylinderExchange'] = true;
           }
-          if (window.showProgressMainMenu) window.showProgressMainMenu('A');
-          await sim.sleep(600);
+          await sim.sleep(500);
+
+          // 최종 상태: 실린더 잠금 check(IDLE 대기) 화면에서 멈추어 사용자 개별 점검 대기
+          if (window.showProgressCylinderLockCheck) {
+            window.showProgressCylinderLockCheck();
+          }
+          if (window.toast) window.toast('🎯 [완료] 실린더 잠금 check 대기 상태까지 개별 검증 완료!', 'ok');
         }
       },
 
@@ -926,6 +931,32 @@
       this.executeNextStep();
     },
 
+    runSingleStep: async function(stepIdx) {
+      if (this.isRunning) return;
+      const idx = Math.max(0, Math.min(this.scenario.length - 1, parseInt(stepIdx) || 0));
+      const step = this.scenario[idx];
+      if (!step) return;
+
+      this.isRunning = true;
+      this.isPaused = false;
+      this.currentStepIndex = idx + 1;
+      this.updateUiStatus();
+
+      const statusText = document.getElementById('pcSimStatusText');
+      if (statusText) statusText.textContent = `[단독실행] ${step.name.slice(0, 16)}...`;
+
+      try {
+        await step.run(this);
+        if (window.toast) window.toast(`✅ [${step.name}] 단독 검증 완료 (PASS)`, 'ok');
+      } catch (e) {
+        console.error(`[Simulator] Error at step ${idx + 1} (${step.name}):`, e);
+      } finally {
+        this.isRunning = false;
+        this.updateUiStatus();
+        if (statusText) statusText.textContent = '완료 (대기)';
+      }
+    },
+
     pause: function() {
       this.isPaused = true;
       if (this.timer) { clearTimeout(this.timer); this.timer = null; }
@@ -999,10 +1030,19 @@
 
   // ── PC 상단 버튼 이벤트 바인딩 ──
   function bindPcSimToolbar() {
+    const singleStepBtn = document.getElementById('pcSimSingleStepBtn');
+    const stepSelect = document.getElementById('pcSimStepSelect');
     const startBtn = document.getElementById('pcSimStartBtn');
     const pauseBtn = document.getElementById('pcSimPauseBtn');
     const stopBtn = document.getElementById('pcSimStopBtn');
     const speedSelect = document.getElementById('pcSimSpeedSelect');
+
+    if (singleStepBtn) {
+      singleStepBtn.addEventListener('click', () => {
+        const val = stepSelect ? stepSelect.value : 0;
+        window.GmsInteractiveSimulator.runSingleStep(val);
+      });
+    }
 
     if (startBtn) {
       startBtn.addEventListener('click', () => {
