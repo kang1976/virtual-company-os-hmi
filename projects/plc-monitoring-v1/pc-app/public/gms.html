@@ -129,6 +129,16 @@
      마운트한다(A/B가 화면 하나를 공유 - 조정모드 A/B와 동일한 패턴). -->
 <link rel="stylesheet" href="gms-configmode-grid/plc-grid-app.css">
   <link rel="stylesheet" href="theme-3d.css" />
+<style>
+@keyframes hud-pulse {
+  0% { box-shadow: 0 0 12px rgba(0, 240, 255, 0.4); border-color: #00F0FF; }
+  100% { box-shadow: 0 0 28px rgba(0, 240, 255, 0.9); border-color: #38bdf8; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
 </head>
 <body>
 
@@ -189,47 +199,12 @@
         </div>
       </div>
     </div>
-    <!-- 우측 패널 탭 전환 버튼 및 PC 시뮬레이션 제어 바 -->
+    <!-- 우측 패널 탭 전환 버튼 -->
     <div class="tab-switch-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-      <div class="pc-sim-controls" style="display:flex;align-items:center;gap:4px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.4);border-radius:6px;padding:2px 8px;margin-right:auto;">
-        <span style="font-size:11px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:3px;">
-          🎮 <span class="pc-sim-badge-txt">시뮬레이션</span>:
-        </span>
-        <!-- A측 / B측 대상 선택 -->
-        <select id="pcSimSideSelect" style="background:#0f172a;color:#a78bfa;border:1px solid #8b5cf6;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
-          <option value="A">A측 검증</option>
-          <option value="B">B측 검증</option>
-        </select>
-        <!-- 1단계씩 개별 시뮬레이션 선택 및 실행 -->
-        <select id="pcSimStepSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
-          <option value="0">1단계: 비밀번호 & 실린더잠금 check 검증</option>
-          <option value="1">2단계: 실린더 사전확인 9단계(Sub 1~9) & 취소옵션 개별 반복 검증</option>
-          <option value="2">3단계: 알람 시뮬레이션(Seq 1/2/3) 인터락 검증</option>
-        </select>
-        <button type="button" id="pcSimSingleStepBtn" class="tab-switch-btn" style="background:#059669;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;" title="선택한 단계를 시뮬레이션 실행합니다">▶ 선택 단계 실행</button>
-        <!-- 화면 녹화 제어 버튼 -->
-        <button type="button" id="pcSimRecordBtn" class="tab-switch-btn" style="background:#475569;color:#fff;border:1px solid #94a3b8;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="화면 조작 과정을 동영상(WebM/MP4)으로 녹화 및 저장합니다">⏺ 화면 녹화</button>
-        <!-- 검증 체크시트 즉시 다운로드 버튼 -->
-        <a id="pcSimChecksheetDownloadBtn" href="/GMS_시뮬레이션_동작_검증_체크시트.xlsx" download="GMS_시뮬레이션_동작_검증_체크시트.xlsx" class="tab-switch-btn" style="text-decoration:none;display:inline-flex;align-items:center;background:#1e3a8a;color:#fff;border:1px solid #3b82f6;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="1단계 검증 완료 체크시트 엑셀 문서를 즉시 다운로드합니다">📄 체크시트 다운로드</a>
-        <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="display:none;background:#0284c7;color:#fff;border:none;padding:3px 10px;font-weight:bold;border-radius:4px;cursor:pointer;">▶ 전체 시작</button>
-        <button type="button" id="pcSimPauseBtn" class="tab-switch-btn" style="display:none;background:#eab308;color:#000;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏸ 일시정지</button>
-        <button type="button" id="pcSimStopBtn" class="tab-switch-btn" style="display:none;background:#ef4444;color:#fff;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;">⏹ 중지</button>
-        <select id="pcSimSpeedSelect" style="background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
-          <option value="0.5">0.5x 배속 (정밀 관찰)</option>
-          <option value="1">1x 배속 (실시간)</option>
-          <option value="2" selected>2x 배속 (권장)</option>
-          <option value="5">5x 배속</option>
-          <option value="10">10x 배속</option>
-        </select>
-        <!-- 알람 시뮬레이션 빠른 테스트 버튼 -->
-        <select id="pcSimAlarmSelect" style="background:#2d0606;color:#f87171;border:1px solid #ef4444;border-radius:4px;font-size:11px;font-weight:bold;padding:2px 4px;cursor:pointer;">
-          <option value="1">Seq 1:초기화</option>
-          <option value="2">Seq 2:재진행</option>
-          <option value="3">Seq 3:SHUTDOWN</option>
-        </select>
-        <button type="button" id="pcSimAlarmBtn" class="tab-switch-btn" style="background:#b91c1c;color:#fff;border:none;padding:3px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="현재 진행 중인 공정에 즉시 가상 알람을 발생시킵니다">🚨 알람 TEST</button>
-        <span id="pcSimStatusText" style="font-size:11px;color:#94a3b8;margin-left:4px;">대기</span>
-      </div>
+      <!-- 시뮬레이션 제어창 열기/닫기 토글 버튼 -->
+      <button type="button" id="toggleSimPopupBtn" class="tab-switch-btn" style="background:#0284c7;color:#fff;border:1px solid #38bdf8;font-weight:bold;padding:3px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;" title="화면 상단 이동식 시뮬레이션 제어 팝업창을 열거나 닫습니다">
+        🎮 시뮬레이션 제어창
+      </button>
 
       <button class="tab-switch-btn active" data-tab="progress">진행 메뉴</button>
       <button class="tab-switch-btn" data-tab="config">CONFIG.</button>
@@ -242,6 +217,72 @@
       <a class="tab-switch-btn room-link" href="gms-select.html" title="장비 선택 화면으로 이동">ROOM</a>
     </div>
   </div>
+</div>
+
+<!-- ── [신규] 좌측 상단 대형 상태 오버레이 배너 (HUD Banner) ── -->
+<div id="gmsOsMouseHud" style="display:none;position:fixed;top:12px;left:12px;z-index:999999;background:rgba(15,23,42,0.92);border:2px solid #00F0FF;box-shadow:0 0 20px rgba(0,240,255,0.6);border-radius:8px;padding:10px 16px;color:#fff;font-family:'Pretendard',sans-serif;pointer-events:none;animation:hud-pulse 1.5s infinite alternate;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:24px;animation:spin 2s linear infinite;">⚙️</span>
+    <div>
+      <div style="font-size:14px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:6px;">
+        <span>[OS 레벨 실제 물리 마우스 제어 동작 중]</span>
+        <span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:50%;box-shadow:0 0 8px #ef4444;"></span>
+      </div>
+      <div id="gmsHudStatusMsg" style="font-size:12px;color:#e2e8f0;margin-top:2px;">실제 마우스 커서가 자동 제어되고 있습니다. 마우스 조작을 잠시 멈춰주세요. (중지: ESC)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── [신규] 화면 상단 주소창 밑 배치 및 위치 조정(드래그) 가능한 시뮬레이션 제어 팝업 ── -->
+<div id="simFloatingPopup" style="position:fixed;top:48px;left:120px;z-index:99990;background:#0f172a;border:2px solid #0284c7;box-shadow:0 8px 30px rgba(0,0,0,0.6);border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;user-select:none;">
+  <!-- 드래그 핸들러 -->
+  <div id="simPopupDragHandle" style="cursor:move;padding:2px 6px;background:#1e293b;border-radius:4px;color:#38bdf8;font-size:12px;font-weight:bold;display:flex;align-items:center;gap:4px;" title="이곳을 잡고 원하는 위치(상단 주소창 밑 등)로 드래그하여 이동할 수 있습니다">
+    ⠿ 이동
+  </div>
+  <span style="font-size:12px;font-weight:bold;color:#00F0FF;display:flex;align-items:center;gap:3px;">
+    🎮 시뮬레이션:
+  </span>
+  <!-- A측 / B측 대상 선택 -->
+  <select id="pcSimSideSelect" style="background:#1e293b;color:#a78bfa;border:1px solid #8b5cf6;border-radius:4px;font-size:11px;font-weight:bold;padding:3px 6px;cursor:pointer;">
+    <option value="A">A측 검증</option>
+    <option value="B">B측 검증</option>
+  </select>
+  <!-- 1단계씩 개별 시뮬레이션 선택 및 실행 -->
+  <select id="pcSimStepSelect" style="background:#1e293b;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:3px 6px;cursor:pointer;">
+    <option value="0">1단계: 비밀번호 & 실린더잠금 check 검증</option>
+    <option value="1">2단계: 실린더 사전확인 9단계(Sub 1~9) & 취소옵션 개별 반복 검증</option>
+    <option value="2">3단계: 알람 시뮬레이션(Seq 1/2/3) 인터락 검증</option>
+  </select>
+  <button type="button" id="pcSimSingleStepBtn" class="tab-switch-btn" style="background:#059669;color:#fff;border:none;padding:4px 12px;font-weight:bold;border-radius:4px;cursor:pointer;" title="선택한 단계를 시뮬레이션 실행합니다">▶ 선택 단계 실행</button>
+  <!-- OS 레벨 실제 물리 마우스 제어 모드 토글 -->
+  <label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#a7f3d0;font-weight:bold;background:#064e3b;border:1px solid #059669;padding:3px 8px;border-radius:4px;cursor:pointer;" title="체크 시 실제 Windows 마우스 커서가 물리적으로 움직이고 클릭합니다">
+    <input type="checkbox" id="pcSimOsMouseModeCheck" style="cursor:pointer;" checked> 🖱️ OS 물리 마우스
+  </label>
+  <!-- 강제 중지 버튼 -->
+  <button type="button" id="pcSimStopOsBtn" class="tab-switch-btn" style="background:#dc2626;color:#fff;border:none;padding:4px 10px;font-weight:bold;border-radius:4px;cursor:pointer;" title="진행 중인 OS 물리 마우스 제어를 즉시 강제 중단합니다">🛑 강제 중지</button>
+  <!-- 화면 녹화 제어 버튼 -->
+  <button type="button" id="pcSimRecordBtn" class="tab-switch-btn" style="background:#475569;color:#fff;border:1px solid #94a3b8;padding:4px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="화면 조작 과정을 동영상(WebM/MP4)으로 녹화 및 저장합니다">⏺ 화면 녹화</button>
+  <!-- 검증 체크시트 즉시 다운로드 버튼 -->
+  <a id="pcSimChecksheetDownloadBtn" href="/GMS_시뮬레이션_동작_검증_체크시트.xlsx" download="GMS_시뮬레이션_동작_검증_체크시트.xlsx" class="tab-switch-btn" style="text-decoration:none;display:inline-flex;align-items:center;background:#1e3a8a;color:#fff;border:1px solid #3b82f6;padding:4px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="1단계 검증 완료 체크시트 엑셀 문서를 즉시 다운로드합니다">📄 체크시트 다운로드</a>
+  <button type="button" id="pcSimStartBtn" class="tab-switch-btn" style="display:none;">▶ 전체 시작</button>
+  <button type="button" id="pcSimPauseBtn" class="tab-switch-btn" style="display:none;">⏸ 일시정지</button>
+  <button type="button" id="pcSimStopBtn" class="tab-switch-btn" style="display:none;">⏹ 중지</button>
+  <select id="pcSimSpeedSelect" style="background:#1e293b;color:#38bdf8;border:1px solid #0284c7;border-radius:4px;font-size:11px;font-weight:bold;padding:3px 4px;cursor:pointer;">
+    <option value="0.5">0.5x 배속 (정밀 관찰)</option>
+    <option value="1">1x 배속 (실시간)</option>
+    <option value="2" selected>2x 배속 (권장)</option>
+    <option value="5">5x 배속</option>
+  </select>
+  <!-- 알람 시뮬레이션 빠른 테스트 버튼 -->
+  <select id="pcSimAlarmSelect" style="background:#2d0606;color:#f87171;border:1px solid #ef4444;border-radius:4px;font-size:11px;font-weight:bold;padding:3px 4px;cursor:pointer;">
+    <option value="1">Seq 1:초기화</option>
+    <option value="2">Seq 2:재진행</option>
+    <option value="3">Seq 3:SHUTDOWN</option>
+  </select>
+  <button type="button" id="pcSimAlarmBtn" class="tab-switch-btn" style="background:#b91c1c;color:#fff;border:none;padding:4px 8px;font-weight:bold;border-radius:4px;cursor:pointer;" title="현재 진행 중인 공정에 즉시 가상 알람을 발생시킵니다">🚨 알람 TEST</button>
+  <span id="pcSimStatusText" style="font-size:11px;color:#94a3b8;margin-left:4px;">대기</span>
+  <!-- 팝업 닫기 버튼 -->
+  <button type="button" id="closeSimPopupBtn" style="background:transparent;border:none;color:#94a3b8;font-size:14px;cursor:pointer;padding:0 4px;line-height:1;" title="제어창 접기">✕</button>
 </div>
 <div id="equipStatusSplitter" class="h-splitter" title="드래그해서 Cylinder Step Status 영역 높이 조절"></div>
 
@@ -858,17 +899,17 @@
      위젯 하나당 13MB(대부분 안 쓰는 다국어 로케일)라 5개를 매번 다 불러오면 페이지 열 때마다
      약 65MB를 내려받고 파싱해야 했다(부하 원인). 이제 gms.js의 loadGmsWidgetModule()이 각
      화면을 실제로 처음 열 때만 dynamic import()로 불러온다(gms.js/Operation.js 참고). -->
-<script src="gms.js"></script>
-<script src="gms-config-tab.js"></script>
-<script src="operation-screens-bundle.js"></script>
-<script src="Operation.js"></script>
-<script src="gms-sequence-editor.js"></script>
-<script src="gms-pt-calibration.js"></script>
-<script src="gms-configmode-tab.js"></script>
-<script src="gms-sub-sequence-runner.js"></script>
-<script src="gms-editor.js"></script>
-<script src="gms-option-display.js"></script>
-<script src="clickTracker.js"></script>
-<script src="gms-interactive-sim.js"></script>
+<script src="gms.js?v=20261008_2330"></script>
+<script src="gms-config-tab.js?v=20261008_2330"></script>
+<script src="operation-screens-bundle.js?v=20261009_1425"></script>
+<script src="Operation.js?v=20261009_1425"></script>
+<script src="gms-sequence-editor.js?v=20261009_1425"></script>
+<script src="gms-pt-calibration.js?v=20261008_2330"></script>
+<script src="gms-configmode-tab.js?v=20261008_2330"></script>
+<script src="gms-sub-sequence-runner.js?v=20261008_2330"></script>
+<script src="gms-editor.js?v=20261008_2330"></script>
+<script src="gms-option-display.js?v=20261008_2330"></script>
+<script src="clickTracker.js?v=20261008_2330"></script>
+<script src="gms-interactive-sim.js?v=20261008_2330"></script>
 </body>
 </html>

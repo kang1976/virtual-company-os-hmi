@@ -373,16 +373,54 @@ function sideScreenTitle(key, fallback, side) {
   return side ? `[${side}] ${base}` : base;
 }
 
+// ── 화면 고유 번호(Screen Number) 메모리 매핑 및 추적 ──
+const GMS_SCREEN_NUMBERS = {
+  root: 100, mainMenu: 101, password: 102,
+  maintenanceMenu: 103, manualValve: 104, heater: 105, maintenancePurge: 106,
+  pipeClean: 107, leakTest: 108, vtTest: 109, ptTest: 110, pressureTest: 111,
+  barcodeCheck: 112, cylinderLockCheck: 200,
+  pulsAutoRun: 210, onePAutoRun: 220, onePPurgeAutoRun: 221, onePPumpingAutoRun: 222,
+  onePPrimaryPurgeAutoRun: 223, exchangePressureTest: 230, exchangeVtTest: 231,
+  exchangeSecondPurge: 240, cylReplaceCheck: 250, cylReplaceValveOpen: 251,
+  cylReplaceAutoGuardOpen: 252, cylReplaceSwap: 253, cylReplaceGasName: 254,
+  cylReplaceAutoGuardClose: 255, exchangeAfterPressureTest: 260, exchangeAfterPuls: 261,
+  exchangeThirdPurge: 262, exchangeAfterVtTest: 263, exchangeFourthPurge: 264,
+  exchangePurgeComplete: 265, hpLpPump: 270, cylReplaceForcePurge: 271,
+  gasSupplyPressureCheck: 300, gasSupplyValveShutter: 301, gasSupplyRegulatorClose: 302,
+  gasSupplyCylinderOpen: 303, gasSupplyRegulatorAdjust: 304, gasSupplyPmvOpen: 305,
+  gasSupplyFpvOpen: 306, gasSupplyReady: 307, gasSupplyActive: 308, gasSupplyConfirmAction: 309,
+  trend: 400, adjustMode: 401, pressureAdjust: 402, workLog: 500, errorLog: 501,
+  configMode: 502, optionDisplay: 503, auxMaintenanceMode: 504,
+  sequencePuls: 601, sequenceBypass: 602, sequenceRgv: 603,
+};
+
+window.GMS_SCREEN_MEMORY = {
+  currentNo: 100,
+  currentName: 'root',
+  previousNo: null,
+  previousName: null,
+  side: null,
+  timestamp: Date.now(),
+};
+
 /** 진행 메뉴 프레임(조작화면) 안의 화면들 중 하나만 보여준다. */
 function showProgressScreen(name, headerText) {
+  const prevName = window.GMS_SCREEN_MEMORY.currentName;
+  const prevNo = window.GMS_SCREEN_MEMORY.currentNo;
+  const currentNo = GMS_SCREEN_NUMBERS[name] || 999;
+
+  window.GMS_SCREEN_MEMORY = {
+    currentNo,
+    currentName: name,
+    previousNo: prevNo,
+    previousName: prevName,
+    side: progressCurrentSide,
+    timestamp: Date.now(),
+  };
+
   for (const [key, el] of Object.entries(progressScreens)) el.style.display = key === name ? '' : 'none';
   progressHeader.textContent = headerText;
   saveProgressState(name);
-  // 작업이력/OPTION DISPLAY 화면은 배관도(.diagram-panel)를 숨기고 op-panel이 그 자리까지
-  // 전체 폭을 쓰게 한다(열이 많은 표라 좁은 우측 패널만으론 비좁음 - 요청사항). 다른 화면으로
-  // 넘어가면 즉시 원래 레이아웃으로 되돌린다 - showProgressScreen이 모든 화면 전환의
-  // 유일한 창구라 여기 한 곳만 지키면 된다. 앞으로 전체 폭이 필요한 화면이 늘어나면
-  // FULL_WIDTH_SCREENS에 이름만 추가하면 된다.
   if (typeof setWorkLogFullWidth === 'function') setWorkLogFullWidth(FULL_WIDTH_SCREENS.has(name));
 }
 const FULL_WIDTH_SCREENS = new Set(['workLog', 'errorLog', 'optionDisplay', 'configMode']);
@@ -710,7 +748,16 @@ function showProgressBarcodeCheck() {
 // 재진입하는 버그가 생긴다(취소 → 메인메뉴 → 실린더 교환 재실행 시 "완료" 상태 패널이
 // 다시 보이던 문제, 실사용 중 발견). ──
 function showProgressCylinderLockCheck() {
-  if (window.stopNamespacedSubSequenceRunner) window.stopNamespacedSubSequenceRunner('idleCheck');
+  const curRt = window.subSeqRunStates ? window.subSeqRunStates['idleCheck'] : null;
+  if (!curRt || (!curRt.running && !curRt.paused)) {
+    if (window.stopNamespacedSubSequenceRunner) window.stopNamespacedSubSequenceRunner('idleCheck');
+  } else {
+    // 이미 진행 중인 서브시퀀스가 있으면 패널 가시성 복원
+    const lockIdle = document.getElementById('cylinderLockIdle');
+    if (lockIdle) lockIdle.style.display = 'none';
+    const lockPanel = document.getElementById('cylinderLockPanel');
+    if (lockPanel) lockPanel.style.display = 'flex';
+  }
   showProgressScreen('cylinderLockCheck', sideScreenTitle('cylinderLockCheck', '실린더 잠금 check', progressCurrentSide));
   if (progressCurrentSide) {
     const pulsIdx = CYLINDER_STEP_ORDER.indexOf('Puls');
@@ -2208,6 +2255,12 @@ function wireOperationScreens() {
       if (typeof window.restoreRunningSubSequencePanel === 'function') {
         window.restoreRunningSubSequencePanel();
       }
+      if (prev.name === 'cylinderLockCheck') {
+        const lockIdle = document.getElementById('cylinderLockIdle');
+        if (lockIdle) lockIdle.style.display = 'none';
+        const lockPanel = document.getElementById('cylinderLockPanel');
+        if (lockPanel) lockPanel.style.display = 'flex';
+      }
       return;
     }
 
@@ -2556,6 +2609,11 @@ function wireOperationScreens() {
   document.getElementById('cylinderLockReturnBtn').addEventListener('click', () => {
     logWorkAction('cylinderLockReturnBtn', progressCurrentSide);
     const side = progressCurrentSide;
+    // 즉시 대기화면 숨기고 진행 패널 표시 (비동기 지연 방지)
+    const lockIdle = document.getElementById('cylinderLockIdle');
+    if (lockIdle) lockIdle.style.display = 'none';
+    const lockPanel = document.getElementById('cylinderLockPanel');
+    if (lockPanel) lockPanel.style.display = 'flex';
     if (window.startNamespacedSubSequenceRunner) {
       window.startNamespacedSubSequenceRunner('idleCheck', 'IdleCheck', side, {
         onFinish: () => {
@@ -3171,3 +3229,117 @@ loadOperationScreens().then(() => {
   wireOperationScreens();
   window.operationScreensLoaded = true;
 });
+
+/** OS 레벨 실제 마우스 자동화 및 실시간 좌표 보정을 위한 요소 뷰포트 좌표 API */
+window.getGmsElementViewportRect = function (selector) {
+  try {
+    const el = document.querySelector(selector);
+    if (!el) return { found: false, error: 'Element not found' };
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    const visible = style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    return {
+      found: true,
+      visible,
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+      centerX: rect.x + rect.width / 2,
+      centerY: rect.y + rect.height / 2,
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      screenMemory: window.GMS_SCREEN_MEMORY || null,
+    };
+  } catch (err) {
+    return { found: false, error: String(err) };
+  }
+};
+
+// ── OS 마우스 제어 스크립트(Python)와 실시간 연동을 위한 지오메트리 자동 전송 (300ms 주기) ──
+(function setupGeometryReporter() {
+  const KEY_SELECTORS = [
+    '#progressABtn', '#progressBBtn', '#progressAuxBtn',
+    '#cylinderLockReturnBtn', '#cylinderLockCancelBtn', '#cylinderLockTrendBtn',
+    '#pulsAckBtn', '#pulsCancelBtn',
+    '#mainMenuCylinderExchangeBtn', '#mainMenuMaintenanceEntryBtn', '#mainMenuTrendBtn', '#mainMenuCancelBtn',
+    '#passwordConfirmBtn', '#passwordCancelBtn', '#passwordClearBtn', '#passwordBackBtn',
+    '.keypad-btn[data-digit="4"]', '.keypad-btn[data-digit="3"]', '.keypad-btn[data-digit="2"]', '.keypad-btn[data-digit="1"]',
+    '#sideBtnA', '#sideBtnB', '#tabBtnProgress',
+    '#pcSimSingleStepBtn', '#pcSimStepSelect', '#pcSimSideSelect', '#pcSimRecordBtn',
+    '#pcSimAlarmSelect', '#pcSimAlarmBtn',
+    '#simStartBtn', '#simStopBtn', '#simScenarioSelect'
+  ];
+
+  function collectAndReport() {
+    const elements = {};
+    for (const sel of KEY_SELECTORS) {
+      const data = window.getGmsElementViewportRect(sel);
+      if (data && data.found) {
+        elements[sel] = data;
+      }
+    }
+
+    const reportPayload = {
+      type: 'geometry_report',
+      time: new Date().toISOString(),
+      page: 'GMS',
+      screenMemory: window.GMS_SCREEN_MEMORY || null,
+      elements,
+      windowInnerWidth: window.innerWidth,
+      windowInnerHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio || 1,
+    };
+
+    fetch('/api/gms/browser-geometry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reportPayload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.commands && data.commands.length > 0) {
+          for (const cmd of data.commands) {
+            try {
+              if (cmd.type === 'select_step') {
+                const sel = document.getElementById('pcSimStepSelect');
+                if (sel) {
+                  sel.value = String(cmd.value);
+                  sel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              } else if (cmd.type === 'select_side') {
+                const sel = document.getElementById('pcSimSideSelect');
+                if (sel) {
+                  sel.value = String(cmd.value);
+                  sel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              } else if (cmd.type === 'select_alarm') {
+                const sel = document.getElementById('pcSimAlarmSelect');
+                if (sel) {
+                  sel.value = String(cmd.value);
+                  sel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              } else if (cmd.type === 'reload') {
+                location.reload();
+              } else if (cmd.type === 'click' && cmd.selector) {
+                const el = document.querySelector(cmd.selector);
+                if (el) el.click();
+              }
+            } catch (e) {
+              console.error('[Operation] Failed to execute remote command:', e);
+            }
+          }
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/debug/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reportPayload),
+    }).catch(() => {});
+  }
+
+  setInterval(collectAndReport, 300);
+})();

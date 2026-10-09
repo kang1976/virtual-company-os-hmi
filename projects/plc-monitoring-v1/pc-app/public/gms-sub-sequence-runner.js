@@ -705,8 +705,16 @@ function subSeqLogStep(ns, step, runStateSnapshot, extraLabel, diffLabels) {
 function subSeqSetPanelVisible(ns, running) {
   const idle = el(ns, 'idle');
   const panel = el(ns, 'panel');
-  if (idle) idle.style.display = running ? 'none' : '';
-  if (panel) panel.style.display = running ? '' : 'none';
+  if (idle) idle.style.display = running ? 'none' : 'flex';
+  if (panel) panel.style.display = running ? 'flex' : 'none';
+
+  // idleCheck 네임스페이스 특수 보강 (DOM 캐시나 ID 직접 지정 대비)
+  if (ns === 'idleCheck') {
+    const lockIdle = document.getElementById('cylinderLockIdle');
+    if (lockIdle) lockIdle.style.display = running ? 'none' : 'flex';
+    const lockPanel = document.getElementById('cylinderLockPanel');
+    if (lockPanel) lockPanel.style.display = running ? 'flex' : 'none';
+  }
 }
 
 function subSeqClearTimer(ns) {
@@ -2141,10 +2149,18 @@ window.stopAllSubSequences = function stopAllSubSequences() {
 window.restoreRunningSubSequencePanel = function restoreRunningSubSequencePanel() {
   Object.keys(SUBSEQ_NS).forEach((ns) => {
     const rt = subSeqRunStates[ns];
-    if (rt && rt.running) {
+    if (rt && (rt.running || rt.paused)) {
       subSeqSetPanelVisible(ns, true);
     }
   });
+  // idleCheck 네임스페이스가 실행/복원 중인 경우 추가 확인
+  const idleRt = subSeqRunStates['idleCheck'];
+  if (idleRt && (idleRt.running || idleRt.paused)) {
+    const lockIdle = document.getElementById('cylinderLockIdle');
+    if (lockIdle) lockIdle.style.display = 'none';
+    const lockPanel = document.getElementById('cylinderLockPanel');
+    if (lockPanel) lockPanel.style.display = 'flex';
+  }
 };
 
 /** 특정 스텝 인덱스로 서브시퀀스를 강제 재개하거나 복원한다. */
@@ -2162,28 +2178,20 @@ window.resumeSubSequenceRunnerStepAt = async function resumeSubSequenceRunnerSte
     subSeqSetPanelVisible(ns, true);
     subSeqRunStepAt(ns, stepIndex);
     return true;
-  } else {
-    if (cfg) {
-      subSeqPendingResumes[ns] = {
-        mainStepType: cfg.mainStepType,
-        side: side,
-        stepIndex: stepIndex,
-        valveOpenState: {},
-        elapsedSec: 0,
-        cycleTarget: null,
-        cycleCurrent: 0,
-        cycleCheckStepIndex: null
-      };
-      await window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, subSeqPendingResumes[ns].side, subSeqCallbacks[ns] || subSeqGetDefaultCallbacks(ns));
-      subSeqSetPanelVisible(ns, true);
-      const curRt = subSeqRunStates[ns];
-      if (curRt) {
-        curRt.running = true;
-        curRt.stepIndex = stepIndex;
-        subSeqRunStepAt(ns, stepIndex);
-      }
-      return true;
-    }
+  } else if (cfg) {
+    subSeqPendingResumes[ns] = {
+      mainStepType: cfg.mainStepType,
+      side: side,
+      stepIndex: stepIndex,
+      valveOpenState: {},
+      elapsedSec: 0,
+      cycleTarget: null,
+      cycleCurrent: 0,
+      cycleCheckStepIndex: null
+    };
+    await window.startNamespacedSubSequenceRunner(ns, cfg.mainStepType, subSeqPendingResumes[ns].side, subSeqCallbacks[ns] || subSeqGetDefaultCallbacks(ns));
+    subSeqSetPanelVisible(ns, true);
+    return true;
   }
   return false;
 };

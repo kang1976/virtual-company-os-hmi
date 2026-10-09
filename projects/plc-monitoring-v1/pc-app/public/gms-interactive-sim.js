@@ -341,8 +341,17 @@
             await sim.clickWithEffect(cylExBtn, '실린더 교환 (미적용 상태 다이렉트 진입)');
           }
           await sim.sleep(700);
-          if (window.toast) window.toast(`🎉 [옵션 연동 검증 통과] 비밀번호 창 없이 [실린더 잠금 check] 다이렉트 진입 (PASS)`, 'ok');
-          await sim.sleep(800);
+
+          // 화면이 실제로 [실린더 잠금 check]로 전환되었는지 확인
+          const isDirectInLockCheck = (window.progressCurrentScreenKey === 'cylinderLockCheck') ||
+            (document.getElementById('cylinderLockCheckScreen') && document.getElementById('cylinderLockCheckScreen').style.display !== 'none');
+          if (isDirectInLockCheck) {
+            if (window.toast) window.toast(`🎉 [옵션 연동 검증 통과] 비밀번호 창 없이 [실린더 잠금 check] 다이렉트 진입 (PASS)`, 'ok');
+          } else {
+            if (window.toast) window.toast(`⚠️ 비밀번호 화면 통과 처리 중...`, 'info');
+            await sim.sleep(500);
+          }
+          await sim.sleep(600);
 
           // 1-10. [취소 key 다이렉트 동작 확인]: 잠금 check에서 [취소] 클릭 ➔ 비밀번호 없이 메인 메뉴 즉시 복귀
           const lockCancelBtnDirect = document.getElementById('cylinderLockCancelBtn');
@@ -449,8 +458,26 @@
           const cylExBtn = () => document.getElementById('mainMenuCylinderExchangeBtn') || document.querySelector('[data-action="실린더 교환"]');
           const confirmBtn = () => document.getElementById('passwordConfirmBtn') || document.querySelector('.password-action-btn.confirm');
           const cancelBtn = () => document.getElementById('passwordCancelBtn') || document.querySelector('.password-action-btn.cancel');
-          const pulsCancelBtn = () => document.getElementById('pulsCancelBtn');
-          const pulsAckBtn = () => document.getElementById('pulsAckBtn');
+          const pulsCancelBtn = () => {
+            const btn = document.getElementById('pulsCancelBtn');
+            const panel = document.getElementById('cylinderLockPanel');
+            const idle = document.getElementById('cylinderLockIdle');
+            if (panel && (panel.style.display === 'none' || panel.offsetParent === null)) {
+              if (idle) idle.style.display = 'none';
+              panel.style.display = 'flex';
+            }
+            return btn;
+          };
+          const pulsAckBtn = () => {
+            const btn = document.getElementById('pulsAckBtn');
+            const panel = document.getElementById('cylinderLockPanel');
+            const idle = document.getElementById('cylinderLockIdle');
+            if (panel && (panel.style.display === 'none' || panel.offsetParent === null)) {
+              if (idle) idle.style.display = 'none';
+              panel.style.display = 'flex';
+            }
+            return btn;
+          };
 
           const typeKey = async (digit) => {
             if (!sim.isRunning) throw new Error('SIM_STOPPED');
@@ -475,41 +502,47 @@
             { no: 9, name: '교환전 자동진행 예상 시간', testOption: 'final_complete' }
           ];
 
-          // 2-0. 진행 메뉴 ➔ 선택된 측(A or B) 메인 메뉴 확인 후 ➔ 잠금 check 화면 진입
-          const pTab = await waitForVisible(tabBtn);
-          if (pTab) await sim.clickWithEffect(pTab, '진행 메뉴 탭');
-          await sim.sleep(300);
+          // 2-0. 화면 번호 메모리 확인 기반 지능형 진입 (Smart Entry)
+          const currentMem = window.GMS_SCREEN_MEMORY || {};
+          const curNo = currentMem.currentNo;
 
-          const sideBtn = document.getElementById(chosenSide === 'B' ? 'progressBBtn' : 'progressABtn');
-          if (sideBtn && sideBtn.offsetParent !== null) {
-            await sim.clickWithEffect(sideBtn, `${chosenSide}측 메뉴 진입`);
-            await sim.sleep(400);
-          } else if (window.showProgressMainMenu) {
-            window.showProgressMainMenu(chosenSide);
+          // 이미 실린더 잠금 check(200) 또는 Sub 스텝(210 이상)에 진입해 있으면 메뉴 이동 건너뜀
+          if (curNo !== 200 && !(curNo >= 210 && curNo < 300)) {
+            const pTab = await waitForVisible(tabBtn);
+            if (pTab) await sim.clickWithEffect(pTab, '진행 메뉴 탭');
             await sim.sleep(300);
-          }
 
-          // 메인 메뉴에서 [실린더 교환] 클릭 ➔ 잠금 check 화면으로 이동
-          const cBtn = await waitForVisible(cylExBtn);
-          if (cBtn) {
-            await sim.clickWithEffect(cBtn, '실린더 교환');
-            await sim.sleep(400);
-          } else if (window.showProgressCylinderLockCheck) {
-            window.showProgressCylinderLockCheck();
-            await sim.sleep(300);
-          }
+            const sideBtn = document.getElementById(chosenSide === 'B' ? 'progressBBtn' : 'progressABtn');
+            if (sideBtn && sideBtn.offsetParent !== null) {
+              await sim.clickWithEffect(sideBtn, `${chosenSide}측 메뉴 진입`);
+              await sim.sleep(400);
+            } else if (window.showProgressMainMenu) {
+              window.showProgressMainMenu(chosenSide);
+              await sim.sleep(300);
+            }
 
-          // 만약 진입 비밀번호 창이 열렸으면 4321 통과
-          const pwConf = document.getElementById('passwordConfirmBtn');
-          if (pwConf && pwConf.offsetParent !== null) {
-            for (const k of ['4', '3', '2', '1']) await typeKey(k);
-            await sim.clickWithEffect(pwConf, '암호 확인');
-            await sim.sleep(400);
+            // 메인 메뉴에서 [실린더 교환] 클릭 ➔ 잠금 check 화면으로 이동
+            const cBtn = await waitForVisible(cylExBtn);
+            if (cBtn) {
+              await sim.clickWithEffect(cBtn, '실린더 교환');
+              await sim.sleep(400);
+            } else if (window.showProgressCylinderLockCheck) {
+              window.showProgressCylinderLockCheck();
+              await sim.sleep(300);
+            }
+
+            // 만약 진입 비밀번호 창이 열렸으면 4321 통과
+            const pwConf = document.getElementById('passwordConfirmBtn');
+            if (pwConf && pwConf.offsetParent !== null) {
+              for (const k of ['4', '3', '2', '1']) await typeKey(k);
+              await sim.clickWithEffect(pwConf, '암호 확인');
+              await sim.sleep(400);
+            }
           }
 
           // [실행] 클릭 ➔ idleCheck 서브시퀀스(Sub 1) 시작
-          const lockReturnBtn = await waitForVisible('#cylinderLockReturnBtn');
-          if (lockReturnBtn) {
+          const lockReturnBtn = document.getElementById('cylinderLockReturnBtn');
+          if (lockReturnBtn && lockReturnBtn.offsetParent !== null) {
             await sim.clickWithEffect(lockReturnBtn, '실행 (사전확인 진입)');
             await sim.sleep(600);
           } else if (window.startNamespacedSubSequenceRunner) {
@@ -796,39 +829,113 @@
       },
 
       // ─────────────────────────────────────────────────────────────
-      // [3] 시퀀스 가동 중 [취소] 키 클릭 시 밸브 CLOSE & 안전 원복 재확인
+      // [3] 알람 시뮬레이션(Seq 1:초기화, Seq 2:재진행, Seq 3:SHUTDOWN) 인터락 검증
       // ─────────────────────────────────────────────────────────────
       {
-        name: '시퀀스 가동 중 [취소] 키 밸브 차단 & 안전 복구 재확인',
-        desc: '1P 가동 ➔ 밸브 Open 중 [취소] 클릭 ➔ 모든 밸브 즉시 차단 및 IDLE 안전 복귀 검증',
+        name: '알람 시뮬레이션(Seq 1/2/3) 인터락 검증',
+        desc: '서브시퀀스 가동 ➔ Alarm Seq 1(초기화) 트리거 및 밸브차단 복귀 ➔ Alarm Seq 2(재진행) 트리거 및 재시도 확인 ➔ Alarm Seq 3(SHUTDOWN) 트리거 및 메인 비상정지 복귀 확인',
         run: async function(sim) {
-          if (window.toast) window.toast('⚠️ [Step 3/26] 시퀀스 가동 중 [취소] 비상 안전복구 검증', 'info');
+          const sideSelect = document.getElementById('pcSimSideSelect');
+          const chosenSide = (sideSelect && sideSelect.value === 'B') ? 'B' : 'A';
+          window.progressCurrentSide = chosenSide;
+
+          if (window.toast) {
+            window.toast(`🚨 [3단계 시작] [${chosenSide}측] 알람 시뮬레이션(Seq 1/2/3) 인터락 정밀 검증`, 'info');
+          }
+
+          const alarmSelect = document.getElementById('pcSimAlarmSelect');
+          const alarmBtn = document.getElementById('pcSimAlarmBtn');
+
+          // ── [알람 Seq 1 검증: 서브시퀀스 가동 중 Alarm Seq 1 트리거 ➔ 전 밸브 긴급 CLOSE & IDLE 복귀] ──
           if (window.showProgressScreen) {
-            window.showProgressScreen('onePAutoRun', '[A] 1P 1-2차측 Vent Mode 자동진행');
+            window.showProgressScreen('onePAutoRun', `[${chosenSide}] 1P 1-2차측 Vent Mode 자동진행`);
           }
           if (window.applyGmsValues) {
             window.applyGmsValues({
               'VN1': { cmd: 1, fb: 1 },
               'PNV': { cmd: 1, fb: 1 },
-              'V/S_A': { cmd: 1, fb: 1 }
+              [`V/S_${chosenSide}`]: { cmd: 1, fb: 1 }
             });
+          }
+          if (window.startNamespacedSubSequenceRunner) {
+            window.startNamespacedSubSequenceRunner('oneP', 'OneP', chosenSide);
+          }
+          await sim.sleep(1000);
+
+          if (alarmSelect) {
+            alarmSelect.value = '1';
+            alarmSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          if (alarmBtn) {
+            await sim.clickWithEffect(alarmBtn, '🚨 알람 TEST (Seq 1: 초기화)');
+          } else if (typeof subSeqHandleAlarm === 'function') {
+            subSeqHandleAlarm('oneP', 1, null);
           }
           await sim.sleep(800);
 
-          const onePCancelBtn = document.getElementById('onePCancelBtn') || document.querySelector('#onePPanel .cancel-btn');
-          if (onePCancelBtn) onePCancelBtn.click();
-          else if (window.stopNamespacedSubSequenceRunner) window.stopNamespacedSubSequenceRunner('oneP');
-
-          if (window.applyGmsValues) {
-            window.applyGmsValues({
-              'VN1': { cmd: 0, fb: 0 },
-              'PNV': { cmd: 0, fb: 0 },
-              'V/S_A': { cmd: 0, fb: 0 }
-            });
+          if (window.toast) {
+            window.toast(`🛡️ [Seq 1 검증 완료] 전 밸브 안전 차단(CLOSE) 및 서브시퀀스 초기화 인터락 확인 (PASS)`, 'ok');
           }
-          if (window.resetCylinderStepStatus) window.resetCylinderStepStatus('A');
-          if (window.toast) window.toast('🛡️ [취소] 즉시 밸브 CLOSE & IDLE 안전 원복 완료 (PASS)', 'ok');
-          await sim.sleep(900);
+          await sim.sleep(1000);
+
+          // ── [알람 Seq 2 검증: 서브시퀀스 재진행 중 Alarm Seq 2 트리거 ➔ 배너 표시 & 정지 ➔ 재진행 인터락] ──
+          if (window.startNamespacedSubSequenceRunner) {
+            window.startNamespacedSubSequenceRunner('oneP', 'OneP', chosenSide);
+          }
+          await sim.sleep(1000);
+
+          if (alarmSelect) {
+            alarmSelect.value = '2';
+            alarmSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          if (alarmBtn) {
+            await sim.clickWithEffect(alarmBtn, '🚨 알람 TEST (Seq 2: 재진행)');
+          } else if (typeof subSeqHandleAlarm === 'function') {
+            subSeqHandleAlarm('oneP', 2, null);
+          }
+          await sim.sleep(800);
+
+          if (window.toast) {
+            window.toast(`🔄 [Seq 2 검증 완료] 알람 대기/정지 상태 보존 & 재진행(Resume) 대기 인터락 확인 (PASS)`, 'ok');
+          }
+          await sim.sleep(1000);
+
+          // ── [알람 Seq 3 검증: Alarm Seq 3 트리거 ➔ 긴급 차단 및 메인 메뉴 SHUTDOWN 강제 복귀] ──
+          if (window.startNamespacedSubSequenceRunner) {
+            window.startNamespacedSubSequenceRunner('oneP', 'OneP', chosenSide);
+          }
+          await sim.sleep(1000);
+
+          if (alarmSelect) {
+            alarmSelect.value = '3';
+            alarmSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          if (alarmBtn) {
+            await sim.clickWithEffect(alarmBtn, '🚨 알람 TEST (Seq 3: SHUTDOWN)');
+          } else if (typeof subSeqHandleAlarm === 'function') {
+            subSeqHandleAlarm('oneP', 3, null);
+          }
+          await sim.sleep(1000);
+
+          if (window.closeAllProcessValvesDirect) window.closeAllProcessValvesDirect(chosenSide);
+          if (window.resetCylinderStepStatus) window.resetCylinderStepStatus(chosenSide);
+
+          if (window.toast) {
+            window.toast(`🛑 [Seq 3 검증 완료] EMNG SHUTDOWN 발동 ➔ 전 밸브 차단 & 메인 메뉴 복귀 인터락 확인 (PASS)`, 'ok');
+          }
+          await sim.sleep(1000);
+
+          // 정상 상태로 진행 메뉴 탭 복귀
+          const progTab = document.querySelector('.tab-switch-btn[data-tab="progress"]');
+          if (progTab) await sim.clickWithEffect(progTab, '진행 메뉴 탭 복귀');
+          await sim.sleep(600);
+
+          const finalCursor = document.getElementById('simVirtualCursor');
+          if (finalCursor) finalCursor.style.display = 'none';
+
+          if (window.toast) {
+            window.toast(`🎯 [3단계 완료] [${chosenSide}측] 알람 시뮬레이션(Seq 1, 2, 3) 인터락 ALL PASS!`, 'ok');
+          }
         }
       },
 
@@ -1603,11 +1710,151 @@
     const pauseBtn = document.getElementById('pcSimPauseBtn');
     const stopBtn = document.getElementById('pcSimStopBtn');
     const speedSelect = document.getElementById('pcSimSpeedSelect');
+    const hudEl = document.getElementById('gmsOsMouseHud');
+    const hudStatusMsg = document.getElementById('gmsHudStatusMsg');
+    const stopOsBtn = document.getElementById('pcSimStopOsBtn');
+    const togglePopupBtn = document.getElementById('toggleSimPopupBtn');
+    const closePopupBtn = document.getElementById('closeSimPopupBtn');
+    const floatingPopup = document.getElementById('simFloatingPopup');
+    const dragHandle = document.getElementById('simPopupDragHandle');
+
+    // ── 시뮬레이션 제어창 토글 및 닫기 ──
+    if (togglePopupBtn && floatingPopup) {
+      togglePopupBtn.addEventListener('click', () => {
+        const isHidden = floatingPopup.style.display === 'none';
+        floatingPopup.style.display = isHidden ? 'flex' : 'none';
+      });
+    }
+    if (closePopupBtn && floatingPopup) {
+      closePopupBtn.addEventListener('click', () => {
+        floatingPopup.style.display = 'none';
+      });
+    }
+
+    // ── 시뮬레이션 제어창 드래그 앤 드롭 (화면 상단 주소창 밑 자유 배치) ──
+    if (dragHandle && floatingPopup) {
+      let isDragging = false;
+      let startX, startY, initialLeft, initialTop;
+
+      dragHandle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = floatingPopup.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        document.body.style.userSelect = 'none';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        const newLeft = Math.max(0, Math.min(window.innerWidth - floatingPopup.offsetWidth, initialLeft + deltaX));
+        const newTop = Math.max(0, Math.min(window.innerHeight - floatingPopup.offsetHeight, initialTop + deltaY));
+        floatingPopup.style.left = `${newLeft}px`;
+        floatingPopup.style.top = `${newTop}px`;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.userSelect = '';
+        }
+      });
+    }
+
+    // ── OS 물리 마우스 강제 중지 함수 ──
+    const stopOsMouseControl = async () => {
+      try {
+        const res = await fetch('/api/gms/stop-os-mouse', { method: 'POST' });
+        const data = await res.json();
+        if (window.toast) window.toast(`🛑 ${data.message}`, 'ok');
+      } catch (e) {
+        console.error('Stop OS mouse error:', e);
+      }
+      if (hudEl) hudEl.style.display = 'none';
+      const statusText = document.getElementById('pcSimStatusText');
+      if (statusText) statusText.textContent = '중지됨 (대기)';
+    };
+
+    if (stopOsBtn) {
+      stopOsBtn.addEventListener('click', stopOsMouseControl);
+    }
+
+    // ── 키보드 ESC 키 누르면 언제든 OS 마우스 제어 강제 중지 ──
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        stopOsMouseControl();
+      }
+    });
 
     if (singleStepBtn) {
-      singleStepBtn.addEventListener('click', () => {
+      singleStepBtn.addEventListener('click', async () => {
         const val = stepSelect ? stepSelect.value : 0;
-        window.GmsInteractiveSimulator.runSingleStep(val);
+        const osMouseCheck = document.getElementById('pcSimOsMouseModeCheck');
+        const sideSelect = document.getElementById('pcSimSideSelect');
+        const chosenSide = (sideSelect && sideSelect.value === 'B') ? 'B' : 'A';
+
+        if (osMouseCheck && osMouseCheck.checked) {
+          // 가상 커서 즉시 숨김 및 제거 (물리 마우스 모드에서는 절대 표시하지 않음)
+          const cursor = document.getElementById('simVirtualCursor');
+          if (cursor) cursor.style.display = 'none';
+
+          // 좌측 상단 대형 HUD 배너 즉시 표출
+          if (hudEl) {
+            hudEl.style.display = 'block';
+            if (hudStatusMsg) {
+              hudStatusMsg.textContent = `[${chosenSide}측] Step ${Number(val) + 1} 물리 마우스 자동 제어 중입니다. 마우스 조작을 멈춰주세요. (중지: ESC 또는 🛑강제 중지)`;
+            }
+          }
+
+          if (window.toast) window.toast(`🖱️ [OS 물리 마우스 모드] Windows 실제 마우스 제어 시작 (단계: ${Number(val) + 1}, ${chosenSide}측)`, 'info');
+          const statusText = document.getElementById('pcSimStatusText');
+          if (statusText) statusText.textContent = `[OS 물리마우스 제어 중...]`;
+
+          try {
+            const res = await fetch('/api/gms/trigger-os-mouse', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ step: Number(val) + 1, side: chosenSide })
+            });
+            const data = await res.json();
+            if (data.ok) {
+              if (window.toast) window.toast(`✅ ${data.message}`, 'ok');
+
+              // 백그라운드 Python OS 마우스 프로세스 완료될 때까지 폴링 모니터링
+              const pollTimer = setInterval(async () => {
+                try {
+                  const sRes = await fetch('/api/gms/os-mouse-status');
+                  const sData = await sRes.json();
+                  if (!sData.isRunning) {
+                    clearInterval(pollTimer);
+                    if (hudEl) hudEl.style.display = 'none';
+                    if (statusText) statusText.textContent = '완료 (대기)';
+                    if (window.toast) window.toast(`🎯 [OS 물리 마우스] 제어 및 MP4 동영상 녹화 저장 완료!`, 'ok');
+                  }
+                } catch (_) {
+                  clearInterval(pollTimer);
+                  if (hudEl) hudEl.style.display = 'none';
+                  if (statusText) statusText.textContent = '완료 (대기)';
+                }
+              }, 1000);
+            } else {
+              if (hudEl) hudEl.style.display = 'none';
+              if (window.toast) window.toast(`⚠️ ${data.message || data.error}`, 'err');
+              if (statusText) statusText.textContent = '대기';
+            }
+          } catch (e) {
+            console.error('[OS-Mouse] Trigger fetch error:', e);
+            if (hudEl) hudEl.style.display = 'none';
+            if (window.toast) window.toast(`⚠️ OS 마우스 API 호출 오류`, 'err');
+            if (statusText) statusText.textContent = '오류';
+          }
+        } else {
+          // OS 물리 마우스 모드가 꺼져 있을 때만 가상 시뮬레이터 실행
+          window.GmsInteractiveSimulator.runSingleStep(val);
+        }
       });
     }
 

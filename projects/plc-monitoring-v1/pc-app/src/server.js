@@ -73,7 +73,7 @@ const {
   filePrefix,
 } = require('./settingsManager');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3004;
 const MAX_LOG_ENTRIES = 500;
 const MIN_INTERVAL_MS = 1;
 const MAX_INTERVAL_MS = 60 * 60 * 1000; // 60분
@@ -2801,7 +2801,92 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'gmsStatus', payload: gmsManager.getStatus() }));
   ws.send(JSON.stringify({ type: 'gmsConnStatus', payload: gmsSession.getStatus() }));
   ws.send(JSON.stringify({ type: 'gmsConnLogHistory', payload: gmsSession.getRecentLogs(100) }));
-  ws.send(JSON.stringify({ type: 'gmsValues', payload: { values: gmsManager.getValues(), pts: gmsManager.getPtValues(), lastUpdate: null } }));
+});
+
+// ── GMS 브라우저 지오메트리 및 화면 메모리 실시간 동기화 API ──
+let gmsBrowserGeometryState = { screenMemory: null, elements: {}, updatedAt: Date.now() };
+let gmsCommandQueue = [];
+
+app.get('/api/gms/browser-geometry', (req, res) => {
+  res.json({ ok: true, data: gmsBrowserGeometryState });
+});
+
+app.post('/api/gms/browser-geometry', (req, res) => {
+  try {
+    const payload = req.body || {};
+    gmsBrowserGeometryState = {
+      screenMemory: payload.screenMemory || gmsBrowserGeometryState.screenMemory,
+      elements: payload.elements || gmsBrowserGeometryState.elements,
+      updatedAt: Date.now(),
+    };
+    // 대기 중인 명령이 있으면 반환
+    const commandsToRun = [...gmsCommandQueue];
+    gmsCommandQueue = [];
+    res.json({ ok: true, commands: commandsToRun });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/gms/queue-command', (req, res) => {
+  const cmd = req.body && req.body.command;
+  if (cmd) {
+    gmsCommandQueue.push(cmd);
+    res.json({ ok: true, queued: cmd });
+  } else {
+    res.status(400).json({ ok: false, error: 'No command provided' });
+  }
+});
+
+let osMouseProcess = null;
+app.post('/api/gms/trigger-os-mouse', (req, res) => {
+  try {
+    const { step = 1, side = 'A' } = req.body || {};
+    const pythonScript = path.join('d:', 'AI_Work', 'Antigravity', '06.CEO', 'gms_os_mouse_controller.py');
+    const pythonExe = path.join('d:', 'AI_Work', 'Antigravity', '06.CEO', '.venv', 'Scripts', 'python.exe');
+    const runner = fs.existsSync(pythonExe) ? pythonExe : 'python';
+
+    if (osMouseProcess && !osMouseProcess.killed) {
+      return res.json({ ok: false, message: '이미 OS 마우스 제어 프로세스가 가동 중입니다.' });
+    }
+
+    const { spawn } = require('child_process');
+    const logFile = path.join('d:', 'AI_Work', 'Antigravity', '06.CEO', 'os_mouse_runner.log');
+    const outStream = fs.openSync(logFile, 'a');
+
+    osMouseProcess = spawn(runner, [pythonScript, `--step=${step}`, `--side=${side}`], {
+      detached: true,
+      stdio: ['ignore', outStream, outStream],
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUNBUFFERED: '1' }
+    });
+    osMouseProcess.on('exit', (code) => {
+      console.log(`[OS-Mouse] Python script finished with code ${code}`);
+      osMouseProcess = null;
+    });
+    osMouseProcess.unref();
+
+    console.log(`[OS-Mouse] Triggered step ${step} (side ${side}) using ${runner}`);
+    res.json({ ok: true, message: `OS 레벨 실제 물리 마우스 제어 시작 (Step ${step}, Side ${side})` });
+  } catch (err) {
+    console.error('[OS-Mouse] Trigger error:', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/api/gms/os-mouse-status', (req, res) => {
+  const isRunning = !!(osMouseProcess && !osMouseProcess.killed);
+  res.json({ ok: true, isRunning });
+});
+
+app.post('/api/gms/stop-os-mouse', (req, res) => {
+  if (osMouseProcess && !osMouseProcess.killed) {
+    try {
+      process.kill(osMouseProcess.pid);
+    } catch (_) {}
+    osMouseProcess = null;
+    return res.json({ ok: true, message: 'OS 물리 마우스 제어가 강제 중지되었습니다.' });
+  }
+  res.json({ ok: true, message: '실행 중인 OS 물리 마우스 프로세스가 없습니다.' });
 });
 
 process.on('SIGINT', () => {
