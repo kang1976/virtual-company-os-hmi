@@ -1824,22 +1824,31 @@
               if (window.toast) window.toast(`✅ ${data.message}`, 'ok');
 
               // 백그라운드 Python OS 마우스 프로세스 완료될 때까지 폴링 모니터링
+              // 백그라운드 Python OS 마우스 프로세스 실시간 관찰 모니터링
               const pollTimer = setInterval(async () => {
                 try {
                   const sRes = await fetch('/api/gms/os-mouse-status');
                   const sData = await sRes.json();
-                  if (!sData.isRunning) {
+                  if (sData.isRunning) {
+                    if (hudEl) hudEl.style.display = 'block';
+                    if (hudStatusMsg && sData.stepText) {
+                      hudStatusMsg.innerHTML = '<span style="color:#facc15;font-weight:bold;">⚡ [0.5배속 관찰 모드]</span> ' + sData.stepText + ' <span style="font-size:12px;color:#94a3b8;">(중지: ESC)</span>';
+                    }
+                    if (statusText && sData.stepText) {
+                      statusText.textContent = sData.stepText;
+                    }
+                  } else {
                     clearInterval(pollTimer);
                     if (hudEl) hudEl.style.display = 'none';
                     if (statusText) statusText.textContent = '완료 (대기)';
-                    if (window.toast) window.toast(`🎯 [OS 물리 마우스] 제어 및 MP4 동영상 녹화 저장 완료!`, 'ok');
+                    if (window.toast) window.toast('🎯 [OS 물리 마우스] 0.5배속 제어 및 동영상 녹화 완료!', 'ok');
                   }
                 } catch (_) {
                   clearInterval(pollTimer);
                   if (hudEl) hudEl.style.display = 'none';
                   if (statusText) statusText.textContent = '완료 (대기)';
                 }
-              }, 1000);
+              }, 300);
             } else {
               if (hudEl) hudEl.style.display = 'none';
               if (window.toast) window.toast(`⚠️ ${data.message || data.error}`, 'err');

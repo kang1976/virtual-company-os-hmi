@@ -3230,7 +3230,7 @@ loadOperationScreens().then(() => {
   window.operationScreensLoaded = true;
 });
 
-/** OS 레벨 실제 마우스 자동화 및 실시간 좌표 보정을 위한 요소 뷰포트 좌표 API */
+/** OS 레벨 실제 마우스 자동화 및 실시간 좌표 보정을 위한 요소 뷰포트 좌표 API (OS 절대 데스크톱 물리 좌표 산출) */
 window.getGmsElementViewportRect = function (selector) {
   try {
     const el = document.querySelector(selector);
@@ -3238,6 +3238,18 @@ window.getGmsElementViewportRect = function (selector) {
     const rect = el.getBoundingClientRect();
     const style = window.getComputedStyle(el);
     const visible = style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    
+    const dpr = window.devicePixelRatio || 1;
+    const winLeft = (window.screenLeft !== undefined) ? window.screenLeft : (window.screenX || 0);
+    const winTop = (window.screenTop !== undefined) ? window.screenTop : (window.screenY || 0);
+    const toolbarHeight = Math.max(0, (window.outerHeight || window.innerHeight) - window.innerHeight);
+
+    // OS 데스크톱 전체 화면 기준 실제 물리 마우스 타겟 픽셀 (DPR 스케일링 적용)
+    const absX = winLeft + (rect.x + rect.width / 2);
+    const absY = winTop + toolbarHeight + (rect.y + rect.height / 2);
+    const physicalX = Math.round(absX * dpr);
+    const physicalY = Math.round(absY * dpr);
+
     return {
       found: true,
       visible,
@@ -3247,9 +3259,14 @@ window.getGmsElementViewportRect = function (selector) {
       height: rect.height,
       centerX: rect.x + rect.width / 2,
       centerY: rect.y + rect.height / 2,
+      winLeft,
+      winTop,
+      toolbarHeight,
+      physicalX,
+      physicalY,
       screenWidth: window.innerWidth,
       screenHeight: window.innerHeight,
-      devicePixelRatio: window.devicePixelRatio || 1,
+      devicePixelRatio: dpr,
       screenMemory: window.GMS_SCREEN_MEMORY || null,
     };
   } catch (err) {

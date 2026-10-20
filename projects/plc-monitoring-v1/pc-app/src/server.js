@@ -2839,9 +2839,21 @@ app.post('/api/gms/queue-command', (req, res) => {
 });
 
 let osMouseProcess = null;
+let osMouseProgressText = '';
+let osMouseSpeed = 0.5;
+
+app.post('/api/gms/os-mouse-progress', (req, res) => {
+  const { stepText = '' } = req.body || {};
+  osMouseProgressText = stepText;
+  res.json({ ok: true });
+});
+
 app.post('/api/gms/trigger-os-mouse', (req, res) => {
   try {
-    const { step = 1, side = 'A' } = req.body || {};
+    const { step = 1, side = 'A', speed = 0.5 } = req.body || {};
+    osMouseSpeed = Number(speed) || 0.5;
+    osMouseProgressText = `[${side}측] 0.5배속 관찰 모드 시작 중...`;
+
     const pythonScript = path.join('d:', 'AI_Work', 'Antigravity', '06.CEO', 'gms_os_mouse_controller.py');
     const pythonExe = path.join('d:', 'AI_Work', 'Antigravity', '06.CEO', '.venv', 'Scripts', 'python.exe');
     const runner = fs.existsSync(pythonExe) ? pythonExe : 'python';
@@ -2854,7 +2866,7 @@ app.post('/api/gms/trigger-os-mouse', (req, res) => {
     const logFile = path.join('d:', 'AI_Work', 'Antigravity', '06.CEO', 'os_mouse_runner.log');
     const outStream = fs.openSync(logFile, 'a');
 
-    osMouseProcess = spawn(runner, [pythonScript, `--step=${step}`, `--side=${side}`], {
+    osMouseProcess = spawn(runner, [pythonScript, `--step=${step}`, `--side=${side}`, `--speed=${osMouseSpeed}`], {
       detached: true,
       stdio: ['ignore', outStream, outStream],
       env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUNBUFFERED: '1' }
@@ -2862,11 +2874,12 @@ app.post('/api/gms/trigger-os-mouse', (req, res) => {
     osMouseProcess.on('exit', (code) => {
       console.log(`[OS-Mouse] Python script finished with code ${code}`);
       osMouseProcess = null;
+      osMouseProgressText = '';
     });
     osMouseProcess.unref();
 
-    console.log(`[OS-Mouse] Triggered step ${step} (side ${side}) using ${runner}`);
-    res.json({ ok: true, message: `OS 레벨 실제 물리 마우스 제어 시작 (Step ${step}, Side ${side})` });
+    console.log(`[OS-Mouse] Triggered step ${step} (side ${side}, speed ${osMouseSpeed}) using ${runner}`);
+    res.json({ ok: true, message: `OS 레벨 실제 물리 마우스 제어 시작 (Step ${step}, Side ${side}, 속도: ${osMouseSpeed}배속)` });
   } catch (err) {
     console.error('[OS-Mouse] Trigger error:', err);
     res.status(500).json({ ok: false, error: err.message });
@@ -2875,7 +2888,7 @@ app.post('/api/gms/trigger-os-mouse', (req, res) => {
 
 app.get('/api/gms/os-mouse-status', (req, res) => {
   const isRunning = !!(osMouseProcess && !osMouseProcess.killed);
-  res.json({ ok: true, isRunning });
+  res.json({ ok: true, isRunning, stepText: osMouseProgressText, speed: osMouseSpeed });
 });
 
 app.post('/api/gms/stop-os-mouse', (req, res) => {
